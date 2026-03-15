@@ -1,19 +1,26 @@
 # Logixian Agents
 
-AI workflow configurations for the Logixian studio project. This repo provides shared Claude Code settings and custom slash commands that team members can use as-is or integrate into their personal setup.
+Shared best-practice configurations for AI coding agents used across the Logixian studio project. The goal is a single repo where the team maintains optimized, reusable setups for every supported agent — so no one has to configure from scratch.
 
-## What's in This Repo
+> **Current support:** Claude Code — more agents (Gemini, Copilot, etc.) coming as the project grows.
 
-| Path | Purpose |
-|---|---|
-| `CLAUDE.md` | Project-level instructions loaded automatically by Claude Code |
-| `.claude/commands/` | Custom slash commands available inside Claude Code sessions |
+## Repo Structure
 
-## Usage
+| Path | Agent | Purpose |
+|---|---|---|
+| `CLAUDE.md` | Claude Code | Project-level instructions, auto-loaded by Claude Code |
+| `.claude/commands/` | Claude Code | Custom slash commands for Claude Code sessions |
+| `gemini/` | Gemini | _(planned)_ Agent configuration and prompt templates |
+| `.github/copilot-instructions.md` | GitHub Copilot | _(planned)_ Repo-level instructions for Copilot |
 
-### Option 1 — Project-scoped (recommended for team use)
+## Setup
 
-Clone the repo and open it directly in Claude Code. All settings and commands are loaded automatically.
+### Claude Code
+
+
+**Option 1 — Project-scoped (recommended for team use)**
+
+Clone the repo and open it in Claude Code. All settings and commands load automatically.
 
 ```bash
 git clone <repo-url> logixian-agents
@@ -21,16 +28,11 @@ cd logixian-agents
 claude .
 ```
 
-Any slash command in `.claude/commands/` is immediately available (e.g., `/prompt-coach`).
+**Option 2 — Personal user-level integration (optional)**
 
-### Option 2 — Personal user-level integration (optional)
-
-If you want these commands available in **every** Claude Code session on your machine, copy them into your global Claude config directory.
-
-**On macOS/Linux:**
+To make these commands available in every Claude Code session on your machine, copy them into your global config directory.
 
 ```bash
-# Create the global commands directory if it doesn't exist
 mkdir -p ~/.claude/commands
 
 # Copy a specific command
@@ -40,18 +42,39 @@ cp .claude/commands/prompt-coach.md ~/.claude/commands/
 cp .claude/commands/*.md ~/.claude/commands/
 ```
 
-After copying, the commands are available globally — no need to be inside this repo.
+> **Project-level vs. user-level:** Settings in `.claude/` apply only when Claude Code is opened inside this project. Settings in `~/.claude/` apply globally across all projects.
 
-> **Note:** Personal user-level settings live in `~/.claude/`. Project-level settings in `.claude/` only apply when Claude Code is opened inside that project directory. User-level settings apply everywhere.
+### Gemini
+
+> _(planned)_ Configuration guide will be added here once Gemini support is introduced.
+
+### GitHub Copilot
+
+> _(planned)_ Configuration guide will be added here once Copilot support is introduced.
 
 ## Available Commands
+
+### Claude Code
 
 | Command | Description |
 |---|---|
 | `/prompt-coach` | Audits your English prompt and executes the task. Designed for non-native English speakers. |
 
-## Claude Code Docs
+### Gemini
+> _(planned)_
 
+### GitHub Copilot
+> _(planned)_
+
+## Resources
+
+### Claude Code
 - [Claude Code overview](https://docs.anthropic.com/en/docs/claude-code)
 - [Custom slash commands](https://docs.anthropic.com/en/docs/claude-code/slash-commands)
 - [CLAUDE.md reference](https://docs.anthropic.com/en/docs/claude-code/claude-md)
+
+### Gemini
+> _(planned)_
+
+### GitHub Copilot
+> _(planned)_
