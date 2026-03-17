@@ -8,6 +8,7 @@ allowed-tools:
   - Bash(git checkout:*)
   - Bash(git branch:*)
   - Bash(git diff:*)
+  - Bash(git pull:*)
 argument-hint: "<goal description>"
 ---
 
@@ -38,8 +39,8 @@ No ticket prefix yet — will be added when Jira integration is configured.
 2. Show the proposed branch name to the user and ask for confirmation before creating it
 3. Run `git status` to check for uncommitted changes
    - If changes exist, run `git diff` to inspect them:
-     - **Related to the goal** → proceed with `git checkout -b <branch>` (carries changes over); note this to the user
+     - **Related to the goal** → create the branch directly with `git checkout -b <branch>` (carries changes over; skip step 4). Note this to the user.
      - **Unrelated to the goal** → stop, list the conflicting files, and ask the user to commit, stash, or discard them before continuing. Do NOT stash automatically.
-4. On confirmation, checkout `main` and pull latest: `git checkout main && git pull origin main`
+4. _(Clean working tree only)_ Checkout `main` and pull latest: `git checkout main && git pull origin main`
 5. Create and switch to the new branch: `git checkout -b <branch>`
 6. Confirm success with `git branch`
