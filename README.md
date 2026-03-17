@@ -9,7 +9,7 @@ Shared best-practice configurations for AI coding agents used across the Logixia
 | Path | Agent | Purpose |
 |---|---|---|
 | `CLAUDE.md` | Claude Code | Project-level instructions, auto-loaded by Claude Code |
-| `.claude/commands/` | Claude Code | Custom slash commands for Claude Code sessions |
+| `.claude/skills/` | Claude Code | Custom slash skills for Claude Code sessions |
 | `gemini/` | Gemini | _(planned)_ Agent configuration and prompt templates |
 | `.github/copilot-instructions.md` | GitHub Copilot | _(planned)_ Repo-level instructions for Copilot |
 
@@ -30,16 +30,16 @@ claude .
 
 **Option 2 — Personal user-level integration (optional)**
 
-To make these commands available in every Claude Code session on your machine, copy them into your global config directory.
+To make these skills available in every Claude Code session on your machine, copy them into your global config directory.
 
 ```bash
-mkdir -p ~/.claude/commands
+mkdir -p ~/.claude/skills
 
-# Copy a specific command
-cp .claude/commands/prompt-coach.md ~/.claude/commands/
+# Copy a specific skill
+cp -r .claude/skills/prompt-coach ~/.claude/skills/
 
-# Or copy all commands
-cp .claude/commands/*.md ~/.claude/commands/
+# Or copy all skills
+cp -r .claude/skills/. ~/.claude/skills/
 ```
 
 > **Project-level vs. user-level:** Settings in `.claude/` apply only when Claude Code is opened inside this project. Settings in `~/.claude/` apply globally across all projects.
@@ -52,13 +52,16 @@ cp .claude/commands/*.md ~/.claude/commands/
 
 > _(planned)_ Configuration guide will be added here once Copilot support is introduced.
 
-## Available Commands
+## Available Skills
 
 ### Claude Code
 
-| Command | Description |
+| Skill | Description |
 |---|---|
-| `/prompt-coach` | Audits your English prompt and executes the task. Designed for non-native English speakers. |
+| `/prompt-coach` | Audits every English prompt for grammar, Chinglish, and engineering precision before executing the task. Designed for non-native English speakers. |
+| `/commit` | Stage and commit changes following conventional commit conventions (`type(scope): message`). Jira integration planned. |
+| `/pr` | Push the current branch and open a pull request into `main`. Jira integration planned. |
+| `/branch <goal>` | Create and switch to a new branch from `main`, named from the goal description. |
 
 ### Gemini
 > _(planned)_
