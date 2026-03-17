@@ -4,11 +4,14 @@ This repo is the AI workflow layer for the Logixian studio project.
 It orchestrates context-aware agent configurations across multiple AI providers
 (Claude, Gemini, Copilot, etc.) so team members can share optimized setups.
 
-## Available Commands
+## Available Skills
 
-| Command | Purpose |
+| Skill | Purpose |
 |---|---|
-| `/prompt-coach` | Activates the Prompt Coach persona — audits your English prompt, then executes the task. Designed for non-native English speakers. |
+| `/prompt-coach` | Activates the Prompt Coach persona — audits every English prompt for grammar, Chinglish, and engineering precision before executing the task. Designed for non-native English speakers. |
+| `/commit` | Stage and commit changes following conventional commit conventions (`type(scope): message`). |
+| `/pr` | Push the current branch and open a pull request into `main`. |
+| `/branch <goal>` | Create and switch to a new branch from `main`, named from the goal description. |
 
 ## Getting Started
 
