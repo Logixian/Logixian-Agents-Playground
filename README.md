@@ -44,6 +44,16 @@ cp -r .claude/skills/. ~/.claude/skills/
 
 > **Project-level vs. user-level:** Settings in `.claude/` apply only when Claude Code is opened inside this project. Settings in `~/.claude/` apply globally across all projects.
 
+**MCP Servers**
+
+MCP (Model Context Protocol) servers extend Claude Code with live external context. The project-level MCP config is in `.claude/settings.json` and loads automatically — but each person must authenticate individually on first use.
+
+| Server | Purpose | Auth |
+|---|---|---|
+| Atlassian (`mcp-atlassian-api`) | Read/write Confluence pages and Jira issues | OAuth via Atlassian account |
+
+To authenticate, open Claude Code in this project and run `/mcp`, then follow the OAuth prompt for each server.
+
 ### Gemini
 
 > _(planned)_ Configuration guide will be added here once Gemini support is introduced.
