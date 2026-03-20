@@ -9,6 +9,8 @@ It orchestrates context-aware agent configurations across multiple AI providers
 | Skill | Purpose |
 |---|---|
 | `/prompt-coach` | Activates the Prompt Coach persona — audits every English prompt for grammar, Chinglish, and engineering precision before executing the task. Designed for non-native English speakers. |
+| `/architect [task]` | Activates the System Architect persona — drafts ADRs, reviews system boundaries and API contracts, and posts findings to Confluence. |
+| `/pm [task]` | Activates the Project Manager persona — sprint summary, blocker tracking, risk register maintenance via Jira + Confluence. |
 | `/commit` | Stage and commit changes following conventional commit conventions (`type(scope): message`). |
 | `/pr` | Push the current branch and open a pull request into `main`. |
 | `/branch <goal>` | Create and switch to a new branch from `main`, named from the goal description. |
