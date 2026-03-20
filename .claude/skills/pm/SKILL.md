@@ -58,11 +58,20 @@ All ticket reading and writing uses these conventions. This is the single source
 
 ### Description Format
 
+For **feature / implementation tickets**, use user-story format:
 ```
 As a [role], I want [goal], so that [benefit].
 
 **Context:**
 <1–3 sentences of background if needed>
+```
+
+For **design / architecture tickets**, use scope/goal format:
+```
+**Goal:** <what the ticket produces and why>
+
+**Scope:**
+<what is and isn't covered, key dependencies, blocking relationships>
 ```
 
 ### Definition of Done Format (goes in `customfield_10135`, NOT description)
@@ -178,7 +187,7 @@ All ticket operations use the **Shared Field Conventions** above.
 ### `/pm ticket <IRA-XXX>` — Review and update an existing ticket
 
 1. Fetch the ticket via `getJiraIssue`
-2. Evaluate: Does the summary follow the format? Is the description in user-story format? Is DoD populated and testable? Are Clockify/Billable labels set correctly?
+2. Evaluate: Does the summary follow the format? Is the description format appropriate for the ticket type (scope/goal for design/architecture tickets, user-story for feature/implementation tickets)? Is DoD populated and testable? Are Clockify/Billable labels set correctly?
 3. Draft updated fields and show a diff to the user:
    ```
    Summary:     <before> → <after>
