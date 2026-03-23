@@ -1,0 +1,1553 @@
+WEBVTT
+
+00:00:00.000 --> 00:00:08.000
+Okay, so everybody has to read and review it. That is way more… that's way more complicated, I think.
+
+00:00:08.000 --> 00:00:18.000
+So, I open, I will need. Okay.
+
+00:00:18.000 --> 00:00:20.000
+I am.
+
+00:00:20.000 --> 00:00:27.000
+not confident you… you'll go.
+
+00:00:27.000 --> 00:00:30.000
+So I say mute.
+
+00:00:30.000 --> 00:00:34.000
+I don't know.
+
+00:00:34.000 --> 00:01:04.000
+We'll find out. We will know.
+
+00:01:04.000 --> 00:01:34.000
+don't. We don't…
+
+00:01:37.000 --> 00:01:42.000
+Brett is here. Hello, Brad.
+
+00:01:42.000 --> 00:01:48.000
+I didn't… I didn't sound anything. Yeah, yeah, yeah.
+
+00:01:48.000 --> 00:01:51.000
+Hello, Brad, can you hear me?
+
+00:01:51.000 --> 00:01:52.000
+Can you hear me?
+
+00:01:52.000 --> 00:01:54.000
+Yeah, yeah, how are you?
+
+00:01:54.000 --> 00:01:56.000
+Great, good. How are you?
+
+00:01:56.000 --> 00:01:59.000
+Okay, cool. Um, nice to… nice to see you.
+
+00:01:59.000 --> 00:02:00.000
+Yeah, it's good to see you.
+
+00:02:00.000 --> 00:02:07.000
+Yeah, okay, so for… for our today's schedule, um, we are… we are going through
+
+00:02:07.000 --> 00:02:17.000
+The main purpose of today, uh, we actually made, like, many assumptions to the full project, so we want to, like, settle down on the overall boundaries of the whole project.
+
+00:02:17.000 --> 00:02:18.000
+Good.
+
+00:02:18.000 --> 00:02:24.000
+And after that, we can settle down on the whole scope, and we can start… we can start the implementation.
+
+00:02:24.000 --> 00:02:27.000
+So, okay, so let me…
+
+00:02:27.000 --> 00:02:29.000
+That may work through with you, like…
+
+00:02:29.000 --> 00:02:34.000
+Okay, so can you see my screen?
+
+00:02:34.000 --> 00:02:38.000
+Okay, cool. Okay, so, yeah, so we basically…
+
+00:02:38.000 --> 00:02:44.000
+Um, try to, like, have an overall, like, stakeholders. So, in general,
+
+00:02:44.000 --> 00:02:52.000
+Uh, at the middle of this diagram is logicion Engine. We actually, like, named our whole… our team in our project as Logixion.
+
+00:02:52.000 --> 00:02:55.000
+Um, I hope you like the name. Yeah, and also…
+
+00:02:55.000 --> 00:02:56.000
+Yep.
+
+00:02:56.000 --> 00:03:02.000
+Yeah, they were, like, um, couple stakeholders here, and another one is Irologix Internal System, so…
+
+00:03:02.000 --> 00:03:07.000
+The whole system are, like, basically decouposed from the internal system, so we…
+
+00:03:07.000 --> 00:03:09.000
+expect, um, the…
+
+00:03:09.000 --> 00:03:14.000
+the traffic between them will be, um, API'd, and also, we don't know if you're…
+
+00:03:14.000 --> 00:03:15.000
+Yep.
+
+00:03:15.000 --> 00:03:17.000
+I'm supporting WAPHook.
+
+00:03:17.000 --> 00:03:27.000
+Um, so if… if the web hook is supported, and we'll also, like, leverage the YPOC to notify, um, the system, um, for everything.
+
+00:03:27.000 --> 00:03:28.000
+Nice, okay.
+
+00:03:28.000 --> 00:03:34.000
+Yeah, and also there will be, like, WebUp subscription. Okay, I will… went through the details here.
+
+00:03:34.000 --> 00:03:39.000
+So, okay, so the first… the first point here, um, our…
+
+00:03:39.000 --> 00:03:44.000
+Overall data pipeline will be split into two phases.
+
+00:03:44.000 --> 00:03:50.000
+And the number one, uh, the phase one is, um, for ingestion. So…
+
+00:03:50.000 --> 00:03:57.000
+We assume, like, our system has to know whether there's new laws for us to query.
+
+00:03:57.000 --> 00:04:03.000
+And so, we will, like, run the weekly, um, scheduled job to…
+
+00:04:03.000 --> 00:04:14.000
+to fetch and parse the new laws, and to make it, like, structured into a structure, data into the… into the data database. So that is phase one.
+
+00:04:14.000 --> 00:04:20.000
+And Phase 2 is for calculation. And the phase two is totally…
+
+00:04:20.000 --> 00:04:22.000
+um, reactive, it will only be
+
+00:04:22.000 --> 00:04:25.000
+trigger by, um…
+
+00:04:25.000 --> 00:04:31.000
+First scenario is the new law is, um, is approved. There's a human in loop.
+
+00:04:31.000 --> 00:04:38.000
+interaction. And the second scenario is there's new client data injected into the system.
+
+00:04:38.000 --> 00:04:44.000
+There's only, like, two scenarios that will trigger the Phase 2 calculation. So, this is the overall…
+
+00:04:44.000 --> 00:04:47.000
+data pipeline here. And…
+
+00:04:47.000 --> 00:04:58.000
+Question here will be, um, because actually, for now, the data, the laws are scattered around that the internet, there's some official, like,
+
+00:04:58.000 --> 00:05:07.000
+federal base to state, um, those laws. So we are wondering if there's any, like, analogics, internal data that has
+
+00:05:07.000 --> 00:05:12.000
+such database to managing all the auths, and should we interact
+
+00:05:12.000 --> 00:05:18.000
+that stores us, or, like, data stores.
+
+00:05:18.000 --> 00:05:24.000
+So you're asking if we have any sort of data structure or database internally where we manage this sort of data now?
+
+00:05:24.000 --> 00:05:25.000
+Yes, yes.
+
+00:05:25.000 --> 00:05:31.000
+No, we don't. Yeah, I mean, that was part of this project, was to kind of design that data storage, right? So…
+
+00:05:31.000 --> 00:05:42.000
+Okay, okay, yeah, okay, uh, okay, so, yeah, so basically, the app pipeline here, we will, like, fetch the data online, and… and keep
+
+00:05:42.000 --> 00:05:43.000
+Yeah.
+
+00:05:43.000 --> 00:05:52.000
+qubit update, and we also want to… we also want to make sure, um, if the data pipeline is scheduled, it's a weekly scheduled job, is it, like,
+
+00:05:52.000 --> 00:05:53.000
+Yeah.
+
+00:05:53.000 --> 00:05:55.000
+Okay, with you, because there would be, like, one week wait and see if there come out.
+
+00:05:55.000 --> 00:06:05.000
+Yeah, I mean, honestly, like, I almost feel like it could be monthly, but yeah, weekly is probably overdoing it, but, you know, that's… that's very good coverage.
+
+00:06:05.000 --> 00:06:06.000
+Okay.
+
+00:06:06.000 --> 00:06:08.000
+So, yeah, I think, you know, assuming this works at scale, that'd be great.
+
+00:06:08.000 --> 00:06:20.000
+Okay, yeah, okay, then we can… we can make it a weekly schedule job for now, and I mean, it is, like, totally flexible, it can be adjustable in the future, so…
+
+00:06:20.000 --> 00:06:25.000
+if the timeframe is good, then we'll be good, uh, here. Okay, so…
+
+00:06:25.000 --> 00:06:27.000
+Okay, so there's…
+
+00:06:27.000 --> 00:06:30.000
+Um, Scenario 2, this…
+
+00:06:30.000 --> 00:06:38.000
+the process of how we trigger the regulation updates, and how we interact with our logic system. So…
+
+00:06:38.000 --> 00:06:42.000
+The pipeline would be like this. The system automatically checks
+
+00:06:42.000 --> 00:06:56.000
+stage regulation. We feel one week latency. And every… every detective changes requires a, um, human approval before it really, like, taking effect, um, to calculate the client data.
+
+00:06:56.000 --> 00:06:57.000
+So a process would be like this.
+
+00:06:57.000 --> 00:06:58.000
+It makes sense.
+
+00:06:58.000 --> 00:07:02.000
+Okay, let me know when this logic's an engine, and it will do a…
+
+00:07:02.000 --> 00:07:08.000
+do the old-fashioned regulation, and it will trigger… trigger the first, uh, the first…
+
+00:07:08.000 --> 00:07:17.000
+phase of calculation to make this, um, raw document data into a kind of a unified, um, data schema that is.
+
+00:07:17.000 --> 00:07:20.000
+That is for the review, and…
+
+00:07:20.000 --> 00:07:36.000
+So, so after the Phase 1 ingestion is done, we will send a webhook to our logic system. Um, there's a pending review state that we need, um, human in loop to review this new law to see if this makes sense.
+
+00:07:36.000 --> 00:07:44.000
+And after… after the approval, it will trigger the Phase 2 calculation to Logix Engine.
+
+00:07:44.000 --> 00:07:48.000
+So this is kind of the overall, um…
+
+00:07:48.000 --> 00:07:49.000
+overall pipeline here.
+
+00:07:49.000 --> 00:07:51.000
+Yeah, makes sense. Yeah, looks good.
+
+00:07:51.000 --> 00:07:52.000
+Okay. Okay.
+
+00:07:52.000 --> 00:07:53.000
+Yep.
+
+00:07:53.000 --> 00:08:03.000
+So… so in the future, we might need to, like, to make sure, like, what's this schema needed for this query API. So I assume this…
+
+00:08:03.000 --> 00:08:09.000
+um, law query API will serve both at this, um, review stage, and also if there
+
+00:08:09.000 --> 00:08:15.000
+any other scenario that the logic system needs to, like, know, need to, like,
+
+00:08:15.000 --> 00:08:22.000
+visualize all those laws into a more systematic way. You can also leverage this API, so it will serve.
+
+00:08:22.000 --> 00:08:25.000
+These two… these two purpose.
+
+00:08:25.000 --> 00:08:28.000
+Okay, and… okay.
+
+00:08:28.000 --> 00:08:32.000
+And for the third scenario is…
+
+00:08:32.000 --> 00:08:40.000
+for the data… data… applying data update. So we assume, um, every, like, new client data will be
+
+00:08:40.000 --> 00:08:45.000
+um, will be post to Logixion Engine, and because…
+
+00:08:45.000 --> 00:08:52.000
+Um, we're not sure if they're… how our logic systems store client data right now, but we assume in order
+
+00:08:52.000 --> 00:08:55.000
+database is… should be anonymous.
+
+00:08:55.000 --> 00:09:01.000
+anonymized, uh, because we shouldn't, like, store API data, so it should be, like,
+
+00:09:01.000 --> 00:09:10.000
+kind of just… we just store the, um, client UUID, and along with the required matrix, and the required matrix is also…
+
+00:09:10.000 --> 00:09:16.000
+Uh, we need more, like, internal information to verify what required matrix we need.
+
+00:09:16.000 --> 00:09:25.000
+Um, but the projects here will be our logic system, push the new employee data into Logix engine, and it will also trigger the Phase 2 calculation.
+
+00:09:25.000 --> 00:09:29.000
+to get the new outcome of a certain employer.
+
+00:09:29.000 --> 00:09:34.000
+Yeah, that makes sense. That makes sense. Um…
+
+00:09:34.000 --> 00:09:39.000
+Um, but it kind of… it kind of, like, triggered another question here, because…
+
+00:09:39.000 --> 00:09:43.000
+In our milestone, there's also… we need to cover the…
+
+00:09:43.000 --> 00:09:46.000
+Um, the client onboarding pipeline.
+
+00:09:46.000 --> 00:09:52.000
+But I also am the client onboarding pipeline will be… occur at our logic system, but for now…
+
+00:09:52.000 --> 00:09:54.000
+Yeah, it would.
+
+00:09:54.000 --> 00:09:59.000
+Okay. So how do… how do we expect we…
+
+00:09:59.000 --> 00:10:04.000
+Um, how do we spell the way we implement those client onboarding flow? Because…
+
+00:10:04.000 --> 00:10:08.000
+It will… it will happen in the neurologix engine, and it will involve
+
+00:10:08.000 --> 00:10:12.000
+Um, some client-sensitive data, I assume.
+
+00:10:12.000 --> 00:10:20.000
+Yeah, I mean, at a minimum, an identifier, right?
+
+00:10:20.000 --> 00:10:21.000
+Okay.
+
+00:10:21.000 --> 00:10:24.000
+I would almost expect for you to define the API contract for me, and then I would
+
+00:10:24.000 --> 00:10:27.000
+I would basically…
+
+00:10:27.000 --> 00:10:32.000
+So, like, from our end, right, if you kind of think… it looks like you're kind of thinking about
+
+00:10:32.000 --> 00:10:37.000
+Logixen is basically a black box, it's completely separated from…
+
+00:10:37.000 --> 00:10:43.000
+Our core system via API contracts. Is that kind of a fair statement?
+
+00:10:43.000 --> 00:10:48.000
+Okay, so… so Lakai onboarding thing will be, like, separated for, um, the current…
+
+00:10:48.000 --> 00:10:59.000
+Yeah, I mean, it almost… yeah, it almost seems like, right, like, you know, the way you thought about your engine is kind of a completely separate black box from our system. So, like, if I kind of think about it that way…
+
+00:10:59.000 --> 00:11:07.000
+Basically, what happens is, like, you define an API contract that says that, you know, like, if you want your…
+
+00:11:07.000 --> 00:11:12.000
+If you want your employers to remain compliant, then you need to send me an event.
+
+00:11:12.000 --> 00:11:17.000
+you know, you basically need to post an endpoint, and the shape of that post looks like this.
+
+00:11:17.000 --> 00:11:20.000
+You know, employer ID,
+
+00:11:20.000 --> 00:11:27.000
+I guess that would be for onboarding a new one, so let's assume we're kind of doing, like, proper HTTP semantics, so, like…
+
+00:11:27.000 --> 00:11:30.000
+If you already have the employee…
+
+00:11:30.000 --> 00:11:34.000
+ID and some information about the employers.
+
+00:11:34.000 --> 00:11:40.000
+I would basically be submitting a patch request in this scenario with, like, the employer ID,
+
+00:11:40.000 --> 00:11:45.000
+And the fields of change, so whatever the metrics are that change, I would be giving those to you, but…
+
+00:11:45.000 --> 00:11:47.000
+It kind of goes back to the same idea, right? Which is…
+
+00:11:47.000 --> 00:11:54.000
+at the base level, like, you would provide me with an API aspect that I would have to conform to, so, like,
+
+00:11:54.000 --> 00:11:57.000
+Part of that is, like, to create a new employer, kind of in Logixen.
+
+00:11:57.000 --> 00:12:05.000
+Um, you know, what is the shape of that contract? Is there an employer ID, it's a couple of metrics about the employer, like, you know, what state they're in.
+
+00:12:05.000 --> 00:12:09.000
+Um, like, how many employees they have, like, what year they started, kind of all those base…
+
+00:12:09.000 --> 00:12:12.000
+pieces of information, and then, like,
+
+00:12:12.000 --> 00:12:17.000
+Over time, like, if I want to make sure that my employers remain compliant, then I would need to, like, submit
+
+00:12:17.000 --> 00:12:24.000
+Patrick West, or whatever, you know, posts that are essentially modifications of, like, an employer's dataset.
+
+00:12:24.000 --> 00:12:29.000
+to logistics, um, so that you can run these Phase 2 calculations.
+
+00:12:29.000 --> 00:12:34.000
+Okay, so, um, let me, like, make sure if I understand it right. So…
+
+00:12:34.000 --> 00:12:36.000
+apart from, um, this…
+
+00:12:36.000 --> 00:12:41.000
+push API to trigger the calculation. Do we also need to provide
+
+00:12:41.000 --> 00:12:47.000
+any other external API endpoint for the client to onboard.
+
+00:12:47.000 --> 00:12:53.000
+Given that we… we already, like, um, exchanged the client data with our logic system.
+
+00:12:53.000 --> 00:13:02.000
+Yeah, I mean, if we're… yeah, I guess that's kind of my question to you, right? Like, are you expecting that we would kind of set everybody up through a set of APIs, or are you expecting that we would set up
+
+00:13:02.000 --> 00:13:06.000
+kind of, you know, employer profiles a different way.
+
+00:13:06.000 --> 00:13:11.000
+in Logixen.
+
+00:13:11.000 --> 00:13:13.000
+Okay, so I… I'm a little bit… sorry, I'm a little bit calm.
+
+00:13:13.000 --> 00:13:15.000
+But…
+
+00:13:15.000 --> 00:13:22.000
+So, um, I'll assume the, um, the data outcomes come from external employer?
+
+00:13:22.000 --> 00:13:28.000
+will not be in just two logicion engines directly, because they will contain, like,
+
+00:13:28.000 --> 00:13:34.000
+sensitive data, and also, if we… if we do that, we actually don't need
+
+00:13:34.000 --> 00:13:42.000
+to interact, to exchange client data with Paralogix system, you just need to exchange it to an external employer.
+
+00:13:42.000 --> 00:13:48.000
+Do I understand it right?
+
+00:13:48.000 --> 00:13:51.000
+It should not store identifier report.
+
+00:13:51.000 --> 00:13:56.000
+longest sort and minimize compliance profile.
+
+00:13:56.000 --> 00:13:58.000
+Oh, sorry, I couldn't… I couldn't hear… hear you clearly. Can you repeat that?
+
+00:13:58.000 --> 00:14:02.000
+I'm reading… I'm reading what's on the screen and thinking through it.
+
+00:14:02.000 --> 00:14:06.000
+Um, it looks like you're expecting to have some sort of…
+
+00:14:06.000 --> 00:14:09.000
+of…
+
+00:14:09.000 --> 00:14:16.000
+I don't know how you want to think about it, but you're expecting to basically have, like, an anonymized data set that maps to an employer on our side, right? Or, like, in a…
+
+00:14:16.000 --> 00:14:22.000
+Not on our side, because this is all our system at the end of the day, but, you know, like, from the Irologix core system,
+
+00:14:22.000 --> 00:14:28.000
+You're expecting to have some sort of data in Logixen that says, like, this is an employer for IroLogix.
+
+00:14:28.000 --> 00:14:29.000
+Yes.
+
+00:14:29.000 --> 00:14:33.000
+And these are some pieces of information. So…
+
+00:14:33.000 --> 00:14:34.000
+Yeah, it's… like…
+
+00:14:34.000 --> 00:14:39.000
+Yeah, we are expecting that, but I mean, it's kind of, like, a little bit different from…
+
+00:14:39.000 --> 00:14:43.000
+implement a client onboarding engine, because that was supposed to be…
+
+00:14:43.000 --> 00:14:44.000
+Yeah.
+
+00:14:44.000 --> 00:14:46.000
+based to external, so we just want to…
+
+00:14:46.000 --> 00:14:51.000
+Yeah, it would be, right? So, like, we have all that in the Irologic system. Basically, what…
+
+00:14:51.000 --> 00:14:56.000
+What I'm saying is, like, as part of that workflow, like, when we actually onboard an employer,
+
+00:14:56.000 --> 00:15:02.000
+you're expecting to also, in Logix and get some anonymized data for that employer.
+
+00:15:02.000 --> 00:15:03.000
+Yes, we…
+
+00:15:03.000 --> 00:15:07.000
+So what I'm saying is, like, from Logixen, like, what I would want to see…
+
+00:15:07.000 --> 00:15:17.000
+And I'm kind of thinking about this as, like, you know, you are kind of building this core logics and engine, and like, let's just say, kind of, like, you're the steward of that system, and I'm the steward of the IronLogic system.
+
+00:15:17.000 --> 00:15:23.000
+Right? So, like, me is the Irologic system owner, what I would want to see to integrate with yours is, like,
+
+00:15:23.000 --> 00:15:28.000
+what API contracts do you expect me to utilize to push that data to you?
+
+00:15:28.000 --> 00:15:35.000
+Okay, got it, got it. So, so everything for the client onboarding, we just need to, like, settle down these…
+
+00:15:35.000 --> 00:15:36.000
+backed off this push API to receive.
+
+00:15:36.000 --> 00:15:38.000
+Yep. Exactly.
+
+00:15:38.000 --> 00:15:39.000
+Okay, okay, that sounds good.
+
+00:15:39.000 --> 00:15:47.000
+Yep. Yeah, so I'm just thinking through it. So, like, you know, probably the initial creation of a new, you know, anonymized employer profile from the Logix inside is, like,
+
+00:15:47.000 --> 00:15:55.000
+You saying, hey, Brad, like, from Irologic system, like, you need to post an endpoint, and this will allow you to create a new, you know, anonymized employer.
+
+00:15:55.000 --> 00:15:56.000
+Yes.
+
+00:15:56.000 --> 00:16:01.000
+And then if you ever want to modify it, you would submit a patch request, and you would probably give me, you know, you would supply me with that, you know,
+
+00:16:01.000 --> 00:16:05.000
+profile ID and, like, whatever pieces of data have changed.
+
+00:16:05.000 --> 00:16:06.000
+Yes. Yeah.
+
+00:16:06.000 --> 00:16:09.000
+for that employer. So, yeah, I mean, yeah, like…
+
+00:16:09.000 --> 00:16:17.000
+from a logical flow perspective, this all makes sense. I think kind of the next layer for me would kind of be to, like, you know, what are the actual APIs that you would want to
+
+00:16:17.000 --> 00:16:23.000
+overlay on top of these processes. But as far as the process goes, yeah, I mean, it makes total sense, and it… I think it…
+
+00:16:23.000 --> 00:16:24.000
+works.
+
+00:16:24.000 --> 00:16:36.000
+Okay, okay, yeah, sounds good. So, so you just, like, imagine, uh, logicion Engine keeps a client database that is a stuff set of RLogix core system, and our logic core system…
+
+00:16:36.000 --> 00:16:37.000
+Yep.
+
+00:16:37.000 --> 00:16:42.000
+And all the external onboarding and pass the required data into a low-fiction engine for the following
+
+00:16:42.000 --> 00:16:44.000
+Companation, right? And…
+
+00:16:44.000 --> 00:16:50.000
+Yep. Yeah. Yeah, I'm basically just sending you, like, abstract metrics per employer.
+
+00:16:50.000 --> 00:16:55.000
+Right, uh, in a reference to an employer that I can tie back to the actual employer on my side.
+
+00:16:55.000 --> 00:17:02.000
+Okay, okay. So then, I think for this part, um, the immediate next steps might be
+
+00:17:02.000 --> 00:17:10.000
+Like, we need to, like, organize what's the required matrix to calculate… calculate the outcome here, right?
+
+00:17:10.000 --> 00:17:11.000
+Bingo. Yep.
+
+00:17:11.000 --> 00:17:13.000
+Okay. Okay. And how…
+
+00:17:13.000 --> 00:17:18.000
+Which is gonna come back from, kind of, those documents for the different state plans, right? So…
+
+00:17:18.000 --> 00:17:19.000
+Yeah.
+
+00:17:19.000 --> 00:17:26.000
+It's like, you know, I don't know how you… how you'll want to analyze that, but if it were me, I would probably just take them all and feed them into an AI and say, like, what…
+
+00:17:26.000 --> 00:17:30.000
+What are common data points that all of these things share that, like, you know,
+
+00:17:30.000 --> 00:17:31.000
+So…
+
+00:17:31.000 --> 00:17:35.000
+I would crawl for… yeah, you can do it however you like, but I think you could probably say, like, hey,
+
+00:17:35.000 --> 00:17:41.000
+Hey, uh, this is the system I'm trying to build, like, what are common data points between all these plans that, you know,
+
+00:17:41.000 --> 00:17:47.000
+We need to capture metrics for, and it would probably come out with a pretty decent base set of those to start with, I would think.
+
+00:17:47.000 --> 00:17:58.000
+Okay, so you'll… you will expect us to, um, to base, based on our, um, current document, which is, um, this one you sent us last week, and I assume maybe there will be, like,
+
+00:17:58.000 --> 00:18:06.000
+Um, like, how you store an employer data, I assume, and we based on these
+
+00:18:06.000 --> 00:18:13.000
+these documents, we come up with a required matrix, and we… maybe we have you review
+
+00:18:13.000 --> 00:18:17.000
+And we will… I can settle down the API spec.
+
+00:18:17.000 --> 00:18:24.000
+Yeah, that would be great. So, just so you know, I've got, um, a request in with our IT team to get all of y'all Okta accounts.
+
+00:18:24.000 --> 00:18:25.000
+Okay.
+
+00:18:25.000 --> 00:18:30.000
+Um, I'm hoping that'll be done today or tomorrow, so just keep an eye on your email, because it will come to your CMU email.
+
+00:18:30.000 --> 00:18:31.000
+Okay, sure.
+
+00:18:31.000 --> 00:18:35.000
+Um, when that's… when that's done, I've got the Confluence space set up, I'm still… like, I haven't put any…
+
+00:18:35.000 --> 00:18:39.000
+Docs in it yet, but that'll be pretty easy to do, so…
+
+00:18:39.000 --> 00:18:41.000
+Once they get the account set up for y'all, um…
+
+00:18:41.000 --> 00:18:45.000
+you'll have access to Confluence, and I'll start getting stuff put in the space, and…
+
+00:18:45.000 --> 00:18:49.000
+You won't have to use a temp confluence account anymore, sorry about that.
+
+00:18:49.000 --> 00:18:55.000
+Yeah, it's right. Yeah, I think… I think that that sounds good. So we… so actually, we cannot…
+
+00:18:55.000 --> 00:19:02.000
+get this required matrix just based on the first document, right? We might need
+
+00:19:02.000 --> 00:19:03.000
+Yeah.
+
+00:19:03.000 --> 00:19:05.000
+some further information that is what you are already working on. Okay, okay, that's totally…
+
+00:19:05.000 --> 00:19:10.000
+Ludie sounds good. Yeah, we will, uh, we will keep an eye on the further, like, data update.
+
+00:19:10.000 --> 00:19:13.000
+Okay, so I think it's kind of…
+
+00:19:13.000 --> 00:19:18.000
+brought about, um, this… this part, um, it also cover the client onboarding part.
+
+00:19:18.000 --> 00:19:23.000
+Okay, and… okay, and then for…
+
+00:19:23.000 --> 00:19:28.000
+The next part… the next part is, after… after the data pipeline has
+
+00:19:28.000 --> 00:19:33.000
+compute, um, has calculated all the outcomes, and how do we exchange the…
+
+00:19:33.000 --> 00:19:41.000
+results with our logic system. So, here's… here's… here's before we are, like, we are… we are expected. So,
+
+00:19:41.000 --> 00:19:43.000
+So, for every… every…
+
+00:19:43.000 --> 00:19:47.000
+laws and client update, we assume that would be…
+
+00:19:47.000 --> 00:19:54.000
+Um, many, like, compliance snapshot, um, considering different versions, so, like,
+
+00:19:54.000 --> 00:20:00.000
+different versions of the laws will create different snap… numerous snapshots for those
+
+00:20:00.000 --> 00:20:06.000
+certain employers, and every employer, if they have information update, they will get
+
+00:20:06.000 --> 00:20:11.000
+another version of compiled snapshot, and all of the… all of the results are…
+
+00:20:11.000 --> 00:20:13.000
+Um, under, um, this…
+
+00:20:13.000 --> 00:20:19.000
+kind of compliance snapshot, and based on… based on the current document,
+
+00:20:19.000 --> 00:20:26.000
+I assume they might be… there might be some, like, action items, deadlines, penalties, but still, we need…
+
+00:20:26.000 --> 00:20:29.000
+like, more information to settle down what's…
+
+00:20:29.000 --> 00:20:31.000
+what the result will look like.
+
+00:20:31.000 --> 00:20:36.000
+And the… okay, and the workflow of exchanging data here with money.
+
+00:20:36.000 --> 00:20:44.000
+After… after our data pipeline has, um, completed calculation, we will… we will send a webhook.
+
+00:20:44.000 --> 00:20:48.000
+to our logo system to notify that, um, this…
+
+00:20:48.000 --> 00:20:56.000
+snapshot is updated for certain UID for server… for certain employer, and our logic system will…
+
+00:20:56.000 --> 00:21:04.000
+call an auto-query API to fetch the latest snapshot of certain employers, and it can also, like, be a badge of…
+
+00:21:04.000 --> 00:21:11.000
+of every employer's. After the query API and logic chain engineer returns the…
+
+00:21:11.000 --> 00:21:16.000
+the schema, we kind of define here to not to let… to…
+
+00:21:16.000 --> 00:21:17.000
+Okay.
+
+00:21:17.000 --> 00:21:24.000
+produce overall results. So that's kind of the overall flow here.
+
+00:21:24.000 --> 00:21:25.000
+Yep, that makes sense.
+
+00:21:25.000 --> 00:21:33.000
+Okay, cool. Okay. And also, yeah, I think… I think these part just wraps up the…
+
+00:21:33.000 --> 00:21:38.000
+the overall, like, overall workflow of the compliance thing.
+
+00:21:38.000 --> 00:21:44.000
+And for the last part is the alerting responsibility. Um, here's what we think, because…
+
+00:21:44.000 --> 00:21:46.000
+There's a alerting…
+
+00:21:46.000 --> 00:21:52.000
+like, alerting milestone in our project, right? We are thinking, like,
+
+00:21:52.000 --> 00:21:58.000
+If we do… if we do… if we handle the email sending, those kind of things, they actually…
+
+00:21:58.000 --> 00:22:01.000
+also includes some… maybe some DNS setup, because you have to…
+
+00:22:01.000 --> 00:22:02.000
+Yeah.
+
+00:22:02.000 --> 00:22:04.000
+biology's domain, and…
+
+00:22:04.000 --> 00:22:05.000
+Yeah.
+
+00:22:05.000 --> 00:22:07.000
+those kind of things. So, we're thinking, like,
+
+00:22:07.000 --> 00:22:16.000
+Is it possible that, um, for every, like, alert complex we send an event payload as a… as a whole,
+
+00:22:16.000 --> 00:22:27.000
+notification, like, like, you have to send, um, this payload to a client, and we let our logic system to handle the actual email delivery to the employer. That… actually, I think that's…
+
+00:22:27.000 --> 00:22:28.000
+Yep.
+
+00:22:28.000 --> 00:22:34.000
+a way to… to… for the… for brand consistency, because you… you guys can handle all the email… email things.
+
+00:22:34.000 --> 00:22:36.000
+Yeah, yeah.
+
+00:22:36.000 --> 00:22:37.000
+Okay.
+
+00:22:37.000 --> 00:22:43.000
+Yeah, yep, and this is better, because it's not just about emails, right? Like, I mean, honestly, like, emails may not even be a thing we end up doing, but…
+
+00:22:43.000 --> 00:22:49.000
+this… yeah, sending a payload back to our system lets us choose how we dispatch.
+
+00:22:49.000 --> 00:22:50.000
+Okay.
+
+00:22:50.000 --> 00:22:52.000
+that message, or what we even do with it, because some of this might be…
+
+00:22:52.000 --> 00:22:58.000
+like, you as an employer log in to our core system, and you just see, like, a notification, kind of like, I don't know.
+
+00:22:58.000 --> 00:23:01.000
+Like, you might see on your bank account when you log in, and there's, like, a little bell.
+
+00:23:01.000 --> 00:23:02.000
+Okay.
+
+00:23:02.000 --> 00:23:06.000
+You know, and you flip on, and it's like, you know, hey, you got some money in your account, or whatever, like, it'd be…
+
+00:23:06.000 --> 00:23:10.000
+That same kind of thing, right? Like, hey, you know, you've got a thing you need to go do.
+
+00:23:10.000 --> 00:23:11.000
+Okay, okay, so…
+
+00:23:11.000 --> 00:23:16.000
+you know, I don't know, maybe given some certain scenario, we might send emails out, but yeah, I mean, this is the right…
+
+00:23:16.000 --> 00:23:18.000
+This is the right approach.
+
+00:23:18.000 --> 00:23:30.000
+Okay, so, okay, so the scope here, I mean, like, clarify… clarify that. So the event payload, including the alert contacts, to our logic system, and we don't handle
+
+00:23:30.000 --> 00:23:39.000
+Uh, whether email or SMS stuff, uh, we let our logic to decide the best way to notify the user, and we just…
+
+00:23:39.000 --> 00:23:41.000
+And all the content. Okay, that just sounds good.
+
+00:23:41.000 --> 00:23:42.000
+Perfect.
+
+00:23:42.000 --> 00:23:48.000
+Okay, yeah, I think that's the five main points that we want to make sure. So…
+
+00:23:48.000 --> 00:23:54.000
+So, here's the, like, here's the, like, very, like, high-level structure of the whole system.
+
+00:23:54.000 --> 00:24:01.000
+So, um, here's the RLG internal system, and the gray box here will be…
+
+00:24:01.000 --> 00:24:09.000
+We logic engine. So, between internal system and logic engine, uh, we exchange data using API and web hosts, and…
+
+00:24:09.000 --> 00:24:13.000
+Under the Logix engine, there will be an API server. The API server…
+
+00:24:13.000 --> 00:24:20.000
+should be a lightweight, just receiving data requests and interact with the database.
+
+00:24:20.000 --> 00:24:21.000
+Yep.
+
+00:24:21.000 --> 00:24:26.000
+And so this survey would be, like, always on. It will wait there, it will still…
+
+00:24:26.000 --> 00:24:29.000
+always, like, stand by over there to receive requests.
+
+00:24:29.000 --> 00:24:30.000
+Yep.
+
+00:24:30.000 --> 00:24:38.000
+And… and whenever… whenever the data calculation demand is on, uh, it will, like, trigger… trigger the data pipeline, so
+
+00:24:38.000 --> 00:24:43.000
+So this machine here will be, like, on demand. It will start up
+
+00:24:43.000 --> 00:24:45.000
+When it's only when it's needed.
+
+00:24:45.000 --> 00:24:54.000
+And… and yeah, they were, like, composed into two parts. The phase one would be a Chrome job, and phase two would be trigger on demand.
+
+00:24:54.000 --> 00:25:00.000
+So… so data pipeline here will fetch the role rules from the…
+
+00:25:00.000 --> 00:25:03.000
+government resource we get, and…
+
+00:25:03.000 --> 00:25:10.000
+And push the resource through the API server. The pipeline don't interact with the database directly,
+
+00:25:10.000 --> 00:25:14.000
+Um, every, like, every data access and update will get through the API.
+
+00:25:14.000 --> 00:25:16.000
+Go to the DPS server.
+
+00:25:16.000 --> 00:25:19.000
+Yeah, yeah, it's kind of a data interface here, and I'll…
+
+00:25:19.000 --> 00:25:20.000
+Yeah, it's a broker. Yep.
+
+00:25:20.000 --> 00:25:26.000
+Okay, okay. Yeah, I think… yeah, that's basically the overall structure.
+
+00:25:26.000 --> 00:25:27.000
+Um…
+
+00:25:27.000 --> 00:25:28.000
+Yeah, this is great, man.
+
+00:25:28.000 --> 00:25:32.000
+Okay, do I move on along to, like, uh, anything?
+
+00:25:32.000 --> 00:25:39.000
+Okay, so I think let's… we can have a quick sum-up here for our next step.
+
+00:25:39.000 --> 00:25:41.000
+So first, I think the…
+
+00:25:41.000 --> 00:25:51.000
+The most important thing for us to continue is hear, um, the required metrics, like, how are we gonna handle the employer profile.
+
+00:25:51.000 --> 00:25:57.000
+And also is the result, like, what exactly the data, uh, for a result even needs.
+
+00:25:57.000 --> 00:26:01.000
+So this… these two… these two parts will… is… is…
+
+00:26:01.000 --> 00:26:09.000
+Um, currently, like, the biggest uncertainty for us, and I've heard we settled this down, we can actually start
+
+00:26:09.000 --> 00:26:13.000
+Um, the following implementation.
+
+00:26:13.000 --> 00:26:18.000
+Sweet. Okay, I'll work on the metrics for you, and as soon as we get y'all…
+
+00:26:18.000 --> 00:26:24.000
+your account set up, um, you'll be in Confluence, and I'll get all the, uh, the employer…
+
+00:26:24.000 --> 00:26:25.000
+Okay.
+
+00:26:25.000 --> 00:26:29.000
+data schema specifications and drop them in Confluence for you. I mean, most of that'll be
+
+00:26:29.000 --> 00:26:34.000
+probably… I guess you're comfortable looking at, like, ERD diagrams?
+
+00:26:34.000 --> 00:26:37.000
+Okay, okay. Yeah, sounds good, yeah, sounds good.
+
+00:26:37.000 --> 00:26:38.000
+Okay.
+
+00:26:38.000 --> 00:26:49.000
+question about that, because we're gonna have our own database, right? And they already have, so how we ensure the consistency between two ZWs?
+
+00:26:49.000 --> 00:26:52.000
+I mean, the consistency comes in, like, you having a…
+
+00:26:52.000 --> 00:27:03.000
+So, like, you know, in theory, what you're dealing with is two completely disparate systems that, like, talk to each other through API contracts, right? So, like, all of this comes down to
+
+00:27:03.000 --> 00:27:09.000
+basically us agreeing on what the API surface for Logixen looks like, and then implementing clients that responsibly
+
+00:27:09.000 --> 00:27:11.000
+handle, you know…
+
+00:27:11.000 --> 00:27:17.000
+pulling and pushing, so it's two separate things, right? Like, making sure that we send you data correctly through
+
+00:27:17.000 --> 00:27:18.000
+Yeah.
+
+00:27:18.000 --> 00:27:25.000
+Um, like, you know, posts and puts and patches from our end, and then making sure that we properly implement, you know, receivers for the web folks, and…
+
+00:27:25.000 --> 00:27:34.000
+parse those messages and handle them properly, but yeah, I mean, basically all we're doing is a decoupled system, right? So, like, the data stores can live completely
+
+00:27:34.000 --> 00:27:40.000
+asynchronously from one another, because everything's doing, uh, API-based
+
+00:27:40.000 --> 00:27:41.000
+communications.
+
+00:27:41.000 --> 00:27:45.000
+Right. Basically, our database here will be a subset of our object core database.
+
+00:27:45.000 --> 00:27:51.000
+And the data consistency will actually relies on our API.
+
+00:27:51.000 --> 00:27:58.000
+Um, I think the first, uh, first point here might be our logic's internal system might
+
+00:27:58.000 --> 00:28:04.000
+guarantee in a certain way that every client data will stand in API to logic's…
+
+00:28:04.000 --> 00:28:05.000
+Yeah. Yep.
+
+00:28:05.000 --> 00:28:07.000
+Gen 2, so… so, like, we can do this constantly, but maybe…
+
+00:28:07.000 --> 00:28:08.000
+Yeah.
+
+00:28:08.000 --> 00:28:16.000
+Maybe we can consider if that's also some certain Chrome job to make, to double-check if the client data is still
+
+00:28:16.000 --> 00:28:17.000
+consistent. I think that is also…
+
+00:28:17.000 --> 00:28:18.000
+Yeah. Yeah, I don't…
+
+00:28:18.000 --> 00:28:20.000
+You know, but…
+
+00:28:20.000 --> 00:28:28.000
+I don't think this is necessary. I mean, basically what we would do is build, like, so, like, on our side, like, we have an event system in our… our kind of
+
+00:28:28.000 --> 00:28:34.000
+What you have here in the purple box, right? So, like, if I go create a new employer in our system, like, events get sent out.
+
+00:28:34.000 --> 00:28:39.000
+Um, throughout the system, and then I can react to those. So, like, I could do it one of two ways. Like, I can actually build it into…
+
+00:28:39.000 --> 00:28:44.000
+you know, kind of the post-event hand handler for somebody to create a new, um,
+
+00:28:44.000 --> 00:28:46.000
+employer, right? So, like,
+
+00:28:46.000 --> 00:28:52.000
+somebody goes into the system, they submit the form, they create a new employer, like, in the post-handler, like, I could…
+
+00:28:52.000 --> 00:29:04.000
+I could then, you know, make sure that I got the relevant pieces of information, and then post them to Logixen, or I could react to an event. So, like, the way that we do that is we react to events, right? Because it's more scalable, it's decoupled.
+
+00:29:04.000 --> 00:29:08.000
+Um, and really kind of what you're building here in…
+
+00:29:08.000 --> 00:29:14.000
+you know, whether you realize it or not, like, we use a domain-driven architecture kind of in the core system.
+
+00:29:14.000 --> 00:29:18.000
+Really, this is just kind of another domain in our system, right? And this is actually how
+
+00:29:18.000 --> 00:29:23.000
+the domains within our system actually act now, right? So, like, we have databases within our system where
+
+00:29:23.000 --> 00:29:33.000
+you know, one microservice cannot actually see what's in the database, like, it does not have a direct database handle. Like, everything happens through, you know, HTTP and API contracts.
+
+00:29:33.000 --> 00:29:36.000
+Um, so really, like, in a lot of ways, like, you've actually
+
+00:29:36.000 --> 00:29:42.000
+adopted a domain-driven architecture into our core system, maybe without realizing it, but this is…
+
+00:29:42.000 --> 00:29:48.000
+I mean, this is kind of like, in my opinion, the quote-unquote right way to build systems, right?
+
+00:29:48.000 --> 00:29:52.000
+You separate domains, and you handle everything through API contracts.
+
+00:29:52.000 --> 00:30:00.000
+Yeah, I think that makes sense. We can… I think we just need to, like, assume, like, all the data will correctly be transferred.
+
+00:30:00.000 --> 00:30:01.000
+Yep.
+
+00:30:01.000 --> 00:30:06.000
+through the API, and we make sure that… I have a question. If, for example, if our server has dialed for 2 days,
+
+00:30:06.000 --> 00:30:10.000
+And our… every request, we're gonna last, right?
+
+00:30:10.000 --> 00:30:12.000
+how we recover that two days.
+
+00:30:12.000 --> 00:30:15.000
+That's already done updating our system.
+
+00:30:15.000 --> 00:30:23.000
+I think for fault tolerance, um, if our system is down, then our logic in general system will know the API fails.
+
+00:30:23.000 --> 00:30:28.000
+So, they kind of need, like… So they kind of re-vent? Yeah, they have. For two days, something like that? Yeah, they'll have to re-send two.
+
+00:30:28.000 --> 00:30:29.000
+Yeah. Yeah.
+
+00:30:29.000 --> 00:30:32.000
+authenticity as well. Okay.
+
+00:30:32.000 --> 00:30:33.000
+Yeah.
+
+00:30:33.000 --> 00:30:34.000
+Right. Moreover, for continuous…
+
+00:30:34.000 --> 00:30:37.000
+Yeah, I mean, this is up to…
+
+00:30:37.000 --> 00:30:38.000
+Oh, sorry, go ahead.
+
+00:30:38.000 --> 00:30:43.000
+Sorry, for continuous operation, like, after we'll finish the project,
+
+00:30:43.000 --> 00:30:46.000
+Would it be convenient that all of this data
+
+00:30:46.000 --> 00:30:51.000
+especially the knowledge base, resides in your own database.
+
+00:30:51.000 --> 00:30:57.000
+that we eventually, when you're confident of the correctness of our system,
+
+00:30:57.000 --> 00:31:00.000
+We moved everything to…
+
+00:31:00.000 --> 00:31:04.000
+to be more iterated with you.
+
+00:31:04.000 --> 00:31:11.000
+I mean, that's what I was just saying, like, this is actually an architectural paradigm that we follow now. So, like,
+
+00:31:11.000 --> 00:31:16.000
+I'm not sure exactly what you mean by, like, you know, taking the database and putting it with ours, like…
+
+00:31:16.000 --> 00:31:17.000
+it would be…
+
+00:31:17.000 --> 00:31:19.000
+in the database, but in the same
+
+00:31:19.000 --> 00:31:22.000
+like, instance. February romantic.
+
+00:31:22.000 --> 00:31:27.000
+Yeah, no, I mean, no, we actually run, like, disparate database servers now for, like, different
+
+00:31:27.000 --> 00:31:30.000
+different domains, right? So, like,
+
+00:31:30.000 --> 00:31:39.000
+I guess you could think about it this way, like, our accounting database, like, the thing that runs our Core Ledger, is a completely separate database from, like, what handles most of our, like,
+
+00:31:39.000 --> 00:31:44.000
+I don't know, kind of day-to-day entity processing. So, like, this could be a completely separate database, like…
+
+00:31:44.000 --> 00:31:48.000
+This is…
+
+00:31:48.000 --> 00:31:58.000
+I don't know how far you want to go down the… I don't know how far you want to, like, how far you want me to answer. Like, I can answer this question for you at a systems level, and why I would actually, like, take this as it is and run it, like,
+
+00:31:58.000 --> 00:32:01.000
+you know, in our… our current production setup.
+
+00:32:01.000 --> 00:32:10.000
+Like, the problem that we have from a systems perspective is, like, our core accounting database takes a ton of traffic, right? So…
+
+00:32:10.000 --> 00:32:15.000
+If that database ever goes down for some reason, then, you know,
+
+00:32:15.000 --> 00:32:16.000
+Great.
+
+00:32:16.000 --> 00:32:23.000
+Uh, it's really a fault tolerance and kind of a blast radius thing, like, so…
+
+00:32:23.000 --> 00:32:24.000
+Completely.
+
+00:32:24.000 --> 00:32:30.000
+like I said, I… yeah, I don't know how far you want me to go down the rabbit hole of trying to answer the question from a systems perspective, but, like, this is…
+
+00:32:30.000 --> 00:32:37.000
+This is really the right way to build this process, because this database, like, would not ever take a lot of traffic.
+
+00:32:37.000 --> 00:32:43.000
+So, why couple it to, you know, like, our core accounting processes, or our core entity?
+
+00:32:43.000 --> 00:32:45.000
+transaction processes.
+
+00:32:45.000 --> 00:32:51.000
+You know, it's a separate database, put it on a separate server, um, let it scale up and down as needed.
+
+00:32:51.000 --> 00:32:56.000
+Um, so I'm not, like, trying to scale this database with, like, our accounting load or other loads that, you know, are…
+
+00:32:56.000 --> 00:33:00.000
+were much higher in volume than this one would be, so…
+
+00:33:00.000 --> 00:33:09.000
+You're able to build a more cost-effective and scalable system by, like, kind of treating it as its own thing, and then trying to, like, put it on the same database server as our other databases.
+
+00:33:09.000 --> 00:33:16.000
+You know, we tried to, like, keyboard the whole engine, like, separately from Carlos' current system, so I… I believe.
+
+00:33:16.000 --> 00:33:17.000
+Yeah.
+
+00:33:17.000 --> 00:33:19.000
+this kind of infrastructure are…
+
+00:33:19.000 --> 00:33:23.000
+um, fits our logistics expectations.
+
+00:33:23.000 --> 00:33:24.000
+So, okay.
+
+00:33:24.000 --> 00:33:28.000
+Yep. Yeah, no, I mean, this is… this is great. I mean, what you're building is a domain within a
+
+00:33:28.000 --> 00:33:34.000
+a greater, larger architectural system, right?
+
+00:33:34.000 --> 00:33:37.000
+Okay?
+
+00:33:37.000 --> 00:33:38.000
+Okay, and…
+
+00:33:38.000 --> 00:33:41.000
+kind of struggling forwards a little bit, but yeah. I mean, this is essentially a new domain in our system.
+
+00:33:41.000 --> 00:33:45.000
+Yeah, okay, thank you for that. And also, another…
+
+00:33:45.000 --> 00:33:52.000
+things I want to bring up here is that, given that this is a totally, like, separated system, so for the…
+
+00:33:52.000 --> 00:33:54.000
+for reprogramming language,
+
+00:33:54.000 --> 00:33:59.000
+choosing here, um, we assume that… because our lives are using Golin, right?
+
+00:33:59.000 --> 00:34:05.000
+Um, this whole iLogix engine is kind of like a heavy, um, data pipeline thing, so it will…
+
+00:34:05.000 --> 00:34:09.000
+be way more efficient if we can implement it under Python.
+
+00:34:09.000 --> 00:34:21.000
+So, uh, we don't want to, like, discuss, is there any… is it a hard constraint that we have to follow the golden infrastructure, or actually… because given that it's a separated thing, so is it okay we choose?
+
+00:34:21.000 --> 00:34:22.000
+Um, other things, like…
+
+00:34:22.000 --> 00:34:26.000
+No. Yeah, the only ask, I would say, if you were using something
+
+00:34:26.000 --> 00:34:27.000
+like, Java.
+
+00:34:27.000 --> 00:34:30.000
+Yeah, I mean, I don't have a problem with it being written in Python.
+
+00:34:30.000 --> 00:34:32.000
+Yeah, no Java, um…
+
+00:34:32.000 --> 00:34:36.000
+Python is fine. My only ask would be, like, on the API server itself.
+
+00:34:36.000 --> 00:34:41.000
+Um, it needs to be asynchronous, and it needs to be able to handle multiple, you know, connect…
+
+00:34:41.000 --> 00:34:42.000
+Right.
+
+00:34:42.000 --> 00:34:46.000
+basically multiple consumers trying to talk to it at once, um, like, at scale.
+
+00:34:46.000 --> 00:34:54.000
+Um, so yeah, one of the asynchronous frameworks would be probably the right answer on the API server itself. There's, um…
+
+00:34:54.000 --> 00:35:00.000
+I don't know which, like, actual API server. There's an async version of Flask called Quart.
+
+00:35:00.000 --> 00:35:01.000
+Yeah, and also…
+
+00:35:01.000 --> 00:35:06.000
+I think, um, which is pretty good. Like, I don't know, you guys can kind of pick it for yourself, but quart's pretty good.
+
+00:35:06.000 --> 00:35:09.000
+My only requirement would be it's got to be asynchronous.
+
+00:35:09.000 --> 00:35:13.000
+Jenga also have a synchronous version, so I guess, um…
+
+00:35:13.000 --> 00:35:14.000
+I guess, Bison can handle…
+
+00:35:14.000 --> 00:35:15.000
+So… yeah.
+
+00:35:15.000 --> 00:35:18.000
+They do fast, so… yeah.
+
+00:35:18.000 --> 00:35:19.000
+Okay.
+
+00:35:19.000 --> 00:35:24.000
+Yeah. I would… I would really want to talk about using something like Django. That does not feel like a good fit for this. I mean, like…
+
+00:35:24.000 --> 00:35:30.000
+Django is more like, build me a full web application with user management and all that stuff, we don't need any of that.
+
+00:35:30.000 --> 00:35:31.000
+Yeah.
+
+00:35:31.000 --> 00:35:35.000
+Yeah, something like Fort would probably be the right answer, or Flask, like…
+
+00:35:35.000 --> 00:35:45.000
+Yeah, I would… we would probably actually need to talk about what type of framework you would want to use, because Django would not be a good fit for this type of application.
+
+00:35:45.000 --> 00:35:49.000
+Flask would be a good starting point, but Flask is not asynchronous on its own, so…
+
+00:35:49.000 --> 00:35:50.000
+Something like court.
+
+00:35:50.000 --> 00:35:54.000
+Yeah, yeah, I mean…
+
+00:35:54.000 --> 00:35:59.000
+Yeah, because given that it's, like, way back in on the servers, so…
+
+00:35:59.000 --> 00:36:05.000
+like, we only do choose Django, there are, like, a couple other, um, choices for the framework.
+
+00:36:05.000 --> 00:36:11.000
+Um, so yeah, uh, I mean, that's where we settled down this goal. We'll start working on the…
+
+00:36:11.000 --> 00:36:15.000
+bag under this infrastructure, and maybe we can…
+
+00:36:15.000 --> 00:36:18.000
+So, synchronize this on our next meeting.
+
+00:36:18.000 --> 00:36:19.000
+Go ahead. Okay.
+
+00:36:19.000 --> 00:36:20.000
+Yeah. I would say…
+
+00:36:20.000 --> 00:36:26.000
+FastAPI and Quart are probably the two places I would… I would be looking to build something like this.
+
+00:36:26.000 --> 00:36:27.000
+Okay, sounds good.
+
+00:36:27.000 --> 00:36:29.000
+Like, you know, for an actual production implementation.
+
+00:36:29.000 --> 00:36:34.000
+Okay, sounds good. Um, yeah, I guess… Still be willing to…
+
+00:36:34.000 --> 00:36:41.000
+ask Brad to review our, like, functional requirements. No, I don't want to review that, actually. Okay, okay.
+
+00:36:41.000 --> 00:36:45.000
+Okay, so I assume this…
+
+00:36:45.000 --> 00:36:50.000
+kind of, um, we can treat it as a wrap of our lives don't whine.
+
+00:36:50.000 --> 00:36:55.000
+Because actually, like, kind of, um, settled down the… settled down the…
+
+00:36:55.000 --> 00:37:07.000
+Um, the boundary meet, and for our milestone, too. We actually have a little roadmap for Milestone 2, where I'll start designing the APIs back to designing the data schema of those regularly.
+
+00:37:07.000 --> 00:37:12.000
+regulation data, so…
+
+00:37:12.000 --> 00:37:15.000
+Oh, I have a question, because we are going to…
+
+00:37:15.000 --> 00:37:19.000
+integrate with their analogic system a lot.
+
+00:37:19.000 --> 00:37:28.000
+Right. How are we gonna… We're just using these APIs, and they will integrate it using these… I mean, if we have no question, we just, within one week, and talk with Brad.
+
+00:37:28.000 --> 00:37:35.000
+Oh, you mean, you mean the conversation? Oh, yeah. Brian, I assume our, like,
+
+00:37:35.000 --> 00:37:42.000
+or a future communication will be a synchronous way under the Confluence platform you set up for us, or…
+
+00:37:42.000 --> 00:37:45.000
+to people who are on their way to communicate. And worry about…
+
+00:37:45.000 --> 00:37:46.000
+Yeah,
+
+00:37:46.000 --> 00:37:58.000
+want to integrate… integrate, correct? I think the integrity part is actually all right, because the integrated part only happens on the API interface. Yeah, yeah. We define the API interface well, it actually… we can just…
+
+00:37:58.000 --> 00:37:59.000
+Yep.
+
+00:37:59.000 --> 00:38:00.000
+work on that, okay? Okay, okay.
+
+00:38:00.000 --> 00:38:06.000
+Yep, yep, that's the answer, right? Well-defined API contract makes all this work very easily.
+
+00:38:06.000 --> 00:38:10.000
+Yeah, yeah. Okay, um…
+
+00:38:10.000 --> 00:38:13.000
+Okay, yeah, I guess that's pretty much it.
+
+00:38:13.000 --> 00:38:19.000
+Can we, like, rub it our best to our boss to one? Like, uh, that's…
+
+00:38:19.000 --> 00:38:23.000
+Yeah, I want to make sure that we did not miss anything. Yeah.
+
+00:38:23.000 --> 00:38:24.000
+Okay.
+
+00:38:24.000 --> 00:38:31.000
+Yeah, let me… let me just make sure, and let me double-check on Milestone 1. I can't remember what was actually in the document, but I'll shoot you an email.
+
+00:38:31.000 --> 00:38:35.000
+Like, if it looks like it's good, you know, you'll have it in writing either way.
+
+00:38:35.000 --> 00:38:43.000
+Okay, sure, absolutely. Um, I'll… I can also share this document with you, so you can have a look later on.
+
+00:38:43.000 --> 00:38:52.000
+I don't think you need to… so, once we get the Confluence space set up for you, I'll just let you migrate it from this one to that one, and then we'll have it there, so no need to…
+
+00:38:52.000 --> 00:38:54.000
+Okay.
+
+00:38:54.000 --> 00:38:58.000
+to worry about exporting in and emailing it and all that stuff, so…
+
+00:38:58.000 --> 00:38:59.000
+Okay, okay.
+
+00:38:59.000 --> 00:39:01.000
+Yeah, sorry the, uh, the other one's not set up yet.
+
+00:39:01.000 --> 00:39:05.000
+Yeah, it's alright, it's totally, totally alright. And…
+
+00:39:05.000 --> 00:39:12.000
+Also, another, like, small scheduling thing, because we are running our, um, Syngap, like, biweekly, right? And so our next…
+
+00:39:12.000 --> 00:39:13.000
+Yep.
+
+00:39:13.000 --> 00:39:17.000
+Minar is supposed to be… happen at…
+
+00:39:17.000 --> 00:39:22.000
+on March, uh, March 4th, but actually, we are under spring break that week, so…
+
+00:39:22.000 --> 00:39:24.000
+Break, break. Okay.
+
+00:39:24.000 --> 00:39:34.000
+Yeah, spring… spring has already come now, so we just… we just cannot stand the cold weather anymore. And so anyways, uh, so…
+
+00:39:34.000 --> 00:39:39.000
+our bi-weekly's been up, we'll start from March 11th.
+
+00:39:39.000 --> 00:39:41.000
+Just, uh, on the Saturday Island is with you, so we can have a regular sync up.
+
+00:39:41.000 --> 00:39:43.000
+Yeah, yeah, that's fine, yep.
+
+00:39:43.000 --> 00:39:44.000
+Yep, enjoy the warm weather, hopefully you get some.
+
+00:39:44.000 --> 00:39:47.000
+Okay.
+
+00:39:47.000 --> 00:39:55.000
+Okay, thank you. Yeah, I will, I will, um, send you the, uh, I'll update the calendar schedule with you, and you can check it out later.
+
+00:39:55.000 --> 00:40:00.000
+Yeah, I guess… I guess that's pretty much about this meeting.
+
+00:40:00.000 --> 00:40:06.000
+Um, yeah, um, on has further questions to discuss?
+
+00:40:06.000 --> 00:40:07.000
+Cool, okay, yeah, thanks for…
+
+00:40:07.000 --> 00:40:08.000
+No questions, yeah.
+
+00:40:08.000 --> 00:40:11.000
+Yas, thanks for having us.
+
+00:40:11.000 --> 00:40:12.000
+Sure, yeah, good job with this.
+
+00:40:12.000 --> 00:40:13.000
+Yeah, thank you.
+
+00:40:13.000 --> 00:40:16.000
+Okay. Okay.
+
+00:40:16.000 --> 00:40:18.000
+Talk to y'all later. Yeah.
+
+00:40:18.000 --> 00:40:30.000
+See ya.
+

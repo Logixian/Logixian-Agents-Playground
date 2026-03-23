@@ -1,0 +1,1310 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:01.210
+LI-FU (Leif) CHANG: I just saw you…
+
+2
+00:00:02.009 --> 00:00:17.950
+LI-FU (Leif) CHANG: I just saw you setting up the, the confluence, and I also uploaded something into it, especially for the data model, because we… we kind of, like, tried to, try to organize the…
+
+3
+00:00:17.950 --> 00:00:37.109
+LI-FU (Leif) CHANG: those top 5 rules, and try to, like, come up with the required client data, and try to come up with the schema of the compliance snapshot. Maybe we can go through that, but I also see you upload many things on the Confluence, so probably need to sync it up.
+
+4
+00:00:38.230 --> 00:00:46.460
+Brad Campbell: Yeah, I mean, I'm not gonna try to make y'all read all that. Now, a lot of it's just kind of a recapitulation of the stuff we've already talked about, but what I did try to do was, like, take…
+
+5
+00:00:46.900 --> 00:00:52.519
+Brad Campbell: Everything we had talked about, and all of your documentation, and kind of cross-referenced that against the, the…
+
+6
+00:00:53.610 --> 00:01:02.400
+Brad Campbell: the objectives for the milestone, so… I sent out an email, another one, not long after I sent out the one about, like, Confluence having content in it that
+
+7
+00:01:03.330 --> 00:01:04.700
+Brad Campbell: I think, kind
+
+8
+00:01:05.510 --> 00:01:10.010
+Brad Campbell: talks about some of the things that we need to talk about to kind of close Milestone 1 out.
+
+9
+00:01:10.860 --> 00:01:11.420
+LI-FU (Leif) CHANG: Okay.
+
+10
+00:01:11.420 --> 00:01:23.210
+Brad Campbell: I feel like most of this is stuff that we had talked about, but I couldn't remember every detail. I remembered a lot of it, but not all of it, so… I don't know if you want to look at the data stuff first, if you want to talk through that list first, I'll leave it up to you.
+
+11
+00:01:24.490 --> 00:01:37.469
+LI-FU (Leif) CHANG: Okay, okay, so… alright, I guess… I guess we can go through today's schema first, and then… because you also sent a… a list of… of some decision points, right? So maybe we can go through that later?
+
+12
+00:01:37.960 --> 00:01:47.620
+Brad Campbell: Yeah, I think if you want to go ahead and do that first, maybe that helps us get some of that other stuff cleared, and we can say Milestone 1 is more or less done. I mean, it is mostly done. I would like to…
+
+13
+00:01:47.860 --> 00:01:54.289
+Brad Campbell: The, functional requirements were kind of a synthesis of stuff that was in the proposal document.
+
+14
+00:01:54.400 --> 00:02:03.130
+Brad Campbell: And the non-functional requirements are just kind of things I made up, so it might be worth talking about those and agreeing on those before we…
+
+15
+00:02:03.640 --> 00:02:05.840
+Brad Campbell: See that that's actually what we're gonna do.
+
+16
+00:02:06.540 --> 00:02:07.330
+LI-FU (Leif) CHANG: Okay.
+
+17
+00:02:07.430 --> 00:02:08.229
+LI-FU (Leif) CHANG: Okay.
+
+18
+00:02:08.759 --> 00:02:24.990
+LI-FU (Leif) CHANG: All right, because, yeah, because, yeah, I think we should probably, jump into the data schema first, because… to… to, like, sync up, to… to… to align with what… what exactly the system should provide. So, I already, like.
+
+19
+00:02:25.100 --> 00:02:29.160
+LI-FU (Leif) CHANG: Uploaded the… the first draft onto our…
+
+20
+00:02:30.550 --> 00:02:34.249
+LI-FU (Leif) CHANG: Confluence space, I'll send a link to the chat.
+
+21
+00:02:34.880 --> 00:02:38.859
+Brad Campbell: Let's see, I got it. Which one… are you looking at the, system boundaries or the schema?
+
+22
+00:02:39.240 --> 00:02:45.879
+LI-FU (Leif) CHANG: System boundary is… system boundaries is… the document we showed last time is for the overall structure, and
+
+23
+00:02:45.880 --> 00:03:00.950
+LI-FU (Leif) CHANG: And from our, like, from our last discussion, the main, like, uncertain, uncertain point is the, basically, data schema from the client data schema, and the rules data schema, and the compliance snapshot. So the second…
+
+24
+00:03:02.280 --> 00:03:09.670
+LI-FU (Leif) CHANG: document schema is… we try to, like, figure out, what we need, what we need for those three schema, so…
+
+25
+00:03:09.830 --> 00:03:14.280
+LI-FU (Leif) CHANG: Yeah, I'll… I'll, I'll share… I'll share…
+
+26
+00:03:14.420 --> 00:03:23.580
+LI-FU (Leif) CHANG: Sure, that's great. So I think the biggest… the biggest uncertainty for us here is we're kind of unsure what exactly…
+
+27
+00:03:23.860 --> 00:03:33.219
+LI-FU (Leif) CHANG: you guys provided to your clients? Is it, like, just telling them they probably have the risk to get penalty, or…
+
+28
+00:03:33.220 --> 00:03:45.300
+LI-FU (Leif) CHANG: You guys are providing, like, audit… audit service, or trying to look into their… their payroll, or just… because for here, from our understanding to those
+
+29
+00:03:46.920 --> 00:04:05.569
+LI-FU (Leif) CHANG: to those regulations, what costs the client gets penalties just if they, like, if they register to the platform, if they submit their… if they submit their roster, or if they, like, actually deduct their payroll to… to… to pay it to the system. That is…
+
+30
+00:04:07.480 --> 00:04:16.240
+LI-FU (Leif) CHANG: kind of our understanding. So, we're not sure if that… if that's sufficient. I'll go through the details here right now. So…
+
+31
+00:04:16.510 --> 00:04:22.420
+LI-FU (Leif) CHANG: Yeah, so for the first part, unified rule model, we take, like.
+
+32
+00:04:22.540 --> 00:04:40.050
+LI-FU (Leif) CHANG: California, for example, and there are, like, different… different objects, and the first is the default contribution. This part might not be affected, the eligibility, but it will be needed to the required action, so…
+
+33
+00:04:40.180 --> 00:04:45.979
+LI-FU (Leif) CHANG: Because there, there's a section in the… in the document, indicates that… hold on…
+
+34
+00:04:47.170 --> 00:04:51.359
+LI-FU (Leif) CHANG: This is actually in the document, indicates that there is some…
+
+35
+00:04:51.360 --> 00:04:56.409
+Brad Campbell: For example, there's some default contribution, 5% gross pay, and.
+
+36
+00:04:56.410 --> 00:05:10.160
+LI-FU (Leif) CHANG: they're gonna escalate, so there's a… there's an object here to describe that, and different… different states kind of… kind of share the similar structure. Some of them have a cap, but basically, it'll look like this.
+
+37
+00:05:10.160 --> 00:05:19.440
+LI-FU (Leif) CHANG: And so, the eligibility rules. So, eligibility rule is here. Basically, it's, like, the minimum employees, and… Yep.
+
+38
+00:05:19.580 --> 00:05:24.760
+LI-FU (Leif) CHANG: And also, there'll be, like, minimum years in business, so,
+
+39
+00:05:26.180 --> 00:05:34.459
+LI-FU (Leif) CHANG: And, they… and it also depends on their qualified plan, and also there's entity types. There are…
+
+40
+00:05:34.960 --> 00:05:51.529
+LI-FU (Leif) CHANG: This might be a tricky part, because the entity types for different states might be different, and take California, for example, there are, like, sole proprietors, owner-only government, and so that means we need to know what
+
+41
+00:05:51.530 --> 00:06:01.719
+LI-FU (Leif) CHANG: entity types for clients, right? So we don't know if they are qualified to exempt. So, yeah, so there are… there are the exempt entity types. We probably need to, like.
+
+42
+00:06:01.720 --> 00:06:19.540
+LI-FU (Leif) CHANG: synchronize across different states to find, their commonality. And yeah, and there are compliance deadlines here. So there… these part will just basically parse, the compliance date… deadlines part here to… into a
+
+43
+00:06:20.110 --> 00:06:37.710
+LI-FU (Leif) CHANG: into a schema like this, and there will be minimum employees, maximum employees, deadline date, and it'll probably be… also be the, the penalty date I kind of missed here, because, like, for example, for… I think it's New Jersey?
+
+44
+00:06:37.920 --> 00:06:42.550
+LI-FU (Leif) CHANG: Because, yeah, because their… their registration deadline is not…
+
+45
+00:06:42.660 --> 00:06:57.399
+LI-FU (Leif) CHANG: similar to their penalty enforcement deadline. So, yeah, so, there might be also another field here, that's a penalty enforcement date, and that will… that will be included into after the calculation of their
+
+46
+00:06:57.600 --> 00:07:05.469
+LI-FU (Leif) CHANG: of their… yeah, and there's also this voluntary, so… I think this is for Minnesota, or…
+
+47
+00:07:06.080 --> 00:07:17.320
+LI-FU (Leif) CHANG: Yeah, some… some are… yeah, like, for example, this one, year one is just for voluntary, it's just a warning, and they heard it'll have more penalties.
+
+48
+00:07:17.320 --> 00:07:18.380
+Brad Campbell: So…
+
+49
+00:07:18.620 --> 00:07:28.009
+LI-FU (Leif) CHANG: There's also a fill, like this, and… yeah. And this is compliance deadline and the penalty structure, these are…
+
+50
+00:07:28.110 --> 00:07:38.299
+LI-FU (Leif) CHANG: kind of more tricky, because, the first one is valuation metrics. So, some states calculate a state, and some states use years.
+
+51
+00:07:39.050 --> 00:07:42.110
+LI-FU (Leif) CHANG: And… so it'll be, like, days later.
+
+52
+00:07:43.360 --> 00:07:58.319
+LI-FU (Leif) CHANG: or years late, and… and there also be grace period date. And tiers… tiers here is, there are thresholds and amount per employee, and is it accumulated, so this is also based on…
+
+53
+00:07:58.430 --> 00:08:00.379
+LI-FU (Leif) CHANG: Based on the document.
+
+54
+00:08:01.190 --> 00:08:11.169
+LI-FU (Leif) CHANG: And also, there will be, like, subsequent period penalty, like, when they're, like, exceed, more than the threshold of their defined tier.
+
+55
+00:08:11.170 --> 00:08:11.940
+Brad Campbell: Barely.
+
+56
+00:08:12.580 --> 00:08:14.169
+Brad Campbell: We're on top of it, yep.
+
+57
+00:08:14.170 --> 00:08:21.099
+LI-FU (Leif) CHANG: Yeah, and also penalty multiplier. I think this is also… this is just for Minnesota, because there will be, like.
+
+58
+00:08:21.300 --> 00:08:26.440
+LI-FU (Leif) CHANG: Oh, there'll be, like, double? Where should I say? Oh, yeah, no, no, this is for…
+
+59
+00:08:26.840 --> 00:08:35.739
+LI-FU (Leif) CHANG: This is for… yeah, this is for Minnesota, because, like, the penalties will be doubled after, after this threshold, so there's also…
+
+60
+00:08:36.059 --> 00:08:40.419
+LI-FU (Leif) CHANG: a field like this. So, actually, the tricky… the tricky part here is, like.
+
+61
+00:08:40.720 --> 00:08:53.920
+LI-FU (Leif) CHANG: when we, like, explore more states, there will be more regulations, and… and each states have to follow those regulations to fill in these similar structures. And…
+
+62
+00:08:54.310 --> 00:09:05.950
+LI-FU (Leif) CHANG: Yeah, and so this is probably the unified rule model will be looked like, and it is just the first draft, so just want to make sure we are on the right track here.
+
+63
+00:09:05.950 --> 00:09:08.250
+Brad Campbell: No, this looks really good. It sounds like…
+
+64
+00:09:08.360 --> 00:09:15.249
+Brad Campbell: Would it… would it be helpful if I generated a document like that for more states to kind of help you assess whether or not, like, this.
+
+65
+00:09:16.360 --> 00:09:17.010
+LI-FU (Leif) CHANG: Yeah, absolutely.
+
+66
+00:09:17.010 --> 00:09:19.210
+Brad Campbell: is complete jerk.
+
+67
+00:09:19.750 --> 00:09:22.590
+LI-FU (Leif) CHANG: Yeah, and also for… also for the…
+
+68
+00:09:22.690 --> 00:09:31.940
+LI-FU (Leif) CHANG: injection… injection pipeline, I… I haven't mentioned before, so… so based on last time we discussed, so…
+
+69
+00:09:31.940 --> 00:09:45.079
+LI-FU (Leif) CHANG: So the first step of the data pipeline is, like, our system will fetch the new laws, right? And after the first calculation to generate the schema we just see, we need, IOLogix internal to
+
+70
+00:09:45.080 --> 00:09:50.190
+LI-FU (Leif) CHANG: To review… to review all those data, and that just comes to our…
+
+71
+00:09:50.300 --> 00:09:56.949
+LI-FU (Leif) CHANG: That just comes to our, our strategy, is that… because basically these… all these data are…
+
+72
+00:09:57.060 --> 00:10:03.859
+LI-FU (Leif) CHANG: are basically in CalSaver's websites, in those FAQs, they kind of, like, it's kind of scattered.
+
+73
+00:10:04.920 --> 00:10:08.120
+Brad Campbell: Yeah, yep. Yeah, that's not a surprise.
+
+74
+00:10:08.120 --> 00:10:20.350
+LI-FU (Leif) CHANG: We are thinking… yeah, we're thinking, like, maybe it'll be easier to, we just… we basically just base on the content in the website, and we generate a data model like this, and so after it.
+
+75
+00:10:20.350 --> 00:10:21.490
+Brad Campbell: version of this?
+
+76
+00:10:21.630 --> 00:10:39.739
+LI-FU (Leif) CHANG: Yes, and… and yeah, and the only, like, the source of truth is… should be Aerologics, should be human expert to… to really, like, review this and compare it to the… to the actual law, so the system will not process laws, just process the content at a…
+
+77
+00:10:41.080 --> 00:10:43.010
+LI-FU (Leif) CHANG: websites, and…
+
+78
+00:10:43.010 --> 00:11:02.260
+LI-FU (Leif) CHANG: And after… after human experts, make sure all these… all these things are right, and… and then the process will… will… will continue. So we are not sure… we're not sure is it… if this is sufficient, because, like, for… like, for CalSavers, it looks sufficient, because their website, actually, their FAQ covers many things.
+
+79
+00:11:02.260 --> 00:11:13.910
+LI-FU (Leif) CHANG: So, data model would be, like, after all these… all the objects we went through, there will be an audit… audit trail, so probably we will provide every source URL, like CalSavers.
+
+80
+00:11:13.910 --> 00:11:28.429
+LI-FU (Leif) CHANG: account savers, their FAQ page that actually covers the… the content we just… we just saw. So, if that… if that process looks good, or actually you guys expect us to go through…
+
+81
+00:11:28.430 --> 00:11:32.170
+Brad Campbell: I think that process would be really great. I mean, yeah, basically you're just…
+
+82
+00:11:33.950 --> 00:11:48.689
+Brad Campbell: You're generating that data based on, like, a predefined schema, and then somebody looks at it and says, yep, that makes sense, all that stuff seems legit, they click a button, then the rules engine basically pulls in that new version of the rules and reassesses everything, and it's the process.
+
+83
+00:11:49.780 --> 00:11:50.859
+Brad Campbell: So, yeah.
+
+84
+00:11:50.860 --> 00:11:52.260
+LI-FU (Leif) CHANG: Yeah, and…
+
+85
+00:11:52.520 --> 00:12:01.690
+LI-FU (Leif) CHANG: And given that structure, our system probably… because we know… we kind of settle down the data stores, and actually, these are… these are, like, very… a bunch of…
+
+86
+00:12:03.670 --> 00:12:19.720
+LI-FU (Leif) CHANG: bunch of different… different screens, and we probably have to use LLM to parse… parse this data into the predefined structure we define. So, it just brings up another topic, like, if we're gonna integrate LLM to the system.
+
+87
+00:12:20.270 --> 00:12:27.440
+LI-FU (Leif) CHANG: like, should we… Should we… is there certain, like, compliance rules that our objects internal have to follow, like.
+
+88
+00:12:28.030 --> 00:12:28.669
+LI-FU (Leif) CHANG: Is it…
+
+89
+00:12:29.310 --> 00:12:37.859
+Brad Campbell: Not really, I mean, I'm not sure what you mean. So, I guess for the use case of proof of concept,
+
+90
+00:12:38.470 --> 00:12:48.830
+Brad Campbell: We can do this one of two ways. I can give you… so you get… y'all actually have your own AWS account, so within that AWS account, you'll be able to use Bedrock.
+
+91
+00:12:50.090 --> 00:12:55.230
+Brad Campbell: which will let you have access to an LLM backend to do You know, basically.
+
+92
+00:12:55.530 --> 00:12:57.409
+Brad Campbell: you know, feed it a URL,
+
+93
+00:12:57.690 --> 00:13:02.520
+Brad Campbell: define this type of topology based on the information in the document. So,
+
+94
+00:13:02.920 --> 00:13:09.860
+Brad Campbell: like I said, I'll be setting up your AWS account tomorrow, so within that account, I'll set up access to Bedrock. The only…
+
+95
+00:13:10.240 --> 00:13:25.899
+Brad Campbell: The only requirement I would have there is to use, one of the Anthropic models. I would prefer, like, you use, like, Opus 4.6, if you want to cross-reference, like, the performance of that model against, like, one of the OpenAI models, like Codex 5.3 or 5.4.
+
+96
+00:13:26.080 --> 00:13:36.209
+Brad Campbell: Just to see which one produces the superior result, that would be cool, but, I would say in lieu of you wanting to do the comparison, I would just lean towards the anthropic models.
+
+97
+00:13:36.760 --> 00:13:40.139
+LI-FU (Leif) CHANG: Okay, okay, just want to make sure it is okay for the process.
+
+98
+00:13:40.140 --> 00:13:42.549
+Brad Campbell: Absolutely okay, I think it's a very…
+
+99
+00:13:42.580 --> 00:13:46.299
+LI-FU (Leif) CHANG: a very smart approach. I would probably have done the same thing myself, so…
+
+100
+00:13:46.300 --> 00:13:53.630
+Brad Campbell: I mean, I think… yeah, I… yeah, I don't know how you came up with this data model. I probably would have just fed it that PDF and said, like, come up with a…
+
+101
+00:13:54.150 --> 00:14:06.110
+LI-FU (Leif) CHANG: We just work on a PDF file, and kind of compare it to the… to the websites, and try to, like, make those data into… into integers and booleans, so…
+
+102
+00:14:06.110 --> 00:14:11.500
+Brad Campbell: Yeah, I mean, it's good. I mean, you've got a labeling topology for entity types, like, I mean, this is… this is pretty good.
+
+103
+00:14:11.900 --> 00:14:23.500
+LI-FU (Leif) CHANG: Yeah, okay, appreciate it. So, this is just the API schema, it is not directly applied to the database schema, so just want to make sure the structure is on the right path.
+
+104
+00:14:23.500 --> 00:14:24.950
+Brad Campbell: He's definitely on the right path.
+
+105
+00:14:24.950 --> 00:14:41.149
+LI-FU (Leif) CHANG: Yeah, so on the next part is client data payload, so… so this part should be our expected, like, our largest current internal system will pass to the objection system. It is on the, on the part 3 of our… that structure.
+
+106
+00:14:41.200 --> 00:14:49.679
+LI-FU (Leif) CHANG: That when a new client's onboarded, yeah, we'll pass the data. And as far as that, we are kind of unsure, because,
+
+107
+00:14:49.970 --> 00:15:03.419
+LI-FU (Leif) CHANG: Because, like, we're not sure if these data are sufficient, and, like, for example, like, California, we need… definitely need employee count, and the only things to determine if there are
+
+108
+00:15:03.420 --> 00:15:17.520
+LI-FU (Leif) CHANG: eligibility, probably just their operational status, like, if they have registered to the… through the portal, have they uploaded a roster, these kind of things, but we're not sure if you guys can… can get those information.
+
+109
+00:15:17.560 --> 00:15:21.150
+LI-FU (Leif) CHANG: And, like, what exactly your current process is.
+
+110
+00:15:21.150 --> 00:15:38.679
+Brad Campbell: Yeah, I mean, yeah, the reality is this may be, like, an opt-in program, so I guess, you know, assuming that we offered this as a benefit to employers and they opted in, they would provide us with this information, which means that we would be able to supply it to the API for the employers that elect to use the feature, if that makes sense.
+
+111
+00:15:38.930 --> 00:15:44.130
+LI-FU (Leif) CHANG: Okay, yeah, that… that sounds good. So, yeah, and given…
+
+112
+00:15:44.130 --> 00:16:02.960
+LI-FU (Leif) CHANG: So, yeah, that sounds good, and also, but, like, we're not sure if these, like, operational status are sufficient to calculate the eligibility, because we kind of, like, we're still picking up a domain knowledge, so the thing that listed here are just, like, have they registered, and have they uploaded, and…
+
+113
+00:16:03.230 --> 00:16:16.379
+LI-FU (Leif) CHANG: Have they, like, facilitated the deduction of their payroll to their employees? These three things are the only thing I listed out here. And we also need entity type, like.
+
+114
+00:16:16.380 --> 00:16:20.790
+Brad Campbell: The other thing you might need is, like, when did those things happen? Because some of those, like.
+
+115
+00:16:21.120 --> 00:16:31.270
+Brad Campbell: some of those compliance things are based on time windows, like, you have 30 days to do it from the day that you're in corporate, like, you know what I mean? So there's… there's a time component to some of those,
+
+116
+00:16:31.380 --> 00:16:35.430
+Brad Campbell: Compliance actions that you would probably have to account for here.
+
+117
+00:16:35.560 --> 00:16:54.250
+Brad Campbell: So, like, if your company was started on 2021-5-10, or… let's just say I started a company today in California, like, I don't know what the actual regulation says, but I imagine I probably have, like, 30 days to follow this paperwork. So, you know, if I start my company today, and I post this event, like, you know.
+
+118
+00:16:54.890 --> 00:17:04.169
+Brad Campbell: the answer to some of these things may be no, but I may also be within my 30 days to do so. So that's, like, the time-based component is probably the other thing that needs to be assessed.
+
+119
+00:17:04.599 --> 00:17:21.669
+LI-FU (Leif) CHANG: Okay, makes sense, makes sense. So, yeah, so we kind of probably need to combine their, like, what time they register to… to come… oh, okay, yeah, makes sense. Okay, so, yeah, I just need to make sure, these data are… are sufficient and, and it's…
+
+120
+00:17:22.919 --> 00:17:30.139
+LI-FU (Leif) CHANG: like, feasible to get. And after… after this data, there's a compiler snapshot, so…
+
+121
+00:17:30.219 --> 00:17:52.539
+LI-FU (Leif) CHANG: Okay, so given that, like, it will be… look like this. There will be, like, evaluation for different states, depending on the client, and, like, for example, this one. This one is for, like, California, and we should provide a real version ID, like California, we probably have different, different versions, so this just gives a traceability.
+
+122
+00:17:52.609 --> 00:17:53.899
+Brad Campbell: Yep.
+
+123
+00:17:55.179 --> 00:18:01.999
+LI-FU (Leif) CHANG: And their eligibility status, so they might be mandated exempt, and voluntary, so…
+
+124
+00:18:02.239 --> 00:18:09.109
+LI-FU (Leif) CHANG: Yeah, so, like, for example, this one is mandated, that means they have to comply with the rule, and…
+
+125
+00:18:09.110 --> 00:18:11.589
+Brad Campbell: And they're not compliant, so they're in big trouble.
+
+126
+00:18:11.590 --> 00:18:30.569
+LI-FU (Leif) CHANG: compliance data, so… so after that, they will be… we kind of, like, we need to, like, structure all these action items, like, action code, like, for example, they have to register the portal, and it has to write… upload the roster, and this will kind of bind to the operational status here.
+
+127
+00:18:30.690 --> 00:18:32.970
+Brad Campbell: the actual actions that we come up with. Yeah, I mean…
+
+128
+00:18:33.080 --> 00:18:40.110
+Brad Campbell: Like, I can look at that schema and figure out how I would wire that up in our employer portal. So, I mean, I feel like you're definitely on the right track there.
+
+129
+00:18:40.390 --> 00:18:49.470
+LI-FU (Leif) CHANG: Okay, okay. Yeah, and I… and after the action item, there will be a risk exposure, and this might be the most trickiest part.
+
+130
+00:18:49.710 --> 00:18:58.479
+LI-FU (Leif) CHANG: Yeah. Because, yeah, because we have to, like, combine their information here and the penalty rules here to calculate the…
+
+131
+00:18:58.480 --> 00:19:02.119
+Brad Campbell: You know, what the penalties might actually be in aggregate, yep.
+
+132
+00:19:02.550 --> 00:19:08.009
+LI-FU (Leif) CHANG: Yeah, so, yeah, so this is the part. So basically, these are… this is the structure of the…
+
+133
+00:19:08.200 --> 00:19:26.989
+LI-FU (Leif) CHANG: component snapshot, and if they're… if they're all, like, examined or they are compliant, there will be no action item, but yeah. And so, yeah, this is basically the structure. This is just the first draft, we probably need to keep refining it. Yeah, so that's…
+
+134
+00:19:27.150 --> 00:19:31.190
+LI-FU (Leif) CHANG: Kind of the progress we're having right now.
+
+135
+00:19:32.540 --> 00:19:35.009
+Brad Campbell: That's good progress. Alright, this looks really good.
+
+136
+00:19:36.790 --> 00:19:44.210
+Brad Campbell: So after I get all the operational stuff done, I'll generate another one of those documents for, I don't know, like, would 15 more states be good, you think?
+
+137
+00:19:44.400 --> 00:19:50.979
+Brad Campbell: Enough to… or do you want me to try to do all 27 of them? Or 22? I guess there's 22 left out of the 27?
+
+138
+00:19:51.270 --> 00:19:54.339
+LI-FU (Leif) CHANG: You mean you'll get other 27 days,
+
+139
+00:19:54.340 --> 00:20:01.780
+Brad Campbell: Yeah, I mean, I could, like, try to… try to put this type of information together for the other programs. I mean, the thought there is, like, that kind of gives you a complete picture of what
+
+140
+00:20:02.190 --> 00:20:06.960
+Brad Campbell: The whole entire landscape looks like from a data perspective, so you could basically take your
+
+141
+00:20:07.140 --> 00:20:18.340
+Brad Campbell: your data schemas that you have, and cross-reference them against that additional document, you know, basically ask Claude or GPT, like, you know, what are the gaps, and help me finish out the data model type of thing.
+
+142
+00:20:18.340 --> 00:20:20.790
+LI-FU (Leif) CHANG: That would be extremely helpful.
+
+143
+00:20:20.790 --> 00:20:26.099
+Brad Campbell: Okay, yeah, I can do that for sure. I'll… I'll… that will probably not be tomorrow, but I…
+
+144
+00:20:26.290 --> 00:20:27.330
+LI-FU (Leif) CHANG: Okay.
+
+145
+00:20:27.330 --> 00:20:27.870
+Brad Campbell: forever.
+
+146
+00:20:28.190 --> 00:20:28.860
+LI-FU (Leif) CHANG: Excuse me.
+
+147
+00:20:28.860 --> 00:20:30.689
+Brad Campbell: to you on Friday.
+
+148
+00:20:30.840 --> 00:20:36.450
+Brad Campbell: I mean, there are, like, 15 cloud tabs going on my desktop, so it's kind of a regular day, honestly, but .
+
+149
+00:20:36.450 --> 00:20:38.140
+LI-FU (Leif) CHANG: Anyways… Can… Okay.
+
+150
+00:20:38.730 --> 00:20:50.360
+LI-FU (Leif) CHANG: Yeah, and actually, there are also some kind of additional information in this document that is not included in the rule model, and we're not sure if that's…
+
+151
+00:20:50.370 --> 00:21:08.669
+LI-FU (Leif) CHANG: is needed, because, like, if we got, like, additional information, we will, like, kind of store it in kind of, like, like, raw field in the database. We can kind of just stack things in, and if there's needed, we can populate out. And, like, yeah, there are many information we actually didn't put it in the schema.
+
+152
+00:21:09.020 --> 00:21:15.020
+Brad Campbell: Can you, like, synthesize what that data is and just, like, put it, like, in a table on one of these pages somewhere so we can kind of look at it?
+
+153
+00:21:16.150 --> 00:21:22.130
+LI-FU (Leif) CHANG: You mean… you mean for… for this schema, we… we populate this schema for all the five states?
+
+154
+00:21:22.130 --> 00:21:36.449
+Brad Campbell: No, no, no, so you said there was some stuff that wasn't covered in the schema that's, like, reflected in the document. If you can, like, generate a table based on whatever that data set is, and just put it in one of these pages, it would be, like, basically like an appendix, like, hey, here's the stuff that we didn't…
+
+155
+00:21:36.450 --> 00:21:43.700
+Brad Campbell: bacon yet, because I would like to look at that. Maybe there's something important in there, probably not, but it's just good to kind of look at everything.
+
+156
+00:21:44.170 --> 00:21:46.059
+LI-FU (Leif) CHANG: Okay, sure, sure, sounds good.
+
+157
+00:21:46.790 --> 00:21:49.840
+LI-FU (Leif) CHANG: Sounds good. Okay, so we probably will…
+
+158
+00:21:51.110 --> 00:22:00.180
+LI-FU (Leif) CHANG: Like, keep refining… refining the schema here, and you probably… probably want to take a more look, and we probably will just keep refining it.
+
+159
+00:22:00.180 --> 00:22:12.569
+Brad Campbell: I mean, this looks really good. I would say, like, let's… let's… yeah, let's do one more pass based on, like, a complete data set from all the states, and like… I mean, I feel like this is good enough to build off of right now, honestly, so I kind of just…
+
+160
+00:22:13.180 --> 00:22:17.580
+Brad Campbell: Kind of don't want to do that second pass, but it is good to be thorough.
+
+161
+00:22:18.190 --> 00:22:22.929
+LI-FU (Leif) CHANG: Okay, yeah, that actually sounds good.
+
+162
+00:22:24.240 --> 00:22:30.619
+LI-FU (Leif) CHANG: And yeah, and that is for us today, and probably we can go through the list you just provided, and…
+
+163
+00:22:30.620 --> 00:22:34.109
+Brad Campbell: I don't know if you want me to pull that up, or if you want to pull that up, either way.
+
+164
+00:22:35.470 --> 00:22:38.099
+Brad Campbell: Bajillion emails me banked from the one I sent.
+
+165
+00:22:38.590 --> 00:22:40.930
+LI-FU (Leif) CHANG: Oh, I can do that.
+
+166
+00:22:41.180 --> 00:22:42.199
+Brad Campbell: I've got it right here.
+
+167
+00:22:42.590 --> 00:22:43.400
+Brad Campbell: Do…
+
+168
+00:22:43.880 --> 00:22:44.890
+LI-FU (Leif) CHANG: Oh, maybe.
+
+169
+00:22:45.990 --> 00:22:47.339
+LI-FU (Leif) CHANG: Oh, I can get at it.
+
+170
+00:22:49.140 --> 00:22:50.400
+Brad Campbell: I'll get it before I do.
+
+171
+00:22:50.690 --> 00:22:53.210
+LI-FU (Leif) CHANG: Okay… so this one…
+
+172
+00:22:53.210 --> 00:22:55.020
+Brad Campbell: same problem I have, yeah.
+
+173
+00:22:55.400 --> 00:22:57.109
+Brad Campbell: I was doing the same thing.
+
+174
+00:22:58.480 --> 00:23:00.570
+LI-FU (Leif) CHANG: And I… I opened it up.
+
+175
+00:23:01.170 --> 00:23:02.450
+LI-FU (Leif) CHANG: Oh, yeah, here.
+
+176
+00:23:02.710 --> 00:23:03.650
+LI-FU (Leif) CHANG: Okay.
+
+177
+00:23:06.670 --> 00:23:07.720
+Brad Campbell: So…
+
+178
+00:23:07.840 --> 00:23:15.020
+Brad Campbell: I feel like we talked about Postgres was kind of like a good place, because they had JSON storage. I put the Apache Age graph extension in there.
+
+179
+00:23:15.160 --> 00:23:27.219
+Brad Campbell: if you want to play around with that, it's fine. It's basically just a graph overlay for Postgres. I mean, it's… it's… you have a pretty good data model right there, just in JSON data structure, so it's up to you.
+
+180
+00:23:27.220 --> 00:23:35.629
+LI-FU (Leif) CHANG: Yeah, yeah, actually, we… after we get the schema, we probably… we're not sure if we actually need the graph extension.
+
+181
+00:23:35.630 --> 00:23:37.140
+Brad Campbell: I wouldn't think you do, I mean…
+
+182
+00:23:37.890 --> 00:23:46.600
+Brad Campbell: like, this is just how I like to do things, and, you know, there are reasons baked in, like, 20 years of having done this, like…
+
+183
+00:23:47.200 --> 00:23:52.089
+Brad Campbell: Explicitness is always better over implicitness, so, like, you know, when we kind of get a
+
+184
+00:23:53.000 --> 00:24:08.139
+Brad Campbell: more or less kind of final version of a data structure, like, I would like to try to convert that into as many columns as we can with as few JSON columns. The problem is, like, is you… if you put your whole entire data model in JSON structure, one, indexing it is not fun, and two, like.
+
+185
+00:24:08.140 --> 00:24:17.560
+Brad Campbell: It becomes a bit of a novel task on its own, just to kind of keep everybody on the same page as to what the actual data structure looks like as your system kind of grows over time, so…
+
+186
+00:24:18.870 --> 00:24:25.629
+Brad Campbell: Just a… just a thing to kind of put in the background there. But, I mean, overall, it's all good.
+
+187
+00:24:26.130 --> 00:24:26.920
+LI-FU (Leif) CHANG: Okay.
+
+188
+00:24:27.700 --> 00:24:34.169
+LI-FU (Leif) CHANG: Alright, so, so we… we go in for the next items.
+
+189
+00:24:34.810 --> 00:24:38.720
+Brad Campbell: Yeah, I mean, background jobs, we talked about using queues. I don't… do we…
+
+190
+00:24:39.320 --> 00:24:50.900
+Brad Campbell: did we kind of nail that down? I just said… I was working with Claude through everything, and I was like, you know, there's something in here about queues, like, what do you want to use? And I was like, just use SQS, because I don't remember what we talked about, so…
+
+191
+00:24:50.900 --> 00:24:51.460
+LI-FU (Leif) CHANG: Are we…
+
+192
+00:24:51.710 --> 00:25:00.169
+LI-FU (Leif) CHANG: We didn't… we didn't decide the exact framework, but we do… we do mention we're gonna use a queue, and yeah, different frameworks.
+
+193
+00:25:00.170 --> 00:25:00.980
+Brad Campbell: Probably.
+
+194
+00:25:01.180 --> 00:25:02.030
+LI-FU (Leif) CHANG: Yo.
+
+195
+00:25:02.030 --> 00:25:14.199
+Brad Campbell: I mean, you have SQS right in AWS, so there's no need to go set up a bunch of stuff, so… I mean, that would be the easiest thing, but if you want to use something more complicated, you can go set up a rabbit cluster. I wouldn't recommend it, they're not fun to manage.
+
+196
+00:25:14.460 --> 00:25:15.530
+LI-FU (Leif) CHANG: involved.
+
+197
+00:25:16.580 --> 00:25:19.909
+LI-FU (Leif) CHANG: I think just using SQS and AWS would be the most straightforward.
+
+198
+00:25:19.910 --> 00:25:22.430
+Brad Campbell: Okay, yeah, I like that idea.
+
+199
+00:25:25.530 --> 00:25:33.209
+Brad Campbell: So I know we… this… this was kind of an open one from last time. Did… did y'all talk about, like, what Python framework you wanted to use?
+
+200
+00:25:33.770 --> 00:25:38.110
+Brad Campbell: Because you said Django, and I was… I really don't want to go that route.
+
+201
+00:25:38.480 --> 00:25:47.410
+LI-FU (Leif) CHANG: Yeah, I think… I think for, yeah, Python for sure. I think for the API framework. Yeah, fast API looks good, but do you think we need…
+
+202
+00:25:47.920 --> 00:25:57.659
+LI-FU (Leif) CHANG: Like, more kind of investigation, do some very basic comparison between different frameworks, and decide it, or we can lock it down right now.
+
+203
+00:25:57.660 --> 00:26:05.530
+Brad Campbell: I'll… I mean, if y'all want to do the investigation, I'll tell you kind of where my head's at. Like, one, I do think, like, async is kind of a non-negotiable.
+
+204
+00:26:05.830 --> 00:26:16.070
+Brad Campbell: So if you want async, you don't have a lot of options. FastAPI, Starlet, Court, there are a couple of other ones that I've never used before, but I mean, out of all those, like, FastAPI is…
+
+205
+00:26:16.630 --> 00:26:17.660
+Brad Campbell: I've…
+
+206
+00:26:18.680 --> 00:26:19.540
+LI-FU (Leif) CHANG: Okay.
+
+207
+00:26:19.540 --> 00:26:21.640
+Brad Campbell: built a pretty scalable ML
+
+208
+00:26:21.820 --> 00:26:28.400
+Brad Campbell: pipeline at a previous company, all on FastAPI. So, I mean, it's pretty well proven. The other thing, like.
+
+209
+00:26:29.820 --> 00:26:36.920
+Brad Campbell: I'll kind of keep… I'll drop the old man knowledge on y'all every once in a while, and if you don't want to hear it, that's fine, I'll just quit doing it, but, like.
+
+210
+00:26:37.010 --> 00:26:54.020
+Brad Campbell: When you're making technology choices, if you've got an ecosystem that's been around a while, it's well known, and, you know, there's a lot of knowledge about, like, how to use it, and, like, integration patterns with other things, like, that's usually the best option, unless you've got some really esoteric, niche sort of requirement.
+
+211
+00:26:54.080 --> 00:27:09.180
+Brad Campbell: So, I mean, FastAPI kind of checks all those boxes for me. Like, it integrates with Pydanic, I don't know if y'all have used Pydanic, but, like, in terms of, like, enforcing an actual data model in Python, there is not really a better framework. You know, there are… there are edge cases where, you know.
+
+212
+00:27:09.180 --> 00:27:14.450
+Brad Campbell: loose typing or, you know, essentially no typing in Python can kind of bite you in the rear end, so…
+
+213
+00:27:14.690 --> 00:27:18.120
+Brad Campbell: having Pydantic, and that basically being baked in the FastAPI.
+
+214
+00:27:18.300 --> 00:27:27.670
+Brad Campbell: You know, there are lots of reasons that I think it's just a good framework, and then, you know, unicorn over top of it is probably not the wrong way to go if you want something scalable, so…
+
+215
+00:27:27.750 --> 00:27:42.759
+Brad Campbell: I mean, that would be my very strong recommendation. If you want to… if you want to kick it around and come back with something different, we can talk about it, but I… you'd have a hard time dissuading me from FastAPI from, you know, a Python async API backend.
+
+216
+00:27:43.800 --> 00:27:47.959
+LI-FU (Leif) CHANG: Yeah, yeah, I think that makes sense. Yeah. Okay.
+
+217
+00:27:47.960 --> 00:27:52.340
+Brad Campbell: So we'll check the box, so I'm good for… we're 3 down, all right?
+
+218
+00:27:53.940 --> 00:27:54.540
+Brad Campbell: So…
+
+219
+00:27:55.360 --> 00:28:08.210
+Brad Campbell: I don't… I think we should stick with, like, the five-state POCs, like, you know, when you code up an implementation, like, you know, let's say, like, you know, all of your unit tests and your integration tests would kind of prove out that this works for five states, but, you know…
+
+220
+00:28:08.370 --> 00:28:22.199
+Brad Campbell: if you want to, like, expand the scope of looking at the other states just to kind of improve the fidelity of your data model, that makes sense to me, and I think that's, like, as far as we should go for, you know, looking at the other states. I don't know how y'all feel about that.
+
+221
+00:28:23.680 --> 00:28:40.560
+LI-FU (Leif) CHANG: Yeah, I think that… I think for the data… data schema design phase, we do… it would be definitely helpful to… to check on other… other… other states to have the document we have it before, but, like, for implementation, because eventually there are just…
+
+222
+00:28:40.560 --> 00:28:45.789
+LI-FU (Leif) CHANG: scraping from different sources, then use IOM to parse them, so… Yep.
+
+223
+00:28:45.790 --> 00:28:59.050
+LI-FU (Leif) CHANG: We can… I think we can… we can cover the five states first, and probably if we have some more time after the implementation, maybe after the summer, if we still have time, we can… this should be straightforward, too.
+
+224
+00:28:59.090 --> 00:29:04.439
+LI-FU (Leif) CHANG: to expand to other states, I mean, based on our current structure, so… Yeah, exactly.
+
+225
+00:29:04.440 --> 00:29:20.189
+Brad Campbell: Exactly. I think if you have the data model in pretty good shape, like, the novel part of additional states is just figuring out how to map the data… the data collection into the framework, but as long as your data model can accommodate them, like, it's… web scraping's a lot easier than it used to be now, thanks to our…
+
+226
+00:29:20.770 --> 00:29:22.680
+Brad Campbell: our good friends, the LLMs.
+
+227
+00:29:23.320 --> 00:29:24.500
+Brad Campbell: Yep.
+
+228
+00:29:24.500 --> 00:29:25.829
+LI-FU (Leif) CHANG: Okay, yeah, we can check that.
+
+229
+00:29:26.000 --> 00:29:28.810
+Brad Campbell: So, 13, 16, 17, 1-9, all good.
+
+230
+00:29:28.940 --> 00:29:35.379
+Brad Campbell: Sounds like 1.5 we kind of got. I mean, the business rules engine, like, y'all are basically building the business rules engine, so I'm gonna kind of…
+
+231
+00:29:35.580 --> 00:29:41.460
+Brad Campbell: close out one forward, because really, y'all are building that. That's what your data model is. It's a representation of
+
+232
+00:29:41.620 --> 00:29:47.550
+Brad Campbell: this… I mean, that is the engine, so I don't… there is no, like, separate business rules engine. Y'all are kind of building it
+
+233
+00:29:50.170 --> 00:29:56.300
+LI-FU (Leif) CHANG: What do you mean, separate business rule, and… oh, you mean wearing 1.4 right now?
+
+234
+00:29:56.300 --> 00:30:02.320
+Brad Campbell: Yeah, 1.4, I think, was still, like, an open item. I don't know why it's not in here. I think because I told the,
+
+235
+00:30:02.790 --> 00:30:10.700
+Brad Campbell: I told Claude that, like, market is, like, pending, or whatever, or deferred, and it didn't put it in this list of things, but I mean, really, like.
+
+236
+00:30:11.000 --> 00:30:15.359
+Brad Campbell: you're building You're actually building the business rules engine, which is…
+
+237
+00:30:15.760 --> 00:30:30.669
+Brad Campbell: you know, that data model, like, writing the code that enforces that data model, or, like, assesses entities against that data model, that is the business rules engine, so I don't really feel like we need a separate one. There is no need for it, like, you're actually building one here.
+
+238
+00:30:31.000 --> 00:30:32.849
+LI-FU (Leif) CHANG: Yeah, I agree.
+
+239
+00:30:33.120 --> 00:30:34.239
+LI-FU (Leif) CHANG: Or are you covered.
+
+240
+00:30:34.650 --> 00:30:35.179
+LI-FU (Leif) CHANG: Alright, excited.
+
+241
+00:30:35.180 --> 00:30:42.630
+Brad Campbell: I'll close out 14 as not needed, and I'll basically just write in there what I just said to you, which is y'all are actually building one.
+
+242
+00:30:44.110 --> 00:30:54.800
+Brad Campbell: To me, the one to probably look at are the functional requirements and the non-functional requirements, and to kind of get a feel for how y'all think about those.
+
+243
+00:30:55.170 --> 00:30:57.950
+LI-FU (Leif) CHANG: Okay, yeah, we… actually, we… we have…
+
+244
+00:30:57.950 --> 00:31:19.560
+LI-FU (Leif) CHANG: we have made those functional requirements before we get… but we're kind of trying to condense that into… into the boundary we just showed you. We actually did that before, and I think, yeah, our team, we should, we all take a… take a review, for the functional requirement you provided, and we kind of… we probably kind of reshape it and kind of merge it with our
+
+245
+00:31:19.560 --> 00:31:23.790
+LI-FU (Leif) CHANG: Previous… EL, and we'll come back to you after.
+
+246
+00:31:23.790 --> 00:31:24.380
+Brad Campbell: Yeah.
+
+247
+00:31:24.380 --> 00:31:25.499
+LI-FU (Leif) CHANG: Good evening, yeah.
+
+248
+00:31:25.500 --> 00:31:29.729
+Brad Campbell: Yep, just let me know when you're kind of ready for me to take a look at that, and I'll
+
+249
+00:31:29.870 --> 00:31:35.180
+Brad Campbell: Okay. Yeah, we'll close those out, so… Okay, sure. Y'all have got the action on those.
+
+250
+00:31:36.350 --> 00:31:46.080
+LI-FU (Leif) CHANG: Okay, sure. So, okay, so this one, the functional requirement and non-functional requirement is for action items. Yep. Okay.
+
+251
+00:31:46.080 --> 00:31:50.079
+Brad Campbell: ERE is closed, the architectural blueprint, like, I basically just took
+
+252
+00:31:50.410 --> 00:31:58.150
+Brad Campbell: Your diagrams from last time from your deck, and, like, superimpose the decisions on top of them, like, as far as, like, what the actual things you're gonna use are.
+
+253
+00:31:58.300 --> 00:32:11.080
+Brad Campbell: So, I mean, to me, that's basically done. I guess I need to tell it that we're not going to use a BRE so that we can actually get that closed out. The budget estimation, I can actually work on that, because I'm not sure that
+
+254
+00:32:12.710 --> 00:32:19.170
+Brad Campbell: I mean, you can if you want to, if you want to actually try to come up with, like, an operational budget for this.
+
+255
+00:32:19.430 --> 00:32:23.939
+Brad Campbell: I'll let you if you really want to, but I could probably come up with one.
+
+256
+00:32:24.500 --> 00:32:33.859
+LI-FU (Leif) CHANG: Yeah, but if we're gonna do the budget estimation, we probably need to touch the budget part in the AWS, and I believe we probably won't have the permission to that.
+
+257
+00:32:33.860 --> 00:32:37.869
+Brad Campbell: Yeah, I mean, yeah, you'll be able to create things in AWS. I guess my…
+
+258
+00:32:38.100 --> 00:32:45.660
+Brad Campbell: I've spent 20 years doing this, if you just want to let me do it and rely on that, like, I'll be happy to share the doc with you and kind of walk you through it.
+
+259
+00:32:45.950 --> 00:32:46.390
+LI-FU (Leif) CHANG: Oh, no.
+
+260
+00:32:46.510 --> 00:32:50.699
+Brad Campbell: Kind of from the perspective of, you know, teaching.
+
+261
+00:32:51.090 --> 00:32:55.250
+Brad Campbell: To me, that's a little bit of a hard thing to do if you've never done it before.
+
+262
+00:32:55.250 --> 00:33:01.530
+LI-FU (Leif) CHANG: That would be great, because I think we guys are kind of familiar with that, so it would be…
+
+263
+00:33:01.700 --> 00:33:05.140
+LI-FU (Leif) CHANG: Very great if we can have this chance to learn.
+
+264
+00:33:06.100 --> 00:33:07.780
+Brad Campbell: I'll… I'll take that on.
+
+265
+00:33:07.900 --> 00:33:18.359
+Brad Campbell: And then the sprint level time frame, like, I mean, like, it seems kind of weird. I don't know where that even came from, if that was in one of the docs, or whether Claude just said, like, hey, I need sprints.
+
+266
+00:33:18.860 --> 00:33:34.179
+Brad Campbell: That's kind of a weird thing, because it doesn't really fit into the model that we're working with here, so… I do feel like when we get all the design and stuff knocked out, and all that's kind of solidified, like, we can come up with stories and put them in Jira, but I don't know that we have to align, like, to an Agile
+
+267
+00:33:34.350 --> 00:33:37.620
+Brad Campbell: You know, working model, unless that's something y'all really want to do.
+
+268
+00:33:38.290 --> 00:33:45.130
+LI-FU (Leif) CHANG: Yeah, like, speaking with Drew, actually, we have an internal Drew for us to do our task, and…
+
+269
+00:33:45.130 --> 00:33:45.720
+Brad Campbell: Okay.
+
+270
+00:33:46.150 --> 00:33:50.199
+LI-FU (Leif) CHANG: Yeah, I saw you mention you're gonna create one, so you're gonna… are you…
+
+271
+00:33:50.200 --> 00:34:06.269
+LI-FU (Leif) CHANG: Do you feel like you're gonna, kind of participate in that if you're, bored, because we can include you, or if we're gonna… if we need to do that in, in, the new space you just created, we can. Okay.
+
+272
+00:34:06.270 --> 00:34:10.179
+Brad Campbell: No, if you already have one, just use the one you have. I just put it… like, it's…
+
+273
+00:34:10.340 --> 00:34:11.400
+LI-FU (Leif) CHANG: Okay, got it, got it.
+
+274
+00:34:11.409 --> 00:34:17.839
+Brad Campbell: Yeah, so, like, y'all have guest accounts in our Confluence space, and you get a free project, and I didn't know if you had one, so you don't have to use it. It's fine.
+
+275
+00:34:17.840 --> 00:34:26.649
+LI-FU (Leif) CHANG: Okay, okay, yeah, that would be good. I think we probably can share, share it with you at our every weekly meeting.
+
+276
+00:34:26.650 --> 00:34:39.869
+Brad Campbell: I'm not… yeah, I'm not interested in, like, you know, micromanaging or anything. It was more of, like, if you don't have a place to put things and you want one, you know, you've got that. So, if you've got one and that works for you, then use the one you have.
+
+277
+00:34:40.030 --> 00:34:45.220
+LI-FU (Leif) CHANG: Okay, okay, yeah, I think that's it. JRA is not needed, we can use our own.
+
+278
+00:34:45.350 --> 00:34:46.040
+LI-FU (Leif) CHANG: Yep.
+
+279
+00:34:47.580 --> 00:34:48.230
+LI-FU (Leif) CHANG: Sleep.
+
+280
+00:34:48.230 --> 00:34:50.210
+Brad Campbell: Er, I'll… Get rid of that project.
+
+281
+00:34:50.210 --> 00:34:51.090
+LI-FU (Leif) CHANG: Got it.
+
+282
+00:34:52.000 --> 00:35:02.259
+LI-FU (Leif) CHANG: Yeah, so… okay… So, we just… We just finished all the…
+
+283
+00:35:02.280 --> 00:35:13.809
+LI-FU (Leif) CHANG: decision points here, so I think, like, I feel like for… for our, next, like, action items for… for our part is the functional requirements and the…
+
+284
+00:35:13.810 --> 00:35:26.639
+LI-FU (Leif) CHANG: data… data skiing, we're probably, still gonna refine it, and probably given more, like, details for… for each field, and we have another review next week, I guess.
+
+285
+00:35:26.640 --> 00:35:27.729
+Brad Campbell: Yeah, sounds good.
+
+286
+00:35:27.860 --> 00:35:28.270
+LI-FU (Leif) CHANG: Okay.
+
+287
+00:35:28.270 --> 00:35:46.549
+Brad Campbell: Sounds good. Yep, and I'll get you, like I said, I'll get your AWS account set up. I may need to put some guardrails in place before I kind of give you all full access to it. I will definitely have to put, like, a cost control in there, but I'll go ahead and build the VPC and all the stuff that you'll need to actually get in there and do work. I don't…
+
+288
+00:35:46.730 --> 00:35:48.470
+Brad Campbell: I guess I could go ahead and set up a…
+
+289
+00:35:49.650 --> 00:35:53.329
+Brad Campbell: Have y'all, like, worked in a Kubernetes environment before?
+
+290
+00:35:53.980 --> 00:35:55.890
+LI-FU (Leif) CHANG: Yeah, yeah, we… Okay.
+
+291
+00:35:55.890 --> 00:36:00.990
+Brad Campbell: If I set up a DKS cluster, you'd be good to get in there and do what you need to do with it.
+
+292
+00:36:01.370 --> 00:36:02.730
+LI-FU (Leif) CHANG: Okay, okay.
+
+293
+00:36:03.400 --> 00:36:08.890
+Brad Campbell: Okay, I'll set up a small cluster for you, and like I said, I'll set up all the networking and all that stuff, so…
+
+294
+00:36:09.440 --> 00:36:12.020
+LI-FU (Leif) CHANG: Okay, probably, probably gonna, like.
+
+295
+00:36:12.290 --> 00:36:24.259
+LI-FU (Leif) CHANG: Try it around, and probably if we're gonna separate it to… we probably need to, like, be separated to your main service, in case we don't throw out anything.
+
+296
+00:36:24.260 --> 00:36:32.379
+Brad Campbell: Yeah, yeah, you'll be in your own account, so you'll be, like, not connected to us networking-wise. So, like, if you actually needed access to something.
+
+297
+00:36:32.500 --> 00:36:42.370
+Brad Campbell: like, in our dev environment, I could set up, like, private, like, endpoints from our… our dev cluster into your account, so that you could actually hit endpoints if you needed them, but…
+
+298
+00:36:42.490 --> 00:36:48.799
+Brad Campbell: I don't… I don't think that that's anything that you're actually going to need, because, I mean, like, the design is fairly decoupled, so…
+
+299
+00:36:48.930 --> 00:36:58.420
+Brad Campbell: The webhooks make it pretty easy, like, I would just have to build a consumer that would implement your webhooks, you know, the payloads from them to… to do stuff with them in the employer portal, so…
+
+300
+00:36:58.530 --> 00:37:01.350
+Brad Campbell: Okay.
+
+301
+00:37:01.550 --> 00:37:11.090
+LI-FU (Leif) CHANG: How about if you're gonna use external, AI, service, because there will be, there will be cost, so if you're, like.
+
+302
+00:37:11.090 --> 00:37:15.710
+Brad Campbell: Yeah, you just use Bedrock, so you'll have access to Bedrock in the AWS account I set up.
+
+303
+00:37:16.030 --> 00:37:24.950
+LI-FU (Leif) CHANG: Oh, okay, so we can also get the, kind of tutorial or details about how to connect to, yep.
+
+304
+00:37:24.950 --> 00:37:27.200
+Brad Campbell: I can, I can help you figure that out.
+
+305
+00:37:27.200 --> 00:37:28.760
+LI-FU (Leif) CHANG: Okay, got it. I just noticed.
+
+306
+00:37:28.760 --> 00:37:31.330
+Brad Campbell: I'll send you some light reading material in the meantime.
+
+307
+00:37:31.690 --> 00:37:33.050
+LI-FU (Leif) CHANG: Great, great, sounds good.
+
+308
+00:37:33.050 --> 00:37:41.060
+Brad Campbell: It's really not that hard. I mean, there are a couple ways you can do it. Have y'all, like, built things in AWS before, where you kind of use their native authentication model?
+
+309
+00:37:42.680 --> 00:37:48.429
+Brad Campbell: Yeah. So, I mean, like, assuming you have a role attached to, you know, a workload, like.
+
+310
+00:37:48.530 --> 00:37:57.110
+Brad Campbell: a Kubernetes pod or an EC2 instance, you can just issue calls directly to Bedrock. So, like, you can use, like, OpenAI compatible
+
+311
+00:37:57.340 --> 00:37:59.410
+Brad Campbell: clients, and…
+
+312
+00:37:59.510 --> 00:38:15.499
+Brad Campbell: depending on how you authenticate, like, you can either use an API key or, like, the native authentication on the object that you're making the call from will just be able to authenticate directly to Bedrock, so it's really not a lot different. It's kind of the same model that you're probably used to if you've ever written, like, an actual
+
+313
+00:38:15.720 --> 00:38:21.859
+Brad Campbell: you know, client based on, like, the OpenAI SDK, or that type of thing, so…
+
+314
+00:38:22.430 --> 00:38:23.300
+LI-FU (Leif) CHANG: Got it.
+
+315
+00:38:23.500 --> 00:38:28.290
+Brad Campbell: But, yeah, I mean, I can… I can mine plenty of reference material. We're actually…
+
+316
+00:38:28.430 --> 00:38:40.790
+Brad Campbell: we're doing the same thing right now for another application for a very different purpose, but, like, we have spent… like, I've spent most of today building a bedrock integration into another application, so…
+
+317
+00:38:41.910 --> 00:38:42.640
+LI-FU (Leif) CHANG: Alright.
+
+318
+00:38:42.640 --> 00:38:48.200
+Brad Campbell: Same note. Same thing, different use case. Just use LLMs for everything. Makes life a lot easier.
+
+319
+00:38:49.840 --> 00:38:56.210
+LI-FU (Leif) CHANG: Okay. Yeah, I guess that's pretty much the items we're gonna cover today, right? Everyone? Yep.
+
+320
+00:38:56.390 --> 00:39:03.659
+LI-FU (Leif) CHANG: That's for your question. All right. All right, I think we can wrap this up, and let's meet our… meet each other next week.
+
+321
+00:39:03.700 --> 00:39:04.580
+Brad Campbell: Yep.
+
+322
+00:39:04.580 --> 00:39:04.950
+LI-FU (Leif) CHANG: Okay.
+
+323
+00:39:04.950 --> 00:39:12.200
+Brad Campbell: Before we go, everybody got access to everything, right? Like, everybody got into Okta, everybody can get to Confluence, that's all squared away? Okay, just wanted to make sure.
+
+324
+00:39:12.620 --> 00:39:14.980
+LI-FU (Leif) CHANG: Yeah, great.
+
+325
+00:39:15.140 --> 00:39:20.539
+LI-FU (Leif) CHANG: Yeah, thanks for this up, and yeah, yeah, see you next week.
+
+326
+00:39:20.540 --> 00:39:21.719
+Brad Campbell: Yep, talk to you later.
+
+327
+00:39:22.360 --> 00:39:24.720
+LI-FU (Leif) CHANG: A.E. No.
+
