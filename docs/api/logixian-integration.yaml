@@ -478,6 +478,90 @@ paths:
                     format: date-time
         "400":
           $ref: "#/components/responses/BadRequest"
+        "409":
+          description: |
+            A subscription for this callback_url already exists. Use
+            `PUT /webhooks/subscriptions/{subscription_id}` to update event types.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /webhooks/subscriptions/{subscription_id}:
+    parameters:
+      - name: subscription_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+
+    put:
+      operationId: updateWebhookSubscription
+      tags: [Webhooks]
+      summary: Update a webhook subscription's event types
+      description: |
+        Replace the event types for an existing subscription. This is idempotent —
+        calling it multiple times with the same payload produces the same result.
+        The webhook secret is **not** changed or returned.
+      security:
+        - bearerAuth: [webhooks:manage]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [event_types]
+              properties:
+                event_types:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - regulation.change_detected
+                      - compliance.snapshot_updated
+                      - compliance.alert
+                  description: New set of event types (replaces existing list).
+      responses:
+        "200":
+          description: Subscription updated.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  subscription_id:
+                    type: string
+                    format: uuid
+                  callback_url:
+                    type: string
+                    format: uri
+                  event_types:
+                    type: array
+                    items:
+                      type: string
+                  updated_at:
+                    type: string
+                    format: date-time
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    delete:
+      operationId: deleteWebhookSubscription
+      tags: [Webhooks]
+      summary: Delete a webhook subscription
+      description: |
+        Remove a webhook subscription. The associated webhook secret is
+        permanently destroyed. To re-subscribe, create a new subscription
+        (a new secret will be issued).
+      security:
+        - bearerAuth: [webhooks:manage]
+      responses:
+        "204":
+          description: Subscription deleted.
+        "404":
+          $ref: "#/components/responses/NotFound"
 
   # ---------------------------------------------------------------------------
   # Admin — Client registry management
