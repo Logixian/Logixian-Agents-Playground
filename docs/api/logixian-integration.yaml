@@ -1,0 +1,1555 @@
+# =============================================================================
+# Logixian <-> IRALOGIX Integration API Contract (IRA-89)
+# =============================================================================
+# This is the authoritative, design-first OpenAPI spec for all interactions
+# between the Logixian Compliance Engine and the IRALOGIX platform.
+#
+# Source of truth:
+#   - System Boundaries: Confluence 2.1 (page 47742977)
+#   - Data Model:        Confluence 2.2 (page 73138177)
+#   - Auth Design:       ADR-001 (page 99057672)
+#
+# Auth model (ADR-001):
+#   - Authentication: Okta OAuth 2.0 Client Credentials -> JWT
+#   - Authorization:  Logixian client registry (scopes per client_id)
+#   - Webhooks:       HMAC-SHA256 payload signing
+#
+# Downstream tickets (IRA-46, IRA-47, IRA-87) implement against this spec.
+# =============================================================================
+
+openapi: 3.1.0
+
+info:
+  title: Logixian Integration API
+  version: 0.2.0-draft
+  description: |
+    Top-level integration contract between the **Logixian Compliance Engine**
+    and the **IRALOGIX Platform**.
+
+    ## Interaction Categories
+
+    | # | Category | Direction | Mechanism |
+    |---|----------|-----------|-----------|
+    | 1 | Regulation Updates | Logixian -> IRALOGIX (webhook) + IRALOGIX -> Logixian (API) | Event + Query |
+    | 2 | Client Data | IRALOGIX -> Logixian (API) | Push |
+    | 3 | Compliance Snapshot | Logixian -> IRALOGIX (webhook) + IRALOGIX -> Logixian (API) | Event + Query |
+    | 4 | Alerting | Logixian -> IRALOGIX (webhook) | Event |
+
+    ## Auth
+
+    **Authentication:** All API calls require a Bearer JWT obtained via OAuth 2.0
+    Client Credentials flow from the IRALOGIX Okta organization.
+
+    **Authorization:** Logixian maintains a client registry that maps each
+    `client_id` (from JWT) to permitted scopes. Each endpoint declares its
+    required scope. See ADR-001 for full details.
+
+    **Webhooks:** Outbound webhook deliveries include `X-Webhook-Signature`
+    for HMAC-SHA256 payload verification.
+
+    ## Error & Retry
+
+    - All errors use the standard `ErrorResponse` schema.
+    - Webhook deliveries retry with exponential backoff (1m, 5m, 30m) on 5xx or timeout.
+    - After 3 failed attempts, the event is dead-lettered and an alert is raised.
+
+  contact:
+    name: Team Logixian
+    email: kuanlinw@andrew.cmu.edu
+
+tags:
+  - name: Regulations
+    description: Query and manage regulation rules (IRALOGIX -> Logixian)
+  - name: Employers
+    description: Push employer profile data (IRALOGIX -> Logixian)
+  - name: Compliance
+    description: Retrieve compliance snapshots (IRALOGIX -> Logixian)
+  - name: Webhooks
+    description: Manage webhook subscriptions (IRALOGIX -> Logixian)
+  - name: Admin
+    description: Client registry management (admin only)
+
+# =============================================================================
+# Servers
+# =============================================================================
+servers:
+  - url: https://api.logixian.dev/v1
+    description: Development
+  - url: https://api.logixian.io/v1
+    description: Production (placeholder)
+
+# =============================================================================
+# Security — default for all operations
+# =============================================================================
+security:
+  - bearerAuth: []
+
+# =============================================================================
+# Paths — IRALOGIX calls Logixian
+# =============================================================================
+paths:
+
+  # ---------------------------------------------------------------------------
+  # Category 1: Regulation Updates
+  # ---------------------------------------------------------------------------
+  /regulations:
+    get:
+      operationId: listRegulations
+      tags: [Regulations]
+      summary: List regulations
+      description: |
+        Fetch active and/or pending regulations. IRALOGIX uses this to populate
+        their internal dashboard for the compliance team's review.
+      security:
+        - bearerAuth: [regulations:read]
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [ACTIVE, PENDING, REJECTED, ALL]
+            default: ALL
+          description: Filter by rule approval status.
+        - name: state_code
+          in: query
+          schema:
+            type: string
+            example: CA
+          description: Filter by ISO 3166-2 state code.
+        - $ref: "#/components/parameters/PageLimit"
+        - $ref: "#/components/parameters/PageOffset"
+      responses:
+        "200":
+          description: Paginated list of regulations.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, pagination]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/UnifiedRuleModel"
+                  pagination:
+                    $ref: "#/components/schemas/Pagination"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /regulations/{rule_version_id}:
+    get:
+      operationId: getRegulation
+      tags: [Regulations]
+      summary: Get a single regulation
+      security:
+        - bearerAuth: [regulations:read]
+      parameters:
+        - $ref: "#/components/parameters/RuleVersionId"
+      responses:
+        "200":
+          description: The regulation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnifiedRuleModel"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /regulations/{rule_version_id}/approve:
+    post:
+      operationId: approveRegulation
+      tags: [Regulations]
+      summary: Approve a pending regulation
+      description: |
+        Human-in-the-loop approval. Transitions rule status from `PENDING` to
+        `ACTIVE`. Triggers recalculation of all affected compliance snapshots.
+      security:
+        - bearerAuth: [regulations:approve]
+      parameters:
+        - $ref: "#/components/parameters/RuleVersionId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                approved_by:
+                  type: string
+                  description: Display name or ID of the approver.
+                notes:
+                  type: string
+                  description: Optional reviewer notes.
+      responses:
+        "200":
+          description: Rule approved.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnifiedRuleModel"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: Rule is not in PENDING status.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /regulations/{rule_version_id}/reject:
+    post:
+      operationId: rejectRegulation
+      tags: [Regulations]
+      summary: Reject a pending regulation
+      description: |
+        Marks a pending rule as `REJECTED`. The ingestion pipeline will
+        re-parse on its next scheduled run.
+      security:
+        - bearerAuth: [regulations:approve]
+      parameters:
+        - $ref: "#/components/parameters/RuleVersionId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rejected_by:
+                  type: string
+                notes:
+                  type: string
+                  description: Reason for rejection.
+      responses:
+        "200":
+          description: Rule rejected.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnifiedRuleModel"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: Rule is not in PENDING status.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /regulations/{rule_version_id}/modify:
+    post:
+      operationId: modifyRegulation
+      tags: [Regulations]
+      summary: Modify a pending regulation
+      description: |
+        Allows the IRALOGIX compliance team to correct or adjust fields on a
+        `PENDING` rule before approving it. This avoids the reject-and-wait
+        cycle when the ingestion pipeline parsed a value incorrectly (e.g.,
+        wrong deadline date, incorrect penalty amount).
+
+        Only fields included in the request body are updated; omitted fields
+        are left unchanged. The rule remains in `PENDING` status after
+        modification. The `audit_trail` is updated to record the change.
+
+        This is a non-idempotent operation (POST): each call appends a new
+        entry to the audit trail even if the same fields are sent again.
+      security:
+        - bearerAuth: [regulations:approve]
+      parameters:
+        - $ref: "#/components/parameters/RuleVersionId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegulationPatch"
+      responses:
+        "200":
+          description: Rule modified. Returns the updated rule.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnifiedRuleModel"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: Rule is not in PENDING status.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ---------------------------------------------------------------------------
+  # Category 2: Client Data — Employer Profile
+  # ---------------------------------------------------------------------------
+  /employers/{employer_uuid}/profile:
+    put:
+      operationId: upsertEmployerProfile
+      tags: [Employers]
+      summary: Push or update an employer profile
+      description: |
+        IRALOGIX sends the anonymized employer profile to Logixian. This is a
+        full-replace upsert — the entire profile must be sent each time.
+
+        **Privacy:** No PII is accepted. The payload contains only the
+        `employer_uuid` and compliance-relevant metrics.
+
+        On success, the engine queues a compliance recalculation.
+      security:
+        - bearerAuth: [employers:write]
+      parameters:
+        - $ref: "#/components/parameters/EmployerUuid"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClientDataPayload"
+      responses:
+        "202":
+          description: Profile accepted; compliance recalculation queued.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [employer_uuid, accepted_at]
+                properties:
+                  employer_uuid:
+                    type: string
+                    format: uuid
+                  accepted_at:
+                    type: string
+                    format: date-time
+                  message:
+                    type: string
+                    example: "Profile accepted. Compliance snapshot will be recalculated."
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "422":
+          description: Validation error (e.g., missing required state profile fields).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    get:
+      operationId: getEmployerProfile
+      tags: [Employers]
+      summary: Retrieve the current employer profile
+      description: Returns the last-accepted profile for the given employer.
+      security:
+        - bearerAuth: [employers:read]
+      parameters:
+        - $ref: "#/components/parameters/EmployerUuid"
+      responses:
+        "200":
+          description: The employer profile.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientDataPayload"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # ---------------------------------------------------------------------------
+  # Category 3: Compliance Snapshot
+  # ---------------------------------------------------------------------------
+  /employers/{employer_uuid}/snapshot:
+    get:
+      operationId: getComplianceSnapshot
+      tags: [Compliance]
+      summary: Get latest compliance snapshot
+      description: |
+        Returns the most recent compliance snapshot for the employer. The
+        snapshot maps the employer UUID to action items, deadlines, and
+        penalty exposure across all evaluated states.
+      security:
+        - bearerAuth: [compliance:read]
+      parameters:
+        - $ref: "#/components/parameters/EmployerUuid"
+        - name: state_code
+          in: query
+          schema:
+            type: string
+          description: Filter evaluations to a single state.
+      responses:
+        "200":
+          description: The compliance snapshot.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplianceSnapshot"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /employers/{employer_uuid}/snapshot/history:
+    get:
+      operationId: listSnapshotHistory
+      tags: [Compliance]
+      summary: List historical compliance snapshots
+      description: |
+        Returns paginated history of compliance snapshots for audit trail.
+      security:
+        - bearerAuth: [compliance:read]
+      parameters:
+        - $ref: "#/components/parameters/EmployerUuid"
+        - $ref: "#/components/parameters/PageLimit"
+        - $ref: "#/components/parameters/PageOffset"
+      responses:
+        "200":
+          description: Paginated list of historical snapshots.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, pagination]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ComplianceSnapshot"
+                  pagination:
+                    $ref: "#/components/schemas/Pagination"
+
+  # ---------------------------------------------------------------------------
+  # Webhooks — Subscription management
+  # ---------------------------------------------------------------------------
+  /webhooks/subscriptions:
+    post:
+      operationId: createWebhookSubscription
+      tags: [Webhooks]
+      summary: Register a webhook subscription
+      description: |
+        Register a callback URL to receive webhook events. Returns a
+        per-subscriber HMAC webhook secret (displayed once, like Stripe).
+        The subscriber uses this secret to verify payload authenticity.
+      security:
+        - bearerAuth: [webhooks:manage]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [callback_url, event_types]
+              properties:
+                callback_url:
+                  type: string
+                  format: uri
+                  description: HTTPS URL where Logixian will POST webhook events.
+                  example: https://hooks.iralogix.com/logixian
+                event_types:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - regulation.change_detected
+                      - compliance.snapshot_updated
+                      - compliance.alert
+                  description: Event types to subscribe to.
+      responses:
+        "201":
+          description: Subscription created. Webhook secret is shown once.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [subscription_id, webhook_secret]
+                properties:
+                  subscription_id:
+                    type: string
+                    format: uuid
+                  callback_url:
+                    type: string
+                    format: uri
+                  event_types:
+                    type: array
+                    items:
+                      type: string
+                  webhook_secret:
+                    type: string
+                    description: |
+                      HMAC-SHA256 signing secret. **Displayed once.** Store securely.
+                      Use to verify `X-Webhook-Signature` on inbound deliveries.
+                  created_at:
+                    type: string
+                    format: date-time
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  # ---------------------------------------------------------------------------
+  # Admin — Client registry management
+  # ---------------------------------------------------------------------------
+  /admin/clients:
+    post:
+      operationId: registerClient
+      tags: [Admin]
+      summary: Register a new API client
+      description: |
+        Register a client_id (from Okta) in Logixian's client registry
+        and assign scopes. The client_id must match the `sub` or `client_id`
+        claim in the JWT issued by Okta.
+      security:
+        - bearerAuth: [admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClientRegistration"
+      responses:
+        "201":
+          description: Client registered.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Client"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "409":
+          description: Client with this client_id already exists.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    get:
+      operationId: listClients
+      tags: [Admin]
+      summary: List all registered API clients
+      security:
+        - bearerAuth: [admin]
+      responses:
+        "200":
+          description: List of registered clients.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Client"
+
+  /admin/clients/{client_id}:
+    patch:
+      operationId: updateClient
+      tags: [Admin]
+      summary: Update a client (name, enabled, scopes)
+      description: |
+        Update client metadata or modify scopes. To grant scopes, include
+        them in `add_scopes`. To revoke, include them in `remove_scopes`.
+        Set `enabled: false` to immediately block all API access for this
+        client (kill switch).
+      security:
+        - bearerAuth: [admin]
+      parameters:
+        - $ref: "#/components/parameters/ClientId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClientUpdate"
+      responses:
+        "200":
+          description: Client updated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Client"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    delete:
+      operationId: deleteClient
+      tags: [Admin]
+      summary: Remove a client from the registry
+      description: |
+        Permanently removes a client and all its scope assignments.
+        The client's JWT will still be valid until expiry, but all API
+        calls will return 403 (client not found in registry).
+      security:
+        - bearerAuth: [admin]
+      parameters:
+        - $ref: "#/components/parameters/ClientId"
+      responses:
+        "204":
+          description: Client deleted.
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+# =============================================================================
+# Webhooks — Logixian calls IRALOGIX
+# =============================================================================
+# OpenAPI 3.1 webhooks section. These describe payloads Logixian POSTs to
+# IRALOGIX-registered callback URLs.
+#
+# All webhooks share:
+#   - WebhookEnvelope wrapper with event metadata
+#   - X-Webhook-Signature header (HMAC-SHA256 of raw body)
+#   - Retry policy: 3 attempts with exponential backoff (1m, 5m, 30m)
+# =============================================================================
+webhooks:
+
+  # ---------------------------------------------------------------------------
+  # Category 1: Regulation change detected
+  # ---------------------------------------------------------------------------
+  regulation.change_detected:
+    post:
+      operationId: onRegulationChangeDetected
+      summary: Regulation change detected
+      description: |
+        Fired when the ingestion pipeline detects new or changed regulation
+        data for one or more states. The payload contains a summary of
+        changes; IRALOGIX should call `GET /regulations` to review details.
+      parameters:
+        - $ref: "#/components/parameters/WebhookSignature"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/WebhookEnvelope"
+                - type: object
+                  required: [payload]
+                  properties:
+                    payload:
+                      type: object
+                      required: [changes]
+                      properties:
+                        changes:
+                          type: array
+                          items:
+                            type: object
+                            required: [state_code, rule_version_id, change_type]
+                            properties:
+                              state_code:
+                                type: string
+                                example: CA
+                              rule_version_id:
+                                type: string
+                                example: rule_CA_v13_pending
+                              change_type:
+                                type: string
+                                enum: [NEW_RULE, UPDATED_RULE, DEPRECATED_RULE]
+                              summary:
+                                type: string
+                                example: "Penalty tier 2 amount changed from $500 to $600"
+      responses:
+        "200":
+          description: Acknowledged.
+
+  # ---------------------------------------------------------------------------
+  # Category 3: Compliance snapshot updated
+  # ---------------------------------------------------------------------------
+  compliance.snapshot_updated:
+    post:
+      operationId: onSnapshotUpdated
+      summary: Compliance snapshot updated
+      description: |
+        Fired when a compliance snapshot is recalculated for an employer
+        (triggered by profile update or rule approval). IRALOGIX should call
+        `GET /employers/{uuid}/snapshot` to fetch updated details.
+      parameters:
+        - $ref: "#/components/parameters/WebhookSignature"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/WebhookEnvelope"
+                - type: object
+                  required: [payload]
+                  properties:
+                    payload:
+                      type: object
+                      required: [employer_uuid, calculated_at, states_affected]
+                      properties:
+                        employer_uuid:
+                          type: string
+                          format: uuid
+                        calculated_at:
+                          type: string
+                          format: date-time
+                        states_affected:
+                          type: array
+                          items:
+                            type: string
+                          example: ["CA", "NY"]
+                        has_critical_changes:
+                          type: boolean
+                          description: True if any evaluation changed to NON_COMPLIANT or penalty increased.
+      responses:
+        "200":
+          description: Acknowledged.
+
+  # ---------------------------------------------------------------------------
+  # Category 4: Compliance alert
+  # ---------------------------------------------------------------------------
+  compliance.alert:
+    post:
+      operationId: onComplianceAlert
+      summary: Compliance alert
+      description: |
+        Fired when the engine determines a time-sensitive alert is needed
+        (e.g., approaching deadline, entering new penalty tier). Logixian
+        does NOT send emails directly — this event payload goes to IRALOGIX's
+        existing notification service.
+      parameters:
+        - $ref: "#/components/parameters/WebhookSignature"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/WebhookEnvelope"
+                - type: object
+                  required: [payload]
+                  properties:
+                    payload:
+                      type: object
+                      required: [employer_uuid, alert_type, state_code, message]
+                      properties:
+                        employer_uuid:
+                          type: string
+                          format: uuid
+                        alert_type:
+                          type: string
+                          enum:
+                            - DEADLINE_APPROACHING
+                            - DEADLINE_PASSED
+                            - PENALTY_TIER_ESCALATION
+                            - CURE_WINDOW_EXPIRING
+                            - RULE_CHANGE_REQUIRES_ACTION
+                          description: Category of alert.
+                        state_code:
+                          type: string
+                          example: IL
+                        severity:
+                          type: string
+                          enum: [INFO, WARNING, CRITICAL]
+                        message:
+                          type: string
+                          example: "Employer 550e8400: 30 days until IL registration deadline"
+                        deadline_date:
+                          type: string
+                          format: date
+                          description: The relevant deadline, if applicable.
+                        days_remaining:
+                          type: integer
+                          description: Days until deadline. Negative if past due.
+      responses:
+        "200":
+          description: Acknowledged.
+
+# =============================================================================
+# Components
+# =============================================================================
+components:
+
+  # ---------------------------------------------------------------------------
+  # Security Schemes
+  # ---------------------------------------------------------------------------
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        OAuth 2.0 Client Credentials JWT from IRALOGIX Okta.
+        Logixian validates the JWT signature via cached JWKS, then
+        looks up the `client_id` claim in its local client registry
+        to determine permitted scopes.
+
+  # ---------------------------------------------------------------------------
+  # Parameters
+  # ---------------------------------------------------------------------------
+  parameters:
+    EmployerUuid:
+      name: employer_uuid
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Anonymized employer identifier.
+
+    RuleVersionId:
+      name: rule_version_id
+      in: path
+      required: true
+      schema:
+        type: string
+        example: rule_CA_v13_pending
+      description: Unique versioned rule identifier.
+
+    ClientId:
+      name: client_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: OAuth client_id from Okta JWT.
+
+    WebhookSignature:
+      name: X-Webhook-Signature
+      in: header
+      required: true
+      schema:
+        type: string
+      description: |
+        HMAC-SHA256 signature of the raw request body, using the shared
+        webhook secret. Format: `sha256=<hex-digest>`.
+
+    PageLimit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
+    PageOffset:
+      name: offset
+      in: query
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+
+  # ---------------------------------------------------------------------------
+  # Responses
+  # ---------------------------------------------------------------------------
+  responses:
+    BadRequest:
+      description: Invalid request payload.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+    Unauthorized:
+      description: Missing or invalid JWT.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+    Forbidden:
+      description: |
+        Client is disabled or lacks the required scope for this endpoint.
+        The error response includes the missing scope name.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+    NotFound:
+      description: Resource not found.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+  # ---------------------------------------------------------------------------
+  # Schemas
+  # ---------------------------------------------------------------------------
+  schemas:
+
+    # =========================================================================
+    # Admin — Client Registry
+    # =========================================================================
+    ClientRegistration:
+      type: object
+      required: [client_id, name]
+      properties:
+        client_id:
+          type: string
+          description: OAuth client_id from Okta. Must match the JWT `sub` or `client_id` claim.
+          example: "0oa8x7kmf2Mj5nKRd5d7"
+        name:
+          type: string
+          description: Human-readable service name.
+          example: "iralogix-dashboard"
+        scopes:
+          type: array
+          items:
+            type: string
+            enum:
+              - regulations:read
+              - regulations:approve
+              - employers:write
+              - employers:read
+              - compliance:read
+              - webhooks:manage
+              - admin
+          description: Initial scopes to grant.
+          example: ["regulations:read", "compliance:read"]
+
+    ClientUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Updated service name.
+        enabled:
+          type: boolean
+          description: Set to false to immediately block all API access (kill switch).
+        add_scopes:
+          type: array
+          items:
+            type: string
+          description: Scopes to grant.
+        remove_scopes:
+          type: array
+          items:
+            type: string
+          description: Scopes to revoke.
+
+    Client:
+      type: object
+      required: [client_id, name, enabled, scopes, registered_at]
+      properties:
+        client_id:
+          type: string
+        name:
+          type: string
+        enabled:
+          type: boolean
+        scopes:
+          type: array
+          items:
+            type: string
+        registered_at:
+          type: string
+          format: date-time
+
+    # =========================================================================
+    # Shared / Cross-cutting
+    # =========================================================================
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              description: Machine-readable error code.
+              example: VALIDATION_ERROR
+            message:
+              type: string
+              description: Human-readable error description.
+              example: "Field 'employer_uuid' is required."
+            details:
+              type: array
+              items:
+                type: object
+                properties:
+                  field:
+                    type: string
+                  reason:
+                    type: string
+
+    Pagination:
+      type: object
+      required: [total, limit, offset]
+      properties:
+        total:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          type: integer
+
+    WebhookEnvelope:
+      type: object
+      description: |
+        Standard envelope for all outbound webhook payloads from Logixian.
+        The `payload` field varies by event type and is defined per-webhook.
+      required: [event_id, event_type, timestamp]
+      properties:
+        event_id:
+          type: string
+          format: uuid
+          description: Idempotency key. IRALOGIX should deduplicate on this.
+        event_type:
+          type: string
+          description: Dot-notation event name matching the webhook key.
+          example: regulation.change_detected
+        timestamp:
+          type: string
+          format: date-time
+          description: When the event was generated (ISO 8601).
+        source:
+          type: string
+          default: logixian
+          description: Always "logixian" for events from this system.
+
+    # =========================================================================
+    # Category 1: Unified Rule Model
+    # Source: Confluence 2.2 Part 2
+    # =========================================================================
+    UnifiedRuleModel:
+      type: object
+      required:
+        - state_code
+        - program_name
+        - status
+        - rule_version_id
+        - approval_status
+        - default_contribution
+        - eligibility_rules
+        - compliance_deadlines
+        - penalty_structure
+        - audit_trail
+      properties:
+        state_code:
+          type: string
+          description: ISO 3166-2 state code.
+          example: CA
+        program_name:
+          type: string
+          example: CalSavers
+        status:
+          type: string
+          enum: [ACTIVE, SOFT_LAUNCH, ROLLING]
+          description: |
+            Program enforcement status.
+            - `ACTIVE`: full enforcement
+            - `SOFT_LAUNCH`: voluntary phase only (MN pre-mandate)
+            - `ROLLING`: mandatory deadlines still phasing in (NY)
+        rule_version_id:
+          type: string
+          description: Unique versioned identifier for this rule snapshot.
+          example: rule_CA_v12_active
+        approval_status:
+          type: string
+          enum: [PENDING, ACTIVE, REJECTED]
+          description: |
+            Human-in-the-loop approval status.
+            - `PENDING`: parsed by pipeline, awaiting review
+            - `ACTIVE`: approved by IRALOGIX compliance team
+            - `REJECTED`: rejected, will be re-parsed next cycle
+
+        default_contribution:
+          $ref: "#/components/schemas/DefaultContribution"
+        eligibility_rules:
+          $ref: "#/components/schemas/EligibilityRules"
+        compliance_deadlines:
+          type: array
+          items:
+            $ref: "#/components/schemas/ComplianceDeadline"
+        penalty_structure:
+          $ref: "#/components/schemas/PenaltyStructure"
+        audit_trail:
+          $ref: "#/components/schemas/AuditTrail"
+
+        approved_by:
+          type: string
+          description: Who approved this rule version (null if pending).
+        approved_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    RegulationPatch:
+      type: object
+      description: |
+        Partial update payload for modifying a pending regulation. Only include
+        fields that need to change — omitted fields are left unchanged.
+        At least one field must be provided.
+      properties:
+        program_name:
+          type: string
+        default_contribution:
+          $ref: "#/components/schemas/DefaultContribution"
+        eligibility_rules:
+          $ref: "#/components/schemas/EligibilityRules"
+        compliance_deadlines:
+          type: array
+          items:
+            $ref: "#/components/schemas/ComplianceDeadline"
+        penalty_structure:
+          $ref: "#/components/schemas/PenaltyStructure"
+        modified_by:
+          type: string
+          description: Display name or ID of the person making the modification.
+        notes:
+          type: string
+          description: Reason for the modification.
+
+    DefaultContribution:
+      type: object
+      required: [initial_rate, auto_escalation]
+      properties:
+        initial_rate:
+          type: number
+          format: float
+          description: Default employee contribution as decimal (e.g., 0.05 = 5%).
+          example: 0.05
+        auto_escalation:
+          type: object
+          required: [is_enabled]
+          properties:
+            is_enabled:
+              type: boolean
+            annual_increment_rate:
+              type: number
+              format: float
+              nullable: true
+              example: 0.01
+            cap_rate:
+              type: number
+              format: float
+              nullable: true
+              example: 0.08
+
+    EligibilityRules:
+      type: object
+      required:
+        - min_employees_in_state
+        - min_years_in_business
+        - must_not_have_qualified_plan_years
+        - exemption_rules
+      properties:
+        min_employees_in_state:
+          type: integer
+          description: Minimum employee count to be mandated.
+          example: 1
+        employee_count_measurement:
+          type: string
+          enum: [POINT_IN_TIME, PRIOR_CALENDAR_YEAR, ALL_QUARTERS_PRIOR_YEAR]
+          description: |
+            How to measure employee count against threshold.
+            - `POINT_IN_TIME`: current snapshot (CA, NJ, MN)
+            - `PRIOR_CALENDAR_YEAR`: headcount during prior year (NY)
+            - `ALL_QUARTERS_PRIOR_YEAR`: must meet threshold every quarter (IL)
+        part_time_count_toward_threshold:
+          type: boolean
+          description: Whether part-time/seasonal employees count toward the threshold.
+          default: false
+        min_years_in_business:
+          type: integer
+          example: 1
+        must_not_have_qualified_plan_years:
+          type: integer
+          description: Lookback years for qualified plan check. 0 = must not currently offer.
+          example: 0
+        new_hire_enrollment_window_days:
+          type: integer
+          nullable: true
+          description: Days to enroll a new hire. null = legally undefined.
+          example: 30
+        voluntary_participation_available:
+          type: boolean
+          description: Whether non-mandated employers can join voluntarily.
+          default: false
+        exemption_rules:
+          $ref: "#/components/schemas/ExemptionRules"
+
+    ExemptionRules:
+      type: object
+      properties:
+        exempt_entity_types:
+          type: array
+          items:
+            type: string
+            enum: [GOVERNMENT, RELIGIOUS, TRIBAL, OWNER_ONLY, SELF_EMPLOYED]
+          description: Entity types fully exempt from mandate.
+        qualified_plan_exemption:
+          type: object
+          properties:
+            requires_active_certification:
+              type: boolean
+              description: |
+                Employers with a qualified plan must actively certify exemption
+                via portal (NY, NJ). If false, they are silently exempt.
+              default: false
+        exemption_requires_filing:
+          type: boolean
+          description: |
+            Exempt employers must submit a formal filing (IL).
+            Drives FILE_EXEMPTION action code in compliance snapshot.
+          default: false
+
+    ComplianceDeadline:
+      type: object
+      required: [min_employees, deadline_date, is_voluntary]
+      properties:
+        min_employees:
+          type: integer
+          description: Lower bound of employer size bracket.
+        max_employees:
+          type: integer
+          nullable: true
+          description: Upper bound. null = no limit.
+        deadline_date:
+          type: string
+          format: date
+          description: ISO 8601 registration deadline.
+        is_voluntary:
+          type: boolean
+          description: Whether this is a voluntary/soft-launch phase.
+        is_rolling:
+          type: boolean
+          description: |
+            true = deadline still upcoming (NY, MN).
+            false = all-passed, employer in enforcement.
+          default: false
+
+    PenaltyStructure:
+      type: object
+      required: [evaluation_metric, grace_period_days, tiers]
+      properties:
+        penalty_status:
+          type: string
+          enum: [ACTIVE, EDUCATION_FIRST]
+          description: |
+            `ACTIVE` = enforced. `EDUCATION_FIRST` = no formal schedule yet (NY).
+          default: ACTIVE
+        evaluation_metric:
+          type: string
+          enum: [DAYS_LATE, YEAR_OF_NON_COMPLIANCE]
+          description: |
+            - `DAYS_LATE`: days elapsed since deadline (CA, IL)
+            - `YEAR_OF_NON_COMPLIANCE`: calendar years in violation (NJ, MN)
+        grace_period_days:
+          type: integer
+          description: Days after notice before penalty begins (IL = 120).
+          example: 0
+        tiers:
+          type: array
+          items:
+            $ref: "#/components/schemas/PenaltyTier"
+        subsequent_period_penalty:
+          type: integer
+          nullable: true
+          description: Recurring penalty per employee in subsequent periods.
+        penalty_multiplier:
+          type: number
+          nullable: true
+          description: Reserved for future penalty scaling rules.
+        penalty_doubling_conditions:
+          type: array
+          nullable: true
+          items:
+            type: string
+          description: |
+            Conditions that, when ALL true simultaneously, double the penalty.
+            MN: ["FAILED_ENROLLMENT", "FAILED_DISTRIBUTION"]
+
+    PenaltyTier:
+      type: object
+      required: [threshold_value, is_cumulative]
+      properties:
+        threshold_value:
+          type: integer
+          description: Days late (DAYS_LATE) or year number (YEAR_OF_NON_COMPLIANCE).
+        is_warning:
+          type: boolean
+          description: Written warning tier with no monetary penalty.
+          default: false
+        amount_per_employee:
+          type: integer
+          nullable: true
+          description: Dollar penalty per employee. null if is_warning is true.
+        penalty_cap_per_employer:
+          type: integer
+          nullable: true
+          description: Max total employer penalty for this tier. null = no cap.
+        is_cumulative:
+          type: boolean
+          description: Whether this tier stacks on top of prior tiers.
+
+    AuditTrail:
+      type: object
+      required: [source_urls, last_parsed_at]
+      properties:
+        source_urls:
+          type: array
+          items:
+            type: string
+            format: uri
+          description: State portal URLs scraped to produce this rule version.
+        last_parsed_at:
+          type: string
+          format: date-time
+          description: When the pipeline last parsed this state's data.
+
+    # =========================================================================
+    # Category 2: Client Data Payload
+    # Source: Confluence 2.2 Part 3
+    # =========================================================================
+    ClientDataPayload:
+      type: object
+      description: |
+        Anonymized employer compliance profile. Unified superset schema —
+        every state profile sends the same structure, with null for
+        fields not applicable. No PII.
+      required:
+        - employer_uuid
+        - company_hq_state
+        - incorporation_date
+        - entity_type
+        - offers_qualified_plan
+        - state_profiles
+      properties:
+        employer_uuid:
+          type: string
+          format: uuid
+          description: Anonymized employer identifier. No PII.
+        company_hq_state:
+          type: string
+          description: ISO 3166-2 state code of employer HQ.
+          example: CA
+        incorporation_date:
+          type: string
+          format: date
+          description: Date employer was incorporated.
+        entity_type:
+          type: string
+          enum: [FOR_PROFIT, NONPROFIT, GOVERNMENT, RELIGIOUS, TRIBAL, OWNER_ONLY, SELF_EMPLOYED]
+        offers_qualified_plan:
+          type: boolean
+          description: Whether employer currently offers a qualified retirement plan.
+        qualified_plan_ended_date:
+          type: string
+          format: date
+          nullable: true
+          description: Date the qualified plan was discontinued. null = currently active or never offered.
+        state_profiles:
+          type: object
+          description: |
+            Keyed by ISO 3166-2 state code. Each value is a StateProfile.
+            Only states where the employer has operations need to be included.
+          additionalProperties:
+            $ref: "#/components/schemas/StateProfile"
+
+    StateProfile:
+      type: object
+      required: [employee_headcount, operational_status]
+      properties:
+        employee_headcount:
+          $ref: "#/components/schemas/EmployeeHeadcount"
+        operational_status:
+          $ref: "#/components/schemas/OperationalStatus"
+
+    EmployeeHeadcount:
+      type: object
+      required: [w2_full_time, w2_part_time]
+      properties:
+        w2_full_time:
+          type: integer
+          description: Current W-2 full-time employee count.
+        w2_part_time:
+          type: integer
+          description: Current W-2 part-time and seasonal employee count.
+        quarterly_history:
+          type: array
+          nullable: true
+          items:
+            type: object
+            required: [quarter, w2_full_time, w2_part_time]
+            properties:
+              quarter:
+                type: string
+                pattern: '^\d{4}-Q[1-4]$'
+                example: "2025-Q1"
+              w2_full_time:
+                type: integer
+              w2_part_time:
+                type: integer
+          description: |
+            Headcount for each of the prior 4 quarters.
+            Required for IL (ALL_QUARTERS_PRIOR_YEAR measurement).
+            null acceptable for other states.
+
+    OperationalStatus:
+      type: object
+      description: |
+        All fields are timestamps. null = action not yet taken.
+        Booleans are derivable from != null.
+      properties:
+        registered_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Employer registered with the state portal.
+        roster_uploaded_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Employer uploaded employee roster.
+        deductions_started_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Employer began facilitating payroll deductions.
+        compliance_notice_received_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: |
+            Date IRALOGIX received a formal compliance notice for this
+            employer. Starts IL's 120-day cure window.
+
+    # =========================================================================
+    # Category 3: Compliance Snapshot
+    # Source: Confluence 2.2 Part 4
+    # =========================================================================
+    ComplianceSnapshot:
+      type: object
+      required: [employer_uuid, calculated_at, profile_hash, evaluations]
+      properties:
+        employer_uuid:
+          type: string
+          format: uuid
+        calculated_at:
+          type: string
+          format: date-time
+          description: When this snapshot was computed.
+        profile_hash:
+          type: string
+          description: Hash of the employer profile used for this calculation. Enables stale-check.
+        evaluations:
+          type: array
+          items:
+            $ref: "#/components/schemas/StateEvaluation"
+
+    StateEvaluation:
+      type: object
+      required:
+        - state_code
+        - rule_version_id
+        - eligibility_status
+        - eligibility_reasoning_code
+        - compliance_status
+        - action_items
+        - risk_exposure
+      properties:
+        state_code:
+          type: string
+        rule_version_id:
+          type: string
+          description: ID of the rule version used. Enables stale-detection.
+        eligibility_status:
+          type: string
+          enum: [MANDATED, EXEMPT, VOLUNTARY]
+        eligibility_reasoning_code:
+          type: string
+          enum:
+            - MEETS_ALL_CRITERIA
+            - EXEMPT_ENTITY_TYPE
+            - EXEMPT_QUALIFIED_PLAN
+            - EXEMPT_CERTIFIED
+            - EXEMPT_BUSINESS_AGE
+            - VOLUNTARY_ELIGIBLE
+        compliance_status:
+          type: string
+          enum: [COMPLIANT, NON_COMPLIANT, ACTION_REQUIRED, GRACE_PERIOD]
+        applicable_deadline:
+          type: string
+          format: date
+          nullable: true
+          description: Original registration deadline for this employer's size bracket.
+        next_action_deadline:
+          type: string
+          format: date
+          nullable: true
+          description: Next date the employer must act by.
+        compliance_window_expires_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: IL only — when the 120-day cure window closes.
+        action_items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ActionItem"
+        risk_exposure:
+          $ref: "#/components/schemas/RiskExposure"
+
+    ActionItem:
+      type: object
+      required: [action_code, action_type, severity]
+      properties:
+        action_code:
+          type: string
+          enum:
+            - REGISTER_PORTAL
+            - UPLOAD_ROSTER
+            - FACILITATE_DEDUCTIONS
+            - FILE_EXEMPTION
+            - CERTIFY_EXEMPTION
+            - ENROLL_NEW_HIRES
+            - MAINTAIN_RECORDS
+            - DISTRIBUTE_PROGRAM_MATERIALS
+            - TRACK_OPT_OUTS
+        action_type:
+          type: string
+          enum: [ONE_TIME, ONGOING]
+          description: |
+            ONE_TIME = done once, removed when operational_status timestamp is set.
+            ONGOING = persistent legal obligation.
+        severity:
+          type: string
+          enum: [CRITICAL, REQUIRED]
+          description: |
+            CRITICAL = penalty currently accruing.
+            REQUIRED = legally required, no immediate penalty.
+
+    RiskExposure:
+      type: object
+      required: [max_penalty_amount, calculation_breakdown]
+      properties:
+        max_penalty_amount:
+          type: integer
+          description: Maximum penalty exposure in dollars.
+        calculation_breakdown:
+          type: object
+          required:
+            - affected_employees
+            - penalty_per_employee
+            - is_cumulative_max_reached
+            - reasoning_code
+          properties:
+            affected_employees:
+              type: integer
+            penalty_per_employee:
+              type: integer
+            penalty_year:
+              type: integer
+              nullable: true
+              description: |
+                For YEAR_OF_NON_COMPLIANCE metric: which year of
+                non-compliance the employer is in. null for DAYS_LATE.
+            is_cumulative_max_reached:
+              type: boolean
+            reasoning_code:
+              type: string
+              enum:
+                - EXCEEDS_180_DAYS
+                - EXCEEDS_90_DAYS
+                - WITHIN_GRACE_PERIOD
+                - YEAR_N_NON_COMPLIANCE
+                - PENALTY_SCHEDULE_PENDING
+                - EXEMPT_ENTITY_TYPE
+                - EXEMPT_QUALIFIED_PLAN
+                - EXEMPT_CERTIFIED
