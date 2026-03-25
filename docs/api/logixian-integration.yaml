@@ -10,9 +10,15 @@
 #   - Auth Design:       ADR-001 (page 99057672)
 #
 # Auth model (ADR-001):
-#   - Authentication: Okta OAuth 2.0 Client Credentials -> JWT
+#   - Authentication: TBD — Okta OAuth 2.0 Client Credentials -> JWT
+#                     (requires custom auth server + API Access Management;
+#                      pending Brad confirmation on Okta plan availability)
 #   - Authorization:  Logixian client registry (scopes per client_id)
 #   - Webhooks:       HMAC-SHA256 payload signing
+#
+# Two credentials, one onboarding flow:
+#   Inbound  (Subscriber -> Logixian API):  OAuth client_id + client_secret -> JWT
+#   Outbound (Logixian -> Subscriber):      HMAC webhook secret per subscription
 #
 # Downstream tickets (IRA-46, IRA-47, IRA-87) implement against this spec.
 # =============================================================================
@@ -35,14 +41,22 @@ info:
     | 3 | Compliance Snapshot | Logixian -> IRALOGIX (webhook) + IRALOGIX -> Logixian (API) | Event + Query |
     | 4 | Alerting | Logixian -> IRALOGIX (webhook) | Event |
 
-    ## Auth
+    ## Two Credentials, One Onboarding Flow
+
+    The integration involves two directions of communication, each with its
+    own credential type:
+
+    | Direction | Purpose | Credential | Issued by | Rotation |
+    |-----------|---------|------------|-----------|----------|
+    | **Inbound** (Subscriber -> Logixian API) | Prove identity & permissions | OAuth `client_id` + `client_secret` \ (exchanged for short-lived JWT) | **TBD** (Okta or custom auth server) | Regenerate `client_secret` in Okta |
+    | **Outbound** (Logixian -> Subscriber webhook) | Prove authenticity & payload integrity | HMAC webhook secret (signs each payload) | Logixian API (returned on subscription creation) | Delete and re-create subscription |
 
     **Authentication:** All API calls require a Bearer JWT obtained via OAuth 2.0
-    Client Credentials flow from the IRALOGIX Okta organization.
+    Client Credentials flow from IRALOGIX's authorization server (TBD - Okta or other choices).
 
     **Authorization:** Logixian maintains a client registry that maps each
     `client_id` (from JWT) to permitted scopes. Each endpoint declares its
-    required scope. See ADR-001 for full details.
+    required scope. Scopes are managed entirely within Logixian.
 
     **Webhooks:** Outbound webhook deliveries include `X-Webhook-Signature`
     for HMAC-SHA256 payload verification.
@@ -550,16 +564,38 @@ paths:
     delete:
       operationId: deleteWebhookSubscription
       tags: [Webhooks]
-      summary: Delete a webhook subscription
+      summary: Soft-delete a webhook subscription
       description: |
-        Remove a webhook subscription. The associated webhook secret is
-        permanently destroyed. To re-subscribe, create a new subscription
-        (a new secret will be issued).
+        Soft-deletes a webhook subscription by setting `active: false` and
+        recording a `deleted_at` timestamp. Logixian immediately stops
+        delivering events to this subscription. The subscription record
+        and webhook secret hash are retained for audit purposes.
+
+        To re-subscribe, create a new subscription (a new secret will be
+        issued).
       security:
         - bearerAuth: [webhooks:manage]
       responses:
-        "204":
-          description: Subscription deleted.
+        "200":
+          description: Subscription soft-deleted.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [subscription_id, active, deleted_at]
+                properties:
+                  subscription_id:
+                    type: string
+                    format: uuid
+                  callback_url:
+                    type: string
+                    format: uri
+                  active:
+                    type: boolean
+                    example: false
+                  deleted_at:
+                    type: string
+                    format: date-time
         "404":
           $ref: "#/components/responses/NotFound"
 
@@ -620,13 +656,13 @@ paths:
                       $ref: "#/components/schemas/Client"
 
   /admin/clients/{client_id}:
-    patch:
+    put:
       operationId: updateClient
       tags: [Admin]
-      summary: Update a client (name, enabled, scopes)
+      summary: Replace a client's configuration
       description: |
-        Update client metadata or modify scopes. To grant scopes, include
-        them in `add_scopes`. To revoke, include them in `remove_scopes`.
+        Full replacement of client metadata and scopes. The `scopes` array
+        replaces the existing scope set entirely — omit a scope to revoke it.
         Set `enabled: false` to immediately block all API access for this
         client (kill switch).
       security:
@@ -652,18 +688,26 @@ paths:
     delete:
       operationId: deleteClient
       tags: [Admin]
-      summary: Remove a client from the registry
+      summary: Soft-delete a client from the registry
       description: |
-        Permanently removes a client and all its scope assignments.
-        The client's JWT will still be valid until expiry, but all API
-        calls will return 403 (client not found in registry).
+        Soft-deletes a client by setting `enabled: false` and recording a
+        `deleted_at` timestamp. The client record and scope history are
+        retained for audit purposes. The client's JWT will still be valid
+        until expiry, but all API calls will return 403.
+
+        To fully decommission, also delete the OAuth client in Okta (or
+        revoke the API key).
       security:
         - bearerAuth: [admin]
       parameters:
         - $ref: "#/components/parameters/ClientId"
       responses:
-        "204":
-          description: Client deleted.
+        "200":
+          description: Client soft-deleted.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Client"
         "404":
           $ref: "#/components/responses/NotFound"
 
@@ -981,23 +1025,27 @@ components:
 
     ClientUpdate:
       type: object
+      required: [name, enabled, scopes]
       properties:
         name:
           type: string
-          description: Updated service name.
+          description: Service name.
         enabled:
           type: boolean
           description: Set to false to immediately block all API access (kill switch).
-        add_scopes:
+        scopes:
           type: array
           items:
             type: string
-          description: Scopes to grant.
-        remove_scopes:
-          type: array
-          items:
-            type: string
-          description: Scopes to revoke.
+            enum:
+              - regulations:read
+              - regulations:approve
+              - employers:write
+              - employers:read
+              - compliance:read
+              - webhooks:manage
+              - admin
+          description: Full replacement of the client's scope set.
 
     Client:
       type: object
@@ -1016,6 +1064,11 @@ components:
         registered_at:
           type: string
           format: date-time
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Set when soft-deleted. Null if active.
 
     # =========================================================================
     # Shared / Cross-cutting
@@ -1399,6 +1452,14 @@ components:
           type: string
           format: uuid
           description: Anonymized employer identifier. No PII.
+        status:
+          type: string
+          enum: [active, inactive]
+          default: active
+          description: |
+            Employer lifecycle status. Set to `inactive` to deactivate an
+            employer without deleting historical data (snapshots, audit trail).
+            Inactive employers are excluded from compliance recalculation.
         company_hq_state:
           type: string
           description: ISO 3166-2 state code of employer HQ.
