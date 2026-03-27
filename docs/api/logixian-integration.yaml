@@ -14,11 +14,11 @@
 #                     (requires custom auth server + API Access Management;
 #                      pending Brad confirmation on Okta plan availability)
 #   - Authorization:  Logixian client registry (scopes per client_id)
-#   - Webhooks:       HMAC-SHA256 payload signing
+#   - Webhooks:       Ed25519 payload signing (public key verification)
 #
 # Two credentials, one onboarding flow:
 #   Inbound  (Subscriber -> Logixian API):  OAuth client_id + client_secret -> JWT
-#   Outbound (Logixian -> Subscriber):      HMAC webhook secret per subscription
+#   Outbound (Logixian -> Subscriber):      Ed25519 signature (single key pair)
 #
 # Downstream tickets (IRA-46, IRA-47, IRA-87) implement against this spec.
 # =============================================================================
@@ -49,7 +49,7 @@ info:
     | Direction | Purpose | Credential | Issued by | Rotation |
     |-----------|---------|------------|-----------|----------|
     | **Inbound** (Subscriber -> Logixian API) | Prove identity & permissions | OAuth `client_id` + `client_secret` \ (exchanged for short-lived JWT) | **TBD** (Okta or custom auth server) | Regenerate `client_secret` in Okta |
-    | **Outbound** (Logixian -> Subscriber webhook) | Prove authenticity & payload integrity | HMAC webhook secret (signs each payload) | Logixian API (returned on subscription creation) | Delete and re-create subscription |
+    | **Outbound** (Logixian -> Subscriber webhook) | Prove authenticity & payload integrity | Ed25519 signature (Logixian signs with private key; subscribers verify with public key) | Logixian (key pair managed internally) | Logixian rotates key pair; publishes new public key at `/.well-known/webhooks/signing-key` |
 
     **Authentication:** All API calls require a Bearer JWT obtained via OAuth 2.0
     Client Credentials flow from IRALOGIX's authorization server (TBD - Okta or other choices).
@@ -59,7 +59,9 @@ info:
     required scope. Scopes are managed entirely within Logixian.
 
     **Webhooks:** Outbound webhook deliveries include `X-Webhook-Signature`
-    for HMAC-SHA256 payload verification.
+    (Ed25519) and `X-Webhook-Timestamp` headers. Subscribers verify using
+    Logixian's public signing key, available at
+    `GET /.well-known/webhooks/signing-key`.
 
     ## Error & Retry
 
@@ -436,9 +438,9 @@ paths:
       tags: [Webhooks]
       summary: Register a webhook subscription
       description: |
-        Register a callback URL to receive webhook events. Returns a
-        per-subscriber HMAC webhook secret (displayed once, like Stripe).
-        The subscriber uses this secret to verify payload authenticity.
+        Register a callback URL to receive webhook events. Subscribers
+        verify payload authenticity using Logixian's Ed25519 public signing
+        key (available at `GET /.well-known/webhooks/signing-key`).
       security:
         - bearerAuth: [webhooks:manage]
       requestBody:
@@ -465,12 +467,12 @@ paths:
                   description: Event types to subscribe to.
       responses:
         "201":
-          description: Subscription created. Webhook secret is shown once.
+          description: Subscription created.
           content:
             application/json:
               schema:
                 type: object
-                required: [subscription_id, webhook_secret]
+                required: [subscription_id]
                 properties:
                   subscription_id:
                     type: string
@@ -482,11 +484,6 @@ paths:
                     type: array
                     items:
                       type: string
-                  webhook_secret:
-                    type: string
-                    description: |
-                      HMAC-SHA256 signing secret. **Displayed once.** Store securely.
-                      Use to verify `X-Webhook-Signature` on inbound deliveries.
                   created_at:
                     type: string
                     format: date-time
@@ -499,7 +496,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: "#/components/schemas/ErrorResponse"
 
   /webhooks/subscriptions/{subscription_id}:
     parameters:
@@ -517,7 +514,6 @@ paths:
       description: |
         Replace the event types for an existing subscription. This is idempotent —
         calling it multiple times with the same payload produces the same result.
-        The webhook secret is **not** changed or returned.
       security:
         - bearerAuth: [webhooks:manage]
       requestBody:
@@ -569,10 +565,9 @@ paths:
         Soft-deletes a webhook subscription by setting `active: false` and
         recording a `deleted_at` timestamp. Logixian immediately stops
         delivering events to this subscription. The subscription record
-        and webhook secret hash are retained for audit purposes.
+        is retained for audit purposes.
 
-        To re-subscribe, create a new subscription (a new secret will be
-        issued).
+        To re-subscribe, create a new subscription.
       security:
         - bearerAuth: [webhooks:manage]
       responses:
@@ -598,6 +593,36 @@ paths:
                     format: date-time
         "404":
           $ref: "#/components/responses/NotFound"
+
+  # ---------------------------------------------------------------------------
+  # Webhook Signing — Public key distribution
+  # ---------------------------------------------------------------------------
+  /.well-known/webhooks/signing-key:
+    get:
+      operationId: getWebhookSigningKey
+      tags: [Webhooks]
+      summary: Get the webhook signing public key
+      description: |
+        Returns the Ed25519 public key Logixian uses to sign all outbound
+        webhook payloads, in JWK format. Subscribers use this key to verify
+        `X-Webhook-Signature` headers on incoming webhook deliveries.
+
+        This endpoint is **unauthenticated** — the public key is not a secret.
+
+        During key rotation, the response may include multiple keys
+        distinguished by `kid`. Match the `kid` from the webhook's
+        `X-Webhook-Key-Id` header to select the correct key.
+
+        **Caching:** Subscribers should cache this key and refresh daily or
+        when verification fails with an unknown `kid`.
+      security: []
+      responses:
+        "200":
+          description: The signing public key(s) in JWK Set format.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebhookSigningKeySet"
 
   # ---------------------------------------------------------------------------
   # Admin — Client registry management
@@ -719,7 +744,8 @@ paths:
 #
 # All webhooks share:
 #   - WebhookEnvelope wrapper with event metadata
-#   - X-Webhook-Signature header (HMAC-SHA256 of raw body)
+#   - X-Webhook-Signature header (Ed25519 signature of timestamp + body)
+#   - X-Webhook-Timestamp header (Unix epoch seconds, for replay protection)
 #   - Retry policy: 3 attempts with exponential backoff (1m, 5m, 30m)
 # =============================================================================
 webhooks:
@@ -737,6 +763,8 @@ webhooks:
         changes; IRALOGIX should call `GET /regulations` to review details.
       parameters:
         - $ref: "#/components/parameters/WebhookSignature"
+        - $ref: "#/components/parameters/WebhookTimestamp"
+        - $ref: "#/components/parameters/WebhookKeyId"
       requestBody:
         required: true
         content:
@@ -786,6 +814,8 @@ webhooks:
         `GET /employers/{uuid}/snapshot` to fetch updated details.
       parameters:
         - $ref: "#/components/parameters/WebhookSignature"
+        - $ref: "#/components/parameters/WebhookTimestamp"
+        - $ref: "#/components/parameters/WebhookKeyId"
       requestBody:
         required: true
         content:
@@ -832,6 +862,8 @@ webhooks:
         existing notification service.
       parameters:
         - $ref: "#/components/parameters/WebhookSignature"
+        - $ref: "#/components/parameters/WebhookTimestamp"
+        - $ref: "#/components/parameters/WebhookKeyId"
       requestBody:
         required: true
         content:
@@ -934,8 +966,33 @@ components:
       schema:
         type: string
       description: |
-        HMAC-SHA256 signature of the raw request body, using the shared
-        webhook secret. Format: `sha256=<hex-digest>`.
+        Ed25519 signature of `{timestamp}.{raw_body}`, where `{timestamp}`
+        is the value of `X-Webhook-Timestamp`. Logixian signs with its
+        private key; subscribers verify with the public key from
+        `GET /.well-known/webhooks/signing-key`.
+        Format: `ed25519=<base64-signature>`.
+
+    WebhookTimestamp:
+      name: X-Webhook-Timestamp
+      in: header
+      required: true
+      schema:
+        type: string
+      description: |
+        Unix epoch seconds when the webhook was dispatched. Used in
+        signature computation and replay protection. Subscribers should
+        reject deliveries where the timestamp is older than 5 minutes.
+
+    WebhookKeyId:
+      name: X-Webhook-Key-Id
+      in: header
+      required: true
+      schema:
+        type: string
+      description: |
+        Key ID (`kid`) identifying which Ed25519 public key was used to
+        sign this delivery. Match against the `kid` field in the JWK Set
+        from `GET /.well-known/webhooks/signing-key`.
 
     PageLimit:
       name: limit
@@ -1069,6 +1126,43 @@ components:
           format: date-time
           nullable: true
           description: Set when soft-deleted. Null if active.
+
+    # =========================================================================
+    # Webhook Signing Key
+    # =========================================================================
+    WebhookSigningKeySet:
+      type: object
+      description: |
+        JWK Set containing the Ed25519 public key(s) used to verify webhook
+        signatures. During key rotation, multiple keys may be present.
+      required: [keys]
+      properties:
+        keys:
+          type: array
+          items:
+            type: object
+            required: [kty, crv, x, kid, use]
+            properties:
+              kty:
+                type: string
+                enum: [OKP]
+                description: Key type (Octet Key Pair for Ed25519).
+              crv:
+                type: string
+                enum: [Ed25519]
+                description: Curve identifier.
+              x:
+                type: string
+                description: Base64url-encoded public key.
+                example: "11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo"
+              kid:
+                type: string
+                description: Key ID. Matches `X-Webhook-Key-Id` header on deliveries.
+                example: "whk_2026_03"
+              use:
+                type: string
+                enum: [sig]
+                description: Key usage (signature verification).
 
     # =========================================================================
     # Shared / Cross-cutting
