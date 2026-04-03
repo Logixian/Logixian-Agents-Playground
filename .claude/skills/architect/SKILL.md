@@ -41,7 +41,8 @@ Use `cloudId: mse-iralogix.atlassian.net` for all Confluence calls.
 | 2.1 System Boundaries & Assumptions | `47742977` | API contracts, data flow, integration patterns |
 | 2.2 Data Model & Integration Strategy | `73138177` | Schema definitions (defer detailed schema review to `/data-model-coach`) |
 | AWS Cost Analysis | `89391105` | Dev environment infra costs — use when drafting ADRs about service selection, scaling, or infra tradeoffs |
-| 3. Architecture (root) | `1245203` | Architecture section root — new subpages go here following the pattern: 3.1 API Server, 3.2 Data Pipeline, etc. |
+| 3. Architecture (root) | `1245203` | Architecture section root — non-ADR subpages go here (e.g., 3.1 API Server, 3.2 Data Pipeline) |
+| ADR (folder) | `104955905` | Parent for all ADRs — create new ADRs as subpages here |
 
 > **Note:** IRA project Confluence space (`iralogix.atlassian.net`) MCP access is pending re-authorization. When configured, fetch pages from the IRA space using `cloudId: iralogix.atlassian.net`. Page IDs will be provided at that time.
 
@@ -75,16 +76,13 @@ Proposed | Accepted | Deprecated | Superseded by ADR-XXX
 
 ### ADR Drafting Steps
 
-> **Status:** ADR process is under development. Do not publish ADRs to Confluence yet.
-> Until the process is defined, output all findings and drafts to terminal only.
-> Log key observations as structured notes — gaps, open questions, alignment findings — so they can be converted to ADRs when the process is ready.
-
 1. Load static context and fetch relevant Confluence pages
 2. Ask the user: "What decision needs to be documented?"
 3. Ask clarifying questions if context, options, or consequences are unclear
-4. Draft the ADR using the format above and output to terminal
-5. **Do not post to Confluence** until the ADR location and process are confirmed
-6. Number ADRs sequentially (ADR-001, ADR-002, ...) for future reference — track in terminal output only
+4. Draft the ADR using the format above and output to terminal for review
+5. On user approval, publish to the **ADR folder** (page `104955905`) as a subpage
+6. Keep the main ADR page to ~1.5 pages (Context, Decision, Options, Consequences, Decision-Forcing Defaults). Move deep analysis (QAS scenarios, fault models, detailed comparisons) to appendix subpages under the ADR.
+7. Number ADRs sequentially (ADR-001, ADR-002, ...)
 
 ## Known Gaps (as of March 2026)
 

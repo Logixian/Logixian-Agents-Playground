@@ -1,6 +1,6 @@
 ---
 name: pm
-description: Activates the Project Manager persona — sprint summaries, blocker tracking, risk register, milestone review, and Jira ticket management. All ticket and PM tasks share field conventions defined here.
+description: Activates the Project Manager persona — sprint summaries, blocker tracking, risk register, milestone review, Jira ticket management, weekly digest, and action planning from meetings. All ticket and PM tasks share field conventions defined here.
 user-invocable: true
 allowed-tools:
   - Read
@@ -124,6 +124,8 @@ Set in `additional_fields` as: `"customfield_10171": {"id": "<option_id>"}` and 
 | Work Breakdown Structure (Confluence) | Page ID `89489409` | WBS — milestones M1–M5, task breakdown, priorities |
 | Clockify Guide (Confluence) | Page ID `1736706` | Time tracking and billable conventions |
 | 4. SDLC Approach (Confluence) | Page ID `2916361` | Agile process, scrum conventions, task management practices |
+| Meeting Notes folder (Confluence) | Folder ID `2097153` | All meeting pages (client, internal, mentor) |
+| Weekly Digest folder (Confluence) | Folder ID `114294785` | Published weekly digest pages |
 
 **WBS Milestone Summary:**
 - M1 — Requirements & Architecture Foundation — Due: End of Feb (complete)
@@ -213,6 +215,120 @@ All ticket operations use the **Shared Field Conventions** above.
 
 ---
 
+## Action Plan
+
+### `/pm plan` — Propose Jira actions from this week's meetings and digest
+
+Reads meeting pages from this week (and optionally the latest digest) to propose concrete Jira actions. This is the "execute" step after `/pm digest` gives the read-only summary.
+
+**Data sources:**
+1. Search for meeting pages created this week in folder `2097153` (same CQL as digest)
+2. Optionally read the latest digest page from folder `114294785`
+3. Fetch current sprint tickets to check for overlap
+
+**Process:**
+1. Extract decisions and action items from each meeting page
+2. For each action item, classify it as one of:
+   - **CREATE** — new ticket needed (draft using Shared Field Conventions)
+   - **UPDATE** — existing ticket needs rescoping (show diff)
+   - **ASSIGN** — existing ticket needs an assignee
+   - **DOCUMENT** — Confluence page needs updating (create a ticket for it — every doc change gets a ticket)
+3. Present the full action list:
+   ```
+   ## Proposed Actions from Week of <date>
+
+   ### New Tickets
+   1. [CREATE] <summary> — <reason from meeting>
+   2. [CREATE] <summary> — <reason from meeting>
+
+   ### Ticket Updates
+   3. [UPDATE] IRA-XXX — rescope: <what changed>
+   4. [ASSIGN] IRA-XXX → <person> — <reason>
+
+   ### Document Changes (as tickets)
+   5. [CREATE] Update Confluence 2.2 for <change> — from <meeting>
+   ```
+4. Ask: "Apply all? Or select by number? (all / 1,3,5 / edit / cancel)"
+5. On confirmation, execute selected actions using Shared Field Conventions
+
+**Meeting cadence for context:**
+- Wednesday: Client meeting with Brad (decision-heavy, scope changes)
+- Thursday: Internal sprint planning / retro (status, assignments)
+- Friday: Mentor meeting (process feedback, course alignment)
+
+---
+
+## Weekly Digest
+
+### `/pm digest` — Generate and publish a weekly status digest
+
+Combines all project signals into a single weekly summary. Published as a Confluence page under the Weekly Digest folder.
+
+**Data sources:**
+1. **Jira sprint state** — fetch open sprint tickets, group by status
+2. **WBS coverage** — fetch WBS (page `89489409`), cross-reference with Jira tickets to produce a coverage table (WBS item → ticket → status)
+3. **Meeting outcomes** — search for meeting pages created this week in the Meeting Notes folder (folder `2097153`) using CQL: `ancestor = 2097153 AND created >= "<monday-of-week>"`. Extract key decisions from each.
+4. **Risk register** — fetch page `89325569`, surface open risks
+
+**Output format:**
+
+```
+## Weekly Digest — Week of <YYYY-MM-DD>
+
+### Sprint <N> (<status>, ends <date>)
+- X In Progress, Y To Do, Z In Review, W Done
+- Blockers: <list or "None">
+
+### Milestone Progress
+| WBS Item | Ticket | Status |
+|----------|--------|--------|
+(coverage table for active milestone)
+
+### This Week's Meetings
+**Client (date):** <1-2 line summary of decisions>
+**Internal (date):** <1-2 line summary>
+**Mentor (date):** <1-2 line summary>
+
+### Decisions & Changes
+- <bulleted list of significant decisions from meetings>
+
+### Action Items (from meetings)
+- [ ] <action> — <owner>
+
+### Open Risks
+- [R-XXX] <risk> — <owner> — <status>
+
+### Next Week Focus
+- <2-3 priorities based on sprint + milestone state>
+```
+
+**Team roster (for mentions and assignments):**
+
+| Name | Atlassian Account ID |
+|------|---------------------|
+| Kuan Wu | `712020:cb670dc9-feb1-4cae-91c1-fecc51b44c61` |
+| puviengc | `712020:9bff26f2-b4f6-457f-82f9-7c0f23ecd8c4` |
+| Jay Sun | `712020:8880efe6-ce1b-4c09-ac50-5875b68c53bc` |
+| Leif | `712020:a47c0f8d-22ba-46c1-86a5-1e29b1f805bd` |
+| Saul | `712020:621a650d-9362-40a5-825d-ff9e38036736` |
+
+**Mention rules:**
+When the digest references a team member by name (e.g., in action items, assignments, or risk owners), tag them using Confluence ADF mention nodes. Since the digest body uses markdown (which doesn't support mentions), publish the page in **ADF format** instead when mentions are needed. Build the ADF document programmatically — use `{"type": "mention", "attrs": {"id": "<accountId>", "text": "<display name>", "accessLevel": ""}}` inline nodes wherever a name appears.
+
+**Linking rules (IMPORTANT):**
+Every ticket, Confluence page, or external reference in the digest MUST be a clickable link in the published page:
+- Jira tickets: `[IRA-XXX](https://mse-iralogix.atlassian.net/browse/IRA-XXX)`
+- Confluence pages: `[Page Title](https://mse-iralogix.atlassian.net/wiki/spaces/ira/pages/<pageId>/<url-encoded-title>)`
+- Meeting pages: link to the Confluence page fetched during the meeting search step
+- WBS: link to page `89489409`
+- Risk register: link to page `89325569`
+
+**Publishing:**
+1. Draft the digest and show to user for review
+2. On confirmation, publish as a new Confluence page titled `Weekly Digest — <YYYY-MM-DD>` under the Weekly Digest folder (folder `114294785`, use parent page ID `114294785`)
+
+---
+
 ## All PM Tasks
 
 | Invocation | Task |
@@ -227,5 +343,7 @@ All ticket operations use the **Shared Field Conventions** above.
 | `/pm ticket <IRA-XXX>` | Review and update an existing ticket's fields |
 | `/pm ticket new` | Create a new ticket interactively |
 | `/pm ticket draft <goal>` | Draft a ticket from a goal description |
+| `/pm plan` | Propose Jira actions (create/update/assign) from this week's meetings |
+| `/pm digest` | Generate weekly status digest and publish to Confluence |
 | `/pm sdlc` | Read the SDLC Approach page and summarize current practices |
 | `/pm sdlc update` | Propose updates to the SDLC Approach page (scrum process, task conventions, etc.) — confirm before writing back |
