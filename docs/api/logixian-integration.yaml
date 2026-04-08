@@ -27,7 +27,7 @@ openapi: 3.1.0
 
 info:
   title: Logixian Integration API
-  version: 0.2.0-draft
+  version: 0.3.0-draft
   description: |
     Top-level integration contract between the **Logixian Compliance Engine**
     and the **IRALOGIX Platform**.
@@ -298,21 +298,23 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
 
   # ---------------------------------------------------------------------------
-  # Category 2: Client Data — Employer Profile
+  # Category 2: Client Data — Employer Profiles (versioned, append-only)
   # ---------------------------------------------------------------------------
-  /employers/{employer_uuid}/profile:
-    put:
-      operationId: upsertEmployerProfile
+  /employers/{employer_uuid}/profiles:
+    post:
+      operationId: createEmployerProfileVersion
       tags: [Employers]
-      summary: Push or update an employer profile
+      summary: Submit a new employer profile version
       description: |
-        IRALOGIX sends the anonymized employer profile to Logixian. This is a
-        full-replace upsert — the entire profile must be sent each time.
+        IRALOGIX sends the full employer profile to Logixian. Each submission
+        creates a new immutable version (append-only). The complete profile
+        must be sent each time — no partial updates.
 
         **Privacy:** No PII is accepted. The payload contains only the
         `employer_uuid` and compliance-relevant metrics.
 
-        On success, the engine queues a compliance recalculation.
+        On success, the engine queues a compliance recalculation against
+        this new profile version.
       security:
         - bearerAuth: [employers:write]
       parameters:
@@ -324,23 +326,12 @@ paths:
             schema:
               $ref: "#/components/schemas/ClientDataPayload"
       responses:
-        "202":
-          description: Profile accepted; compliance recalculation queued.
+        "201":
+          description: Profile version created; compliance recalculation queued.
           content:
             application/json:
               schema:
-                type: object
-                required: [employer_uuid, accepted_at]
-                properties:
-                  employer_uuid:
-                    type: string
-                    format: uuid
-                  accepted_at:
-                    type: string
-                    format: date-time
-                  message:
-                    type: string
-                    example: "Profile accepted. Compliance snapshot will be recalculated."
+                $ref: "#/components/schemas/ClientDataPayload"
         "400":
           $ref: "#/components/responses/BadRequest"
         "422":
@@ -351,17 +342,55 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
 
     get:
-      operationId: getEmployerProfile
+      operationId: listEmployerProfileVersions
       tags: [Employers]
-      summary: Retrieve the current employer profile
-      description: Returns the last-accepted profile for the given employer.
+      summary: List employer profile version history
+      description: |
+        Returns paginated version history for the employer, ordered by
+        version number descending (newest first). Used for audit trail
+        and point-in-time review.
       security:
         - bearerAuth: [employers:read]
       parameters:
         - $ref: "#/components/parameters/EmployerUuid"
+        - $ref: "#/components/parameters/PageLimit"
+        - $ref: "#/components/parameters/PageOffset"
       responses:
         "200":
-          description: The employer profile.
+          description: Paginated list of profile versions.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, pagination]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ClientDataPayload"
+                  pagination:
+                    $ref: "#/components/schemas/Pagination"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /employers/{employer_uuid}/profiles/{version}:
+    get:
+      operationId: getEmployerProfileVersion
+      tags: [Employers]
+      summary: Retrieve a specific employer profile version
+      description: |
+        Returns a profile version by version number, or pass `latest` to
+        retrieve the most recent version. Most callers should use `latest`;
+        numbered versions are for audit, legal review, and point-in-time
+        compliance analysis.
+      security:
+        - bearerAuth: [employers:read]
+      parameters:
+        - $ref: "#/components/parameters/EmployerUuid"
+        - $ref: "#/components/parameters/ProfileVersion"
+      responses:
+        "200":
+          description: The requested employer profile version.
           content:
             application/json:
               schema:
@@ -994,6 +1023,19 @@ components:
         sign this delivery. Match against the `kid` field in the JWK Set
         from `GET /.well-known/webhooks/signing-key`.
 
+    ProfileVersion:
+      name: version
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: '^(latest|[1-9][0-9]*)$'
+        example: latest
+      description: |
+        Profile version selector. Either a positive integer version number
+        (1, 2, 3, ...) or the literal string `latest` to retrieve the most
+        recent version.
+
     PageLimit:
       name: limit
       in: query
@@ -1525,15 +1567,18 @@ components:
           description: When the pipeline last parsed this state's data.
 
     # =========================================================================
-    # Category 2: Client Data Payload
+    # Category 2: Employer Profile (versioned, append-only)
     # Source: Confluence 2.2 Part 3
     # =========================================================================
     ClientDataPayload:
       type: object
       description: |
-        Anonymized employer compliance profile. Unified superset schema —
-        every state profile sends the same structure, with null for
-        fields not applicable. No PII.
+        Anonymized employer compliance profile, versioned and append-only.
+        Each POST to /employers/{uuid}/profiles creates a new immutable
+        version. Versions are never modified or deleted.
+
+        Unified superset schema — every state profile sends the same
+        structure, with null for fields not applicable. No PII.
       required:
         - employer_uuid
         - company_hq_state
@@ -1542,6 +1587,22 @@ components:
         - offers_qualified_plan
         - state_profiles
       properties:
+        version:
+          type: integer
+          minimum: 1
+          readOnly: true
+          description: |
+            Server-assigned, monotonically increasing version number
+            (1, 2, 3, ...). Unique per employer. Clients omit this field
+            on POST — Logixian assigns it.
+          example: 3
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: |
+            Server-assigned timestamp of when this version was accepted.
+            Clients omit this field on POST.
         employer_uuid:
           type: string
           format: uuid
@@ -1655,7 +1716,7 @@ components:
     # =========================================================================
     ComplianceSnapshot:
       type: object
-      required: [employer_uuid, calculated_at, profile_hash, evaluations]
+      required: [employer_uuid, calculated_at, profile_version, evaluations]
       properties:
         employer_uuid:
           type: string
@@ -1664,9 +1725,13 @@ components:
           type: string
           format: date-time
           description: When this snapshot was computed.
-        profile_hash:
-          type: string
-          description: Hash of the employer profile used for this calculation. Enables stale-check.
+        profile_version:
+          type: integer
+          minimum: 1
+          description: |
+            Version number of the employer profile used for this calculation.
+            Enables stale-check — compare against the latest profile version
+            to determine if the snapshot needs recalculation.
         evaluations:
           type: array
           items:
