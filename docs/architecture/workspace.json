@@ -1,0 +1,653 @@
+{
+  "configuration" : { },
+  "description" : "Description",
+  "documentation" : { },
+  "id" : 1,
+  "lastModifiedDate" : "2026-04-15T19:04:55Z",
+  "model" : {
+    "people" : [ {
+      "description" : "Reviews and approves regulation changes detected by the ingestion pipeline.",
+      "id" : "4",
+      "name" : "IRALOGIX Compliance Team",
+      "properties" : {
+        "structurizr.dsl.identifier" : "complianceTeam"
+      },
+      "relationships" : [ {
+        "description" : "Reviews and approves/rejects pending regulations",
+        "destinationId" : "5",
+        "id" : "19",
+        "sourceId" : "4",
+        "tags" : "Relationship",
+        "technology" : "HTTPS (via IRALOGIX dashboard)"
+      }, {
+        "description" : "Approve/reject pending regulations",
+        "destinationId" : "6",
+        "id" : "24",
+        "sourceId" : "4",
+        "tags" : "Relationship",
+        "technology" : "HTTPS"
+      } ],
+      "tags" : "Element,Person,External"
+    } ],
+    "softwareSystems" : [ {
+      "description" : "IRALOGIX's internal systems that consume compliance data and push employer profiles.",
+      "documentation" : { },
+      "id" : "1",
+      "name" : "IRALOGIX Platform",
+      "properties" : {
+        "structurizr.dsl.identifier" : "iralogix"
+      },
+      "relationships" : [ {
+        "description" : "Pushes employer profiles, queries compliance snapshots, manages subscriptions",
+        "destinationId" : "5",
+        "id" : "16",
+        "sourceId" : "1",
+        "tags" : "Relationship",
+        "technology" : "HTTPS + Auth0 JWT"
+      }, {
+        "description" : "API calls (employer profiles, regulations, snapshots, admin)",
+        "destinationId" : "6",
+        "id" : "21",
+        "sourceId" : "1",
+        "tags" : "Relationship",
+        "technology" : "HTTPS + Auth0 JWT"
+      }, {
+        "description" : "Sends requests with Auth0 JWT",
+        "destinationId" : "7",
+        "id" : "32",
+        "sourceId" : "1",
+        "tags" : "Relationship",
+        "technology" : "HTTPS"
+      } ],
+      "tags" : "Element,Software System,External"
+    }, {
+      "description" : "Authorization server issuing OAuth 2.0 JWTs via Client Credentials flow.",
+      "documentation" : { },
+      "id" : "2",
+      "name" : "Auth0",
+      "properties" : {
+        "structurizr.dsl.identifier" : "auth0"
+      },
+      "relationships" : [ {
+        "description" : "Issues JWTs, provides JWKS for verification",
+        "destinationId" : "5",
+        "id" : "20",
+        "sourceId" : "2",
+        "tags" : "Relationship",
+        "technology" : "HTTPS"
+      }, {
+        "description" : "JWKS endpoint for JWT verification",
+        "destinationId" : "6",
+        "id" : "23",
+        "sourceId" : "2",
+        "tags" : "Relationship",
+        "technology" : "HTTPS"
+      }, {
+        "description" : "JWKS endpoint for JWT verification",
+        "destinationId" : "7",
+        "id" : "33",
+        "sourceId" : "2",
+        "tags" : "Relationship",
+        "technology" : "HTTPS"
+      } ],
+      "tags" : "Element,Software System,External"
+    }, {
+      "description" : "Official state retirement program websites (CalSavers, IL Secure Choice, etc.).",
+      "documentation" : { },
+      "id" : "3",
+      "name" : "State Portals",
+      "properties" : {
+        "structurizr.dsl.identifier" : "statePortals"
+      },
+      "relationships" : [ {
+        "description" : "Scraped for regulation data (weekly ingestion)",
+        "destinationId" : "5",
+        "id" : "18",
+        "sourceId" : "3",
+        "tags" : "Relationship",
+        "technology" : "HTTPS"
+      } ],
+      "tags" : "Element,Software System,External"
+    }, {
+      "containers" : [ {
+        "components" : [ {
+          "description" : "Validates Auth0 JWTs (external requests) and Ed25519 JWTs (internal requests from Pipeline Worker). Resolves client_id to scopes via client registry.",
+          "documentation" : { },
+          "id" : "7",
+          "name" : "Auth Middleware",
+          "properties" : {
+            "structurizr.dsl.identifier" : "authMiddleware"
+          },
+          "relationships" : [ {
+            "description" : "Authenticated external request (Auth0 JWT + scopes)",
+            "destinationId" : "8",
+            "id" : "34",
+            "sourceId" : "7",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Authenticated internal request (Ed25519 JWT)",
+            "destinationId" : "9",
+            "id" : "35",
+            "sourceId" : "7",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "FastAPI Middleware"
+        }, {
+          "description" : "All IRALOGIX-facing endpoints: regulations, employer profiles, compliance snapshots, admin, webhook subscriptions. Contract defined by OpenAPI v0.3.0-draft (IRA-89).",
+          "documentation" : { },
+          "id" : "8",
+          "name" : "External API",
+          "properties" : {
+            "structurizr.dsl.identifier" : "externalAPI"
+          },
+          "relationships" : [ {
+            "description" : "Triggers recalculation (profile created, regulation approved)",
+            "destinationId" : "10",
+            "id" : "36",
+            "sourceId" : "8",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Reads/writes business data",
+            "destinationId" : "12",
+            "id" : "37",
+            "sourceId" : "8",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Emits regulation.change_detected events",
+            "destinationId" : "11",
+            "id" : "38",
+            "sourceId" : "8",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "FastAPI Routers"
+        }, {
+          "description" : "Pipeline Worker write-back endpoints: POST /internal/compliance-snapshots, POST /internal/employer-profile-snapshots. Authenticated via Ed25519 JWT (ADR-004). Triggers webhook dispatch on snapshot write.",
+          "documentation" : { },
+          "id" : "9",
+          "name" : "Internal API",
+          "properties" : {
+            "structurizr.dsl.identifier" : "internalAPI"
+          },
+          "relationships" : [ {
+            "description" : "Persists compliance snapshots from Pipeline Worker",
+            "destinationId" : "12",
+            "id" : "39",
+            "sourceId" : "9",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Emits compliance.snapshot_updated on snapshot write",
+            "destinationId" : "11",
+            "id" : "40",
+            "sourceId" : "9",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "FastAPI Routers"
+        }, {
+          "description" : "Enqueues pipeline trigger messages to pipeline-trigger-queue. Generates idempotency keys. Triggered by employer profile creation and regulation approval.",
+          "documentation" : { },
+          "id" : "10",
+          "name" : "SQS Producer",
+          "properties" : {
+            "structurizr.dsl.identifier" : "sqsProducer"
+          },
+          "relationships" : [ {
+            "description" : "Sends trigger messages",
+            "destinationId" : "14",
+            "id" : "41",
+            "sourceId" : "10",
+            "tags" : "Relationship",
+            "technology" : "AWS SDK"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Adapter"
+        }, {
+          "description" : "Delivers signed webhook events to subscriber callback URLs. Ed25519 payload signing (ADR-001). Retry with exponential backoff (1m, 5m, 30m). Dead-letters after 3 failures.",
+          "documentation" : { },
+          "id" : "11",
+          "name" : "Webhook Dispatcher",
+          "properties" : {
+            "structurizr.dsl.identifier" : "webhookDispatcher"
+          },
+          "relationships" : [ {
+            "description" : "Delivers signed webhook events",
+            "destinationId" : "1",
+            "id" : "42",
+            "sourceId" : "11",
+            "tags" : "Relationship",
+            "technology" : "HTTPS + Ed25519"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Adapter"
+        }, {
+          "description" : "SQLAlchemy ORM. Read/write access to all business tables: employer_profiles, regulations, compliance_snapshots, client_registry, webhook_subscriptions.",
+          "documentation" : { },
+          "id" : "12",
+          "name" : "Data Access Layer",
+          "properties" : {
+            "structurizr.dsl.identifier" : "dataAccess"
+          },
+          "relationships" : [ {
+            "description" : "SQL queries",
+            "destinationId" : "15",
+            "id" : "43",
+            "sourceId" : "12",
+            "tags" : "Relationship",
+            "technology" : "SQLAlchemy"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "SQLAlchemy"
+        } ],
+        "description" : "Handles all inbound HTTP requests (external and internal), auth, business logic, webhook dispatch. Always-on K8s Deployment.",
+        "documentation" : { },
+        "id" : "6",
+        "name" : "API Server",
+        "properties" : {
+          "structurizr.dsl.identifier" : "apiServer"
+        },
+        "relationships" : [ {
+          "description" : "Webhook events (regulation.change_detected, compliance.snapshot_updated, compliance.alert)",
+          "destinationId" : "1",
+          "id" : "22",
+          "sourceId" : "6",
+          "tags" : "Relationship",
+          "technology" : "HTTPS + Ed25519"
+        }, {
+          "description" : "Enqueues trigger messages (profile created, regulation approved)",
+          "destinationId" : "14",
+          "id" : "25",
+          "sourceId" : "6",
+          "tags" : "Relationship",
+          "technology" : "AWS SDK"
+        }, {
+          "description" : "Full read/write access",
+          "destinationId" : "15",
+          "id" : "28",
+          "sourceId" : "6",
+          "tags" : "Relationship",
+          "technology" : "SQLAlchemy"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "Python / FastAPI"
+      }, {
+        "description" : "Long-polls SQS for trigger messages (always-on, 1 replica). Runs compliance calculations and regulation ingestion. Writes results back through API Server internal endpoints. Reads DB directly for bulk data (ADR-003).",
+        "documentation" : { },
+        "id" : "13",
+        "name" : "Pipeline Worker",
+        "properties" : {
+          "structurizr.dsl.identifier" : "pipelineWorker"
+        },
+        "relationships" : [ {
+          "description" : "Long-polls for trigger messages",
+          "destinationId" : "14",
+          "id" : "26",
+          "sourceId" : "13",
+          "tags" : "Relationship",
+          "technology" : "AWS SDK"
+        }, {
+          "description" : "Writes compliance snapshots via internal endpoints",
+          "destinationId" : "6",
+          "id" : "27",
+          "sourceId" : "13",
+          "tags" : "Relationship",
+          "technology" : "HTTP + Ed25519 JWT"
+        }, {
+          "description" : "Direct reads only (employer profiles, regulations). Writes go through API Server.",
+          "destinationId" : "15",
+          "id" : "29",
+          "sourceId" : "13",
+          "tags" : "Relationship",
+          "technology" : "SQLAlchemy (read-only)"
+        }, {
+          "description" : "Scrapes regulation data",
+          "destinationId" : "3",
+          "id" : "30",
+          "sourceId" : "13",
+          "tags" : "Relationship",
+          "technology" : "HTTPS"
+        }, {
+          "description" : "Writes compliance snapshots",
+          "destinationId" : "7",
+          "id" : "44",
+          "sourceId" : "13",
+          "tags" : "Relationship",
+          "technology" : "HTTP + Ed25519 JWT"
+        }, {
+          "description" : "Polls for trigger messages",
+          "destinationId" : "14",
+          "id" : "45",
+          "sourceId" : "13",
+          "tags" : "Relationship",
+          "technology" : "AWS SDK"
+        }, {
+          "description" : "Direct reads (employer profiles, regulations)",
+          "destinationId" : "15",
+          "id" : "46",
+          "sourceId" : "13",
+          "tags" : "Relationship",
+          "technology" : "SQLAlchemy (read-only)"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "Python"
+      }, {
+        "description" : "pipeline-trigger-queue + dead-letter queue. Decouples API Server from Pipeline Worker (ADR-002). No callback queue needed.",
+        "documentation" : { },
+        "id" : "14",
+        "name" : "SQS Queue",
+        "properties" : {
+          "structurizr.dsl.identifier" : "sqs"
+        },
+        "tags" : "Element,Container,Queue",
+        "technology" : "AWS SQS"
+      }, {
+        "description" : "Stores employer profiles, regulations, compliance snapshots, client registry, webhook subscriptions, pipeline_jobs.",
+        "documentation" : { },
+        "id" : "15",
+        "name" : "PostgreSQL",
+        "properties" : {
+          "structurizr.dsl.identifier" : "database"
+        },
+        "tags" : "Element,Container,Database",
+        "technology" : "AWS RDS PostgreSQL"
+      } ],
+      "description" : "Rules engine that evaluates employer compliance across state-mandated retirement programs.",
+      "documentation" : { },
+      "id" : "5",
+      "name" : "Logixian Compliance Engine",
+      "properties" : {
+        "structurizr.dsl.identifier" : "logixian"
+      },
+      "relationships" : [ {
+        "description" : "Delivers webhook events (regulation changes, snapshot updates, alerts)",
+        "destinationId" : "1",
+        "id" : "17",
+        "sourceId" : "5",
+        "tags" : "Relationship",
+        "technology" : "HTTPS + Ed25519"
+      }, {
+        "description" : "Scrapes regulation data",
+        "destinationId" : "3",
+        "id" : "31",
+        "linkedRelationshipId" : "30",
+        "sourceId" : "5",
+        "technology" : "HTTPS"
+      } ],
+      "tags" : "Element,Software System"
+    } ]
+  },
+  "name" : "Logixian Compliance Engine",
+  "properties" : {
+    "structurizr.inspection.error" : "10",
+    "structurizr.dsl" : "d29ya3NwYWNlICJMb2dpeGlhbiBDb21wbGlhbmNlIEVuZ2luZSIgewoKICAgIG1vZGVsIHsKICAgICAgICAjIEV4dGVybmFsIGFjdG9ycwogICAgICAgIGlyYWxvZ2l4ID0gc29mdHdhcmVTeXN0ZW0gIklSQUxPR0lYIFBsYXRmb3JtIiAiSVJBTE9HSVgncyBpbnRlcm5hbCBzeXN0ZW1zIHRoYXQgY29uc3VtZSBjb21wbGlhbmNlIGRhdGEgYW5kIHB1c2ggZW1wbG95ZXIgcHJvZmlsZXMuIiAiRXh0ZXJuYWwiCiAgICAgICAgYXV0aDAgPSBzb2Z0d2FyZVN5c3RlbSAiQXV0aDAiICJBdXRob3JpemF0aW9uIHNlcnZlciBpc3N1aW5nIE9BdXRoIDIuMCBKV1RzIHZpYSBDbGllbnQgQ3JlZGVudGlhbHMgZmxvdy4iICJFeHRlcm5hbCIKICAgICAgICBzdGF0ZVBvcnRhbHMgPSBzb2Z0d2FyZVN5c3RlbSAiU3RhdGUgUG9ydGFscyIgIk9mZmljaWFsIHN0YXRlIHJldGlyZW1lbnQgcHJvZ3JhbSB3ZWJzaXRlcyAoQ2FsU2F2ZXJzLCBJTCBTZWN1cmUgQ2hvaWNlLCBldGMuKS4iICJFeHRlcm5hbCIKICAgICAgICBjb21wbGlhbmNlVGVhbSA9IHBlcnNvbiAiSVJBTE9HSVggQ29tcGxpYW5jZSBUZWFtIiAiUmV2aWV3cyBhbmQgYXBwcm92ZXMgcmVndWxhdGlvbiBjaGFuZ2VzIGRldGVjdGVkIGJ5IHRoZSBpbmdlc3Rpb24gcGlwZWxpbmUuIiAiRXh0ZXJuYWwiCgogICAgICAgICMgTG9naXhpYW4gc3lzdGVtCiAgICAgICAgbG9naXhpYW4gPSBzb2Z0d2FyZVN5c3RlbSAiTG9naXhpYW4gQ29tcGxpYW5jZSBFbmdpbmUiICJSdWxlcyBlbmdpbmUgdGhhdCBldmFsdWF0ZXMgZW1wbG95ZXIgY29tcGxpYW5jZSBhY3Jvc3Mgc3RhdGUtbWFuZGF0ZWQgcmV0aXJlbWVudCBwcm9ncmFtcy4iIHsKCiAgICAgICAgICAgICMgQ29udGFpbmVycwogICAgICAgICAgICBhcGlTZXJ2ZXIgPSBjb250YWluZXIgIkFQSSBTZXJ2ZXIiICJIYW5kbGVzIGFsbCBpbmJvdW5kIEhUVFAgcmVxdWVzdHMgKGV4dGVybmFsIGFuZCBpbnRlcm5hbCksIGF1dGgsIGJ1c2luZXNzIGxvZ2ljLCB3ZWJob29rIGRpc3BhdGNoLiBBbHdheXMtb24gSzhzIERlcGxveW1lbnQuIiAiUHl0aG9uIC8gRmFzdEFQSSIgewoKICAgICAgICAgICAgICAgICMgQXV0aCBib3VuZGFyeQogICAgICAgICAgICAgICAgYXV0aE1pZGRsZXdhcmUgPSBjb21wb25lbnQgIkF1dGggTWlkZGxld2FyZSIgIlZhbGlkYXRlcyBBdXRoMCBKV1RzIChleHRlcm5hbCByZXF1ZXN0cykgYW5kIEVkMjU1MTkgSldUcyAoaW50ZXJuYWwgcmVxdWVzdHMgZnJvbSBQaXBlbGluZSBXb3JrZXIpLiBSZXNvbHZlcyBjbGllbnRfaWQgdG8gc2NvcGVzIHZpYSBjbGllbnQgcmVnaXN0cnkuIiAiRmFzdEFQSSBNaWRkbGV3YXJlIgoKICAgICAgICAgICAgICAgICMgRXh0ZXJuYWwgQVBJIGJvdW5kYXJ5IChJUkFMT0dJWC1mYWNpbmcpCiAgICAgICAgICAgICAgICBleHRlcm5hbEFQSSA9IGNvbXBvbmVudCAiRXh0ZXJuYWwgQVBJIiAiQWxsIElSQUxPR0lYLWZhY2luZyBlbmRwb2ludHM6IHJlZ3VsYXRpb25zLCBlbXBsb3llciBwcm9maWxlcywgY29tcGxpYW5jZSBzbmFwc2hvdHMsIGFkbWluLCB3ZWJob29rIHN1YnNjcmlwdGlvbnMuIENvbnRyYWN0IGRlZmluZWQgYnkgT3BlbkFQSSB2MC4zLjAtZHJhZnQgKElSQS04OSkuIiAiRmFzdEFQSSBSb3V0ZXJzIgoKICAgICAgICAgICAgICAgICMgSW50ZXJuYWwgQVBJIGJvdW5kYXJ5IChQaXBlbGluZSBXb3JrZXItZmFjaW5nKQogICAgICAgICAgICAgICAgaW50ZXJuYWxBUEkgPSBjb21wb25lbnQgIkludGVybmFsIEFQSSIgIlBpcGVsaW5lIFdvcmtlciB3cml0ZS1iYWNrIGVuZHBvaW50czogUE9TVCAvaW50ZXJuYWwvY29tcGxpYW5jZS1zbmFwc2hvdHMsIFBPU1QgL2ludGVybmFsL2VtcGxveWVyLXByb2ZpbGUtc25hcHNob3RzLiBBdXRoZW50aWNhdGVkIHZpYSBFZDI1NTE5IEpXVCAoQURSLTAwNCkuIFRyaWdnZXJzIHdlYmhvb2sgZGlzcGF0Y2ggb24gc25hcHNob3Qgd3JpdGUuIiAiRmFzdEFQSSBSb3V0ZXJzIgoKICAgICAgICAgICAgICAgICMgT3V0Ym91bmQgYWRhcHRlcnMKICAgICAgICAgICAgICAgIHNxc1Byb2R1Y2VyID0gY29tcG9uZW50ICJTUVMgUHJvZHVjZXIiICJFbnF1ZXVlcyBwaXBlbGluZSB0cmlnZ2VyIG1lc3NhZ2VzIHRvIHBpcGVsaW5lLXRyaWdnZXItcXVldWUuIEdlbmVyYXRlcyBpZGVtcG90ZW5jeSBrZXlzLiBUcmlnZ2VyZWQgYnkgZW1wbG95ZXIgcHJvZmlsZSBjcmVhdGlvbiBhbmQgcmVndWxhdGlvbiBhcHByb3ZhbC4iICJBZGFwdGVyIgogICAgICAgICAgICAgICAgd2ViaG9va0Rpc3BhdGNoZXIgPSBjb21wb25lbnQgIldlYmhvb2sgRGlzcGF0Y2hlciIgIkRlbGl2ZXJzIHNpZ25lZCB3ZWJob29rIGV2ZW50cyB0byBzdWJzY3JpYmVyIGNhbGxiYWNrIFVSTHMuIEVkMjU1MTkgcGF5bG9hZCBzaWduaW5nIChBRFItMDAxKS4gUmV0cnkgd2l0aCBleHBvbmVudGlhbCBiYWNrb2ZmICgxbSwgNW0sIDMwbSkuIERlYWQtbGV0dGVycyBhZnRlciAzIGZhaWx1cmVzLiIgIkFkYXB0ZXIiCgogICAgICAgICAgICAgICAgIyBEYXRhIGFjY2VzcwogICAgICAgICAgICAgICAgZGF0YUFjY2VzcyA9IGNvbXBvbmVudCAiRGF0YSBBY2Nlc3MgTGF5ZXIiICJTUUxBbGNoZW15IE9STS4gUmVhZC93cml0ZSBhY2Nlc3MgdG8gYWxsIGJ1c2luZXNzIHRhYmxlczogZW1wbG95ZXJfcHJvZmlsZXMsIHJlZ3VsYXRpb25zLCBjb21wbGlhbmNlX3NuYXBzaG90cywgY2xpZW50X3JlZ2lzdHJ5LCB3ZWJob29rX3N1YnNjcmlwdGlvbnMuIiAiU1FMQWxjaGVteSIKICAgICAgICAgICAgfQoKICAgICAgICAgICAgcGlwZWxpbmVXb3JrZXIgPSBjb250YWluZXIgIlBpcGVsaW5lIFdvcmtlciIgIkxvbmctcG9sbHMgU1FTIGZvciB0cmlnZ2VyIG1lc3NhZ2VzIChhbHdheXMtb24sIDEgcmVwbGljYSkuIFJ1bnMgY29tcGxpYW5jZSBjYWxjdWxhdGlvbnMgYW5kIHJlZ3VsYXRpb24gaW5nZXN0aW9uLiBXcml0ZXMgcmVzdWx0cyBiYWNrIHRocm91Z2ggQVBJIFNlcnZlciBpbnRlcm5hbCBlbmRwb2ludHMuIFJlYWRzIERCIGRpcmVjdGx5IGZvciBidWxrIGRhdGEgKEFEUi0wMDMpLiIgIlB5dGhvbiIKICAgICAgICAgICAgc3FzID0gY29udGFpbmVyICJTUVMgUXVldWUiICJwaXBlbGluZS10cmlnZ2VyLXF1ZXVlICsgZGVhZC1sZXR0ZXIgcXVldWUuIERlY291cGxlcyBBUEkgU2VydmVyIGZyb20gUGlwZWxpbmUgV29ya2VyIChBRFItMDAyKS4gTm8gY2FsbGJhY2sgcXVldWUgbmVlZGVkLiIgIkFXUyBTUVMiICJRdWV1ZSIKICAgICAgICAgICAgZGF0YWJhc2UgPSBjb250YWluZXIgIlBvc3RncmVTUUwiICJTdG9yZXMgZW1wbG95ZXIgcHJvZmlsZXMsIHJlZ3VsYXRpb25zLCBjb21wbGlhbmNlIHNuYXBzaG90cywgY2xpZW50IHJlZ2lzdHJ5LCB3ZWJob29rIHN1YnNjcmlwdGlvbnMsIHBpcGVsaW5lX2pvYnMuIiAiQVdTIFJEUyBQb3N0Z3JlU1FMIiAiRGF0YWJhc2UiCiAgICAgICAgfQoKICAgICAgICAjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQogICAgICAgICMgU3lzdGVtIENvbnRleHQgcmVsYXRpb25zaGlwcyAoTGV2ZWwgMSkKICAgICAgICAjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQogICAgICAgIGlyYWxvZ2l4IC0+IGxvZ2l4aWFuICJQdXNoZXMgZW1wbG95ZXIgcHJvZmlsZXMsIHF1ZXJpZXMgY29tcGxpYW5jZSBzbmFwc2hvdHMsIG1hbmFnZXMgc3Vic2NyaXB0aW9ucyIgIkhUVFBTICsgQXV0aDAgSldUIgogICAgICAgIGxvZ2l4aWFuIC0+IGlyYWxvZ2l4ICJEZWxpdmVycyB3ZWJob29rIGV2ZW50cyAocmVndWxhdGlvbiBjaGFuZ2VzLCBzbmFwc2hvdCB1cGRhdGVzLCBhbGVydHMpIiAiSFRUUFMgKyBFZDI1NTE5IgogICAgICAgIHN0YXRlUG9ydGFscyAtPiBsb2dpeGlhbiAiU2NyYXBlZCBmb3IgcmVndWxhdGlvbiBkYXRhICh3ZWVrbHkgaW5nZXN0aW9uKSIgIkhUVFBTIgogICAgICAgIGNvbXBsaWFuY2VUZWFtIC0+IGxvZ2l4aWFuICJSZXZpZXdzIGFuZCBhcHByb3Zlcy9yZWplY3RzIHBlbmRpbmcgcmVndWxhdGlvbnMiICJIVFRQUyAodmlhIElSQUxPR0lYIGRhc2hib2FyZCkiCiAgICAgICAgYXV0aDAgLT4gbG9naXhpYW4gIklzc3VlcyBKV1RzLCBwcm92aWRlcyBKV0tTIGZvciB2ZXJpZmljYXRpb24iICJIVFRQUyIKCiAgICAgICAgIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KICAgICAgICAjIENvbnRhaW5lciByZWxhdGlvbnNoaXBzIChMZXZlbCAyKQogICAgICAgICMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiAgICAgICAgIyBFeHRlcm5hbCAtPiBBUEkgU2VydmVyCiAgICAgICAgaXJhbG9naXggLT4gYXBpU2VydmVyICJBUEkgY2FsbHMgKGVtcGxveWVyIHByb2ZpbGVzLCByZWd1bGF0aW9ucywgc25hcHNob3RzLCBhZG1pbikiICJIVFRQUyArIEF1dGgwIEpXVCIKICAgICAgICBhcGlTZXJ2ZXIgLT4gaXJhbG9naXggIldlYmhvb2sgZXZlbnRzIChyZWd1bGF0aW9uLmNoYW5nZV9kZXRlY3RlZCwgY29tcGxpYW5jZS5zbmFwc2hvdF91cGRhdGVkLCBjb21wbGlhbmNlLmFsZXJ0KSIgIkhUVFBTICsgRWQyNTUxOSIKICAgICAgICBhdXRoMCAtPiBhcGlTZXJ2ZXIgIkpXS1MgZW5kcG9pbnQgZm9yIEpXVCB2ZXJpZmljYXRpb24iICJIVFRQUyIKICAgICAgICBjb21wbGlhbmNlVGVhbSAtPiBhcGlTZXJ2ZXIgIkFwcHJvdmUvcmVqZWN0IHBlbmRpbmcgcmVndWxhdGlvbnMiICJIVFRQUyIKCiAgICAgICAgIyBBUEkgU2VydmVyIDwtPiBTUVMgPC0+IFBpcGVsaW5lIFdvcmtlcgogICAgICAgIGFwaVNlcnZlciAtPiBzcXMgIkVucXVldWVzIHRyaWdnZXIgbWVzc2FnZXMgKHByb2ZpbGUgY3JlYXRlZCwgcmVndWxhdGlvbiBhcHByb3ZlZCkiICJBV1MgU0RLIgogICAgICAgIHBpcGVsaW5lV29ya2VyIC0+IHNxcyAiTG9uZy1wb2xscyBmb3IgdHJpZ2dlciBtZXNzYWdlcyIgIkFXUyBTREsiCgogICAgICAgICMgUGlwZWxpbmUgV29ya2VyIC0+IEFQSSBTZXJ2ZXIgKHdyaXRlLWJhY2ssIG5vIGNhbGxiYWNrIHF1ZXVlKQogICAgICAgIHBpcGVsaW5lV29ya2VyIC0+IGFwaVNlcnZlciAiV3JpdGVzIGNvbXBsaWFuY2Ugc25hcHNob3RzIHZpYSBpbnRlcm5hbCBlbmRwb2ludHMiICJIVFRQICsgRWQyNTUxOSBKV1QiCgogICAgICAgICMgREIgYWNjZXNzIChBRFItMDAzOiBoeWJyaWQpCiAgICAgICAgYXBpU2VydmVyIC0+IGRhdGFiYXNlICJGdWxsIHJlYWQvd3JpdGUgYWNjZXNzIiAiU1FMQWxjaGVteSIKICAgICAgICBwaXBlbGluZVdvcmtlciAtPiBkYXRhYmFzZSAiRGlyZWN0IHJlYWRzIG9ubHkgKGVtcGxveWVyIHByb2ZpbGVzLCByZWd1bGF0aW9ucykuIFdyaXRlcyBnbyB0aHJvdWdoIEFQSSBTZXJ2ZXIuIiAiU1FMQWxjaGVteSAocmVhZC1vbmx5KSIKCiAgICAgICAgIyBQaXBlbGluZSBXb3JrZXIgLT4gU3RhdGUgUG9ydGFscyAoaW5nZXN0aW9uKQogICAgICAgIHBpcGVsaW5lV29ya2VyIC0+IHN0YXRlUG9ydGFscyAiU2NyYXBlcyByZWd1bGF0aW9uIGRhdGEiICJIVFRQUyIKCiAgICAgICAgIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KICAgICAgICAjIENvbXBvbmVudCByZWxhdGlvbnNoaXBzIChMZXZlbCAzIC0gaW5zaWRlIEFQSSBTZXJ2ZXIpCiAgICAgICAgIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KICAgICAgICAjIEV4dGVybmFsIC0+IEF1dGggTWlkZGxld2FyZQogICAgICAgIGlyYWxvZ2l4IC0+IGF1dGhNaWRkbGV3YXJlICJTZW5kcyByZXF1ZXN0cyB3aXRoIEF1dGgwIEpXVCIgIkhUVFBTIgogICAgICAgIGF1dGgwIC0+IGF1dGhNaWRkbGV3YXJlICJKV0tTIGVuZHBvaW50IGZvciBKV1QgdmVyaWZpY2F0aW9uIiAiSFRUUFMiCgogICAgICAgICMgQXV0aCBNaWRkbGV3YXJlIC0+IEFQSSBib3VuZGFyaWVzCiAgICAgICAgYXV0aE1pZGRsZXdhcmUgLT4gZXh0ZXJuYWxBUEkgIkF1dGhlbnRpY2F0ZWQgZXh0ZXJuYWwgcmVxdWVzdCAoQXV0aDAgSldUICsgc2NvcGVzKSIgIiIKICAgICAgICBhdXRoTWlkZGxld2FyZSAtPiBpbnRlcm5hbEFQSSAiQXV0aGVudGljYXRlZCBpbnRlcm5hbCByZXF1ZXN0IChFZDI1NTE5IEpXVCkiICIiCgogICAgICAgICMgRXh0ZXJuYWwgQVBJIC0+IG91dGJvdW5kCiAgICAgICAgZXh0ZXJuYWxBUEkgLT4gc3FzUHJvZHVjZXIgIlRyaWdnZXJzIHJlY2FsY3VsYXRpb24gKHByb2ZpbGUgY3JlYXRlZCwgcmVndWxhdGlvbiBhcHByb3ZlZCkiICIiCiAgICAgICAgZXh0ZXJuYWxBUEkgLT4gZGF0YUFjY2VzcyAiUmVhZHMvd3JpdGVzIGJ1c2luZXNzIGRhdGEiICIiCiAgICAgICAgZXh0ZXJuYWxBUEkgLT4gd2ViaG9va0Rpc3BhdGNoZXIgIkVtaXRzIHJlZ3VsYXRpb24uY2hhbmdlX2RldGVjdGVkIGV2ZW50cyIgIiIKCiAgICAgICAgIyBJbnRlcm5hbCBBUEkgLT4gb3V0Ym91bmQKICAgICAgICBpbnRlcm5hbEFQSSAtPiBkYXRhQWNjZXNzICJQZXJzaXN0cyBjb21wbGlhbmNlIHNuYXBzaG90cyBmcm9tIFBpcGVsaW5lIFdvcmtlciIgIiIKICAgICAgICBpbnRlcm5hbEFQSSAtPiB3ZWJob29rRGlzcGF0Y2hlciAiRW1pdHMgY29tcGxpYW5jZS5zbmFwc2hvdF91cGRhdGVkIG9uIHNuYXBzaG90IHdyaXRlIiAiIgoKICAgICAgICAjIEFkYXB0ZXJzIC0+IGV4dGVybmFsIGNvbnRhaW5lcnMKICAgICAgICBzcXNQcm9kdWNlciAtPiBzcXMgIlNlbmRzIHRyaWdnZXIgbWVzc2FnZXMiICJBV1MgU0RLIgogICAgICAgIHdlYmhvb2tEaXNwYXRjaGVyIC0+IGlyYWxvZ2l4ICJEZWxpdmVycyBzaWduZWQgd2ViaG9vayBldmVudHMiICJIVFRQUyArIEVkMjU1MTkiCiAgICAgICAgZGF0YUFjY2VzcyAtPiBkYXRhYmFzZSAiU1FMIHF1ZXJpZXMiICJTUUxBbGNoZW15IgoKICAgICAgICAjIFBpcGVsaW5lIFdvcmtlciAtPiBBdXRoIE1pZGRsZXdhcmUgKGludGVybmFsIHdyaXRlLWJhY2spCiAgICAgICAgcGlwZWxpbmVXb3JrZXIgLT4gYXV0aE1pZGRsZXdhcmUgIldyaXRlcyBjb21wbGlhbmNlIHNuYXBzaG90cyIgIkhUVFAgKyBFZDI1NTE5IEpXVCIKICAgICAgICBwaXBlbGluZVdvcmtlciAtPiBzcXMgIlBvbGxzIGZvciB0cmlnZ2VyIG1lc3NhZ2VzIiAiQVdTIFNESyIKICAgICAgICBwaXBlbGluZVdvcmtlciAtPiBkYXRhYmFzZSAiRGlyZWN0IHJlYWRzIChlbXBsb3llciBwcm9maWxlcywgcmVndWxhdGlvbnMpIiAiU1FMQWxjaGVteSAocmVhZC1vbmx5KSIKICAgIH0KCiAgICB2aWV3cyB7CiAgICAgICAgIyBMZXZlbCAxOiBTeXN0ZW0gQ29udGV4dAogICAgICAgIHN5c3RlbUNvbnRleHQgbG9naXhpYW4gIlN5c3RlbUNvbnRleHQiIHsKICAgICAgICAgICAgaW5jbHVkZSAqCiAgICAgICAgICAgIGF1dG9MYXlvdXQgdGIgNDAwIDIwMAogICAgICAgIH0KCiAgICAgICAgIyBMZXZlbCAyOiBDb250YWluZXIKICAgICAgICBjb250YWluZXIgbG9naXhpYW4gIkNvbnRhaW5lcnMiIHsKICAgICAgICAgICAgaW5jbHVkZSAqCiAgICAgICAgICAgIGF1dG9MYXlvdXQgbHIgNDAwIDIwMAogICAgICAgIH0KCiAgICAgICAgIyBMZXZlbCAzOiBDb21wb25lbnQgKEFQSSBTZXJ2ZXIgaW50ZXJuYWxzKQogICAgICAgIGNvbXBvbmVudCBhcGlTZXJ2ZXIgIkFQSVNlcnZlckNvbXBvbmVudHMiIHsKICAgICAgICAgICAgaW5jbHVkZSAqCiAgICAgICAgICAgIGF1dG9MYXlvdXQgbHIgMzAwIDEwMAogICAgICAgIH0KCiAgICAgICAgc3R5bGVzIHsKICAgICAgICAgICAgZWxlbWVudCAiU29mdHdhcmUgU3lzdGVtIiB7CiAgICAgICAgICAgICAgICBiYWNrZ3JvdW5kICMxMTY4QkQKICAgICAgICAgICAgICAgIGNvbG9yICNmZmZmZmYKICAgICAgICAgICAgICAgIHNoYXBlIFJvdW5kZWRCb3gKICAgICAgICAgICAgfQogICAgICAgICAgICBlbGVtZW50ICJFeHRlcm5hbCIgewogICAgICAgICAgICAgICAgYmFja2dyb3VuZCAjOTk5OTk5CiAgICAgICAgICAgICAgICBjb2xvciAjZmZmZmZmCiAgICAgICAgICAgIH0KICAgICAgICAgICAgZWxlbWVudCAiUGVyc29uIiB7CiAgICAgICAgICAgICAgICBiYWNrZ3JvdW5kICMwODQyN0IKICAgICAgICAgICAgICAgIGNvbG9yICNmZmZmZmYKICAgICAgICAgICAgICAgIHNoYXBlIFBlcnNvbgogICAgICAgICAgICB9CiAgICAgICAgICAgIGVsZW1lbnQgIkNvbnRhaW5lciIgewogICAgICAgICAgICAgICAgYmFja2dyb3VuZCAjNDM4REQ1CiAgICAgICAgICAgICAgICBjb2xvciAjZmZmZmZmCiAgICAgICAgICAgIH0KICAgICAgICAgICAgZWxlbWVudCAiQ29tcG9uZW50IiB7CiAgICAgICAgICAgICAgICBiYWNrZ3JvdW5kICM4NUJCRjAKICAgICAgICAgICAgICAgIGNvbG9yICMwMDAwMDAKICAgICAgICAgICAgfQogICAgICAgICAgICBlbGVtZW50ICJEYXRhYmFzZSIgewogICAgICAgICAgICAgICAgc2hhcGUgQ3lsaW5kZXIKICAgICAgICAgICAgfQogICAgICAgICAgICBlbGVtZW50ICJRdWV1ZSIgewogICAgICAgICAgICAgICAgc2hhcGUgUGlwZQogICAgICAgICAgICB9CiAgICAgICAgICAgIGVsZW1lbnQgIkFkYXB0ZXIiIHsKICAgICAgICAgICAgICAgIGJhY2tncm91bmQgI0Y1REE4MQogICAgICAgICAgICAgICAgY29sb3IgIzAwMDAwMAogICAgICAgICAgICB9CiAgICAgICAgICAgIGVsZW1lbnQgIlNRTEFsY2hlbXkiIHsKICAgICAgICAgICAgICAgIGJhY2tncm91bmQgI0MzRTZDQgogICAgICAgICAgICAgICAgY29sb3IgIzAwMDAwMAogICAgICAgICAgICB9CiAgICAgICAgICAgIGVsZW1lbnQgIkZhc3RBUEkgUm91dGVycyIgewogICAgICAgICAgICAgICAgYmFja2dyb3VuZCAjODVCQkYwCiAgICAgICAgICAgIH0KICAgICAgICAgICAgZWxlbWVudCAiRmFzdEFQSSBNaWRkbGV3YXJlIiB7CiAgICAgICAgICAgICAgICBiYWNrZ3JvdW5kICNENEE1RjUKICAgICAgICAgICAgICAgIGNvbG9yICMwMDAwMDAKICAgICAgICAgICAgfQogICAgICAgIH0KICAgIH0KCn0=",
+    "structurizr.inspection.info" : "0",
+    "structurizr.inspection.ignore" : "0",
+    "structurizr.inspection.warning" : "0"
+  },
+  "views" : {
+    "componentViews" : [ {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 100,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 300,
+        "vertices" : true
+      },
+      "containerId" : "6",
+      "elements" : [ {
+        "id" : "1",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "2",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "7",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "8",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "9",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "10",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "11",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "12",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "13",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "14",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "15",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalContainerBoundariesVisible" : false,
+      "key" : "APIServerComponents",
+      "name" : "Component View: Logixian Compliance Engine - API Server",
+      "order" : 3,
+      "relationships" : [ {
+        "id" : "26"
+      }, {
+        "id" : "29"
+      }, {
+        "id" : "32"
+      }, {
+        "id" : "33"
+      }, {
+        "id" : "34"
+      }, {
+        "id" : "35"
+      }, {
+        "id" : "36"
+      }, {
+        "id" : "37"
+      }, {
+        "id" : "38"
+      }, {
+        "id" : "39"
+      }, {
+        "id" : "40"
+      }, {
+        "id" : "41"
+      }, {
+        "id" : "42"
+      }, {
+        "id" : "43"
+      }, {
+        "id" : "44"
+      }, {
+        "id" : "45"
+      }, {
+        "id" : "46"
+      } ]
+    } ],
+    "configuration" : {
+      "styles" : {
+        "elements" : [ {
+          "background" : "#f5da81",
+          "color" : "#000000",
+          "tag" : "Adapter"
+        }, {
+          "background" : "#85bbf0",
+          "color" : "#000000",
+          "tag" : "Component"
+        }, {
+          "background" : "#438dd5",
+          "color" : "#ffffff",
+          "tag" : "Container"
+        }, {
+          "shape" : "Cylinder",
+          "tag" : "Database"
+        }, {
+          "background" : "#999999",
+          "color" : "#ffffff",
+          "tag" : "External"
+        }, {
+          "background" : "#d4a5f5",
+          "color" : "#000000",
+          "tag" : "FastAPI Middleware"
+        }, {
+          "background" : "#85bbf0",
+          "tag" : "FastAPI Routers"
+        }, {
+          "background" : "#08427b",
+          "color" : "#ffffff",
+          "shape" : "Person",
+          "tag" : "Person"
+        }, {
+          "shape" : "Pipe",
+          "tag" : "Queue"
+        }, {
+          "background" : "#c3e6cb",
+          "color" : "#000000",
+          "tag" : "SQLAlchemy"
+        }, {
+          "background" : "#1168bd",
+          "color" : "#ffffff",
+          "shape" : "RoundedBox",
+          "tag" : "Software System"
+        } ]
+      },
+      "terminology" : { }
+    },
+    "containerViews" : [ {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 200,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 400,
+        "vertices" : true
+      },
+      "elements" : [ {
+        "id" : "1",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "2",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "3",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "4",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "6",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "13",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "14",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "15",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalSoftwareSystemBoundariesVisible" : false,
+      "key" : "Containers",
+      "name" : "Container View: Logixian Compliance Engine",
+      "order" : 2,
+      "relationships" : [ {
+        "id" : "21"
+      }, {
+        "id" : "22"
+      }, {
+        "id" : "23"
+      }, {
+        "id" : "24"
+      }, {
+        "id" : "25"
+      }, {
+        "id" : "26"
+      }, {
+        "id" : "27"
+      }, {
+        "id" : "28"
+      }, {
+        "id" : "29"
+      }, {
+        "id" : "30"
+      }, {
+        "id" : "45"
+      }, {
+        "id" : "46"
+      } ],
+      "softwareSystemId" : "5"
+    } ],
+    "systemContextViews" : [ {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 200,
+        "rankDirection" : "TopBottom",
+        "rankSeparation" : 400,
+        "vertices" : true
+      },
+      "elements" : [ {
+        "id" : "1",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "2",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "3",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "4",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "5",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "enterpriseBoundaryVisible" : true,
+      "key" : "SystemContext",
+      "name" : "System Context View: Logixian Compliance Engine",
+      "order" : 1,
+      "relationships" : [ {
+        "id" : "16"
+      }, {
+        "id" : "17"
+      }, {
+        "id" : "18"
+      }, {
+        "id" : "19"
+      }, {
+        "id" : "20"
+      }, {
+        "id" : "31"
+      } ],
+      "softwareSystemId" : "5"
+    } ]
+  }
+}
