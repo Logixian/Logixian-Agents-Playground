@@ -2,7 +2,7 @@
 name: pr
 description: Push the current branch and open a pull request into main
 user-invocable: true
-disable-model-invocation: true
+disable-model-invocation: false
 allowed-tools:
   - Bash(git status:*)
   - Bash(git branch:*)
