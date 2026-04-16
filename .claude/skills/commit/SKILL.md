@@ -2,7 +2,7 @@
 name: commit
 description: Stage and commit changes following logixian-agents conventional commit conventions
 user-invocable: true
-disable-model-invocation: true
+disable-model-invocation: false
 allowed-tools:
   - Bash(git add:*)
   - Bash(git status:*)

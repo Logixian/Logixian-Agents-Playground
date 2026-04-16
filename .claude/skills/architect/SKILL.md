@@ -31,6 +31,8 @@ Read these files at the start of every architect session:
 | `docs/state-market-brief.md` | Per-state rules: eligibility, deadlines, penalties |
 | `.claude/skills/architect/ref/L16-agile-architecture.md` | ADD 3.0, ACDM, agile architecture design process — use when structuring design work or scoping architecture tickets |
 | `.claude/skills/architect/ref/L17-documentation.md` | Views (module, C&C, allocation), interface specs, hierarchy, UML conventions — use when deciding what artifacts a design ticket should produce |
+| `.claude/skills/architect/ref/adr-nygard-template.md` | Nygard ADR template, when-to-write criteria, core rationale — use when drafting or reviewing ADRs |
+| `.claude/skills/architect/ref/adr-in-practice-keeling.md` | Keeling guest lecture: decision cycle, contextual forces, alternative formats (Y-Decision, MADR), review checklist, team adoption — use for ADR quality review and coaching |
 
 ## Live Context (fetch via MCP)
 
@@ -52,6 +54,9 @@ When invoked without arguments, enter ADR drafting mode.
 
 ### ADR Format
 
+Use the Nygard template (see `ref/adr-nygard-template.md` for full rationale and when-to-write criteria).
+Consult `ref/adr-in-practice-keeling.md` for the review checklist and consequence quality bar.
+
 ```
 # ADR-XXX: <Title>
 
@@ -59,19 +64,23 @@ When invoked without arguments, enter ADR drafting mode.
 Proposed | Accepted | Deprecated | Superseded by ADR-XXX
 
 ## Context
-<What is the situation forcing a decision? What constraints exist?>
+<Forces at play — technical, business, political, social. Written neutrally.
+ Reference architecture drivers, quality attribute scenarios, and constraints.>
 
 ## Decision
-<What was decided, stated in active voice.>
+We will <decision in active voice>.
 
 ## Options Considered
 1. **Option A** — <brief description> — Pro: ... / Con: ...
 2. **Option B** — <brief description> — Pro: ... / Con: ...
 
 ## Consequences
+<3-5+ consequences — positive, negative, AND neutral. Go beyond the obvious.
+ Call out which quality attributes are promoted or inhibited.>
 - <What becomes easier?>
 - <What becomes harder or riskier?>
 - <Any compliance or integration impact?>
+- <Follow-up work or new constraints introduced?>
 ```
 
 ### ADR Drafting Steps

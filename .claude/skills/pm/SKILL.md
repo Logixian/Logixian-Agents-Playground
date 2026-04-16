@@ -126,6 +126,7 @@ Set in `additional_fields` as: `"customfield_10171": {"id": "<option_id>"}` and 
 | 4. SDLC Approach (Confluence) | Page ID `2916361` | Agile process, scrum conventions, task management practices |
 | Meeting Notes folder (Confluence) | Folder ID `2097153` | All meeting pages (client, internal, mentor) |
 | Weekly Digest folder (Confluence) | Folder ID `114294785` | Published weekly digest pages |
+| Retrospectives folder (Confluence) | Folder ID `102563841` | Sprint retrospective pages (e.g., `Retrospective: Sprint N`) |
 
 **WBS Milestone Summary:**
 - M1 — Requirements & Architecture Foundation — Due: End of Feb (complete)
@@ -258,6 +259,36 @@ Reads meeting pages from this week (and optionally the latest digest) to propose
 
 ---
 
+## Retrospective
+
+### `/pm retro` — Review the latest sprint retrospective and propose follow-up actions
+
+Reads the most recent retrospective from the Retrospectives folder (`102563841`) and converts Start/Stop/Keep items and action items into Jira tickets or SDLC updates.
+
+**Data sources:**
+1. Search for retrospective pages using CQL: `parent = "102563841" ORDER BY created DESC`
+2. Fetch the most recent page (or a specific sprint if the user names one)
+3. Fetch current sprint tickets to check for overlap before proposing new tickets
+
+**Process:**
+1. Extract the retro's **Start doing**, **Stop doing**, **Keep doing**, and **Action items** sections
+2. For each actionable item, classify as:
+   - **CREATE** — new Jira ticket (use Shared Field Conventions; prefer Clockify `Project/Risk Planning and Management` for process improvements, `Software Engineering System Development` for tooling)
+   - **SDLC UPDATE** — propose an update to the SDLC Approach page (`2916361`)
+   - **RISK** — new entry for the Risk Register (`89325569`)
+   - **NO ACTION** — cultural/team behavior, no artifact needed (still surface it)
+3. Present the full action list grouped by classification
+4. Ask: "Apply all? Or select by number? (all / 1,3,5 / edit / cancel)"
+5. On confirmation, execute selected actions
+
+### `/pm retro new` — Create a retrospective page for the current sprint
+
+1. Determine current sprint number from active Jira sprint
+2. Create a new page under folder `102563841` titled `Retrospective: Sprint <N>` using the existing retro template (copy structure from the most recent retro)
+3. Ask for confirmation before publishing
+
+---
+
 ## Weekly Digest
 
 ### `/pm digest` — Generate and publish a weekly status digest
@@ -268,7 +299,8 @@ Combines all project signals into a single weekly summary. Published as a Conflu
 1. **Jira sprint state** — fetch open sprint tickets, group by status
 2. **WBS coverage** — fetch WBS (page `89489409`), cross-reference with Jira tickets to produce a coverage table (WBS item → ticket → status)
 3. **Meeting outcomes** — search for meeting pages created this week in the Meeting Notes folder (folder `2097153`) using CQL: `ancestor = 2097153 AND created >= "<monday-of-week>"`. Extract key decisions from each.
-4. **Risk register** — fetch page `89325569`, surface open risks
+4. **Retrospective** — if a sprint boundary falls within this week, fetch the latest page from the Retrospectives folder (`102563841`) using CQL: `parent = "102563841" ORDER BY created DESC`. Surface the Start/Stop/Keep highlights and any action items in a dedicated section.
+5. **Risk register** — fetch page `89325569`, surface open risks
 
 **Output format:**
 
@@ -344,6 +376,8 @@ Every ticket, Confluence page, or external reference in the digest MUST be a cli
 | `/pm ticket new` | Create a new ticket interactively |
 | `/pm ticket draft <goal>` | Draft a ticket from a goal description |
 | `/pm plan` | Propose Jira actions (create/update/assign) from this week's meetings |
+| `/pm retro` | Review the latest sprint retrospective and propose follow-up actions (tickets, SDLC updates, risks) |
+| `/pm retro new` | Create a retrospective page for the current sprint from the template |
 | `/pm digest` | Generate weekly status digest and publish to Confluence |
 | `/pm sdlc` | Read the SDLC Approach page and summarize current practices |
 | `/pm sdlc update` | Propose updates to the SDLC Approach page (scrum process, task conventions, etc.) — confirm before writing back |
