@@ -1,0 +1,1452 @@
+{
+  "configuration" : { },
+  "description" : "Logixian Compliance Engine",
+  "documentation" : { },
+  "id" : 1,
+  "lastModifiedDate" : "2026-04-23T21:00:20Z",
+  "model" : {
+    "deploymentNodes" : [ {
+      "children" : [ {
+        "containerInstances" : [ {
+          "containerId" : "23",
+          "deploymentGroups" : [ "Default" ],
+          "environment" : "Production",
+          "id" : "84",
+          "instanceId" : 1,
+          "properties" : {
+            "structurizr.dsl.identifier" : "production.3f45cdb5-505c-4eca-a6e9-e427d0ac38ca.6319619e-a2d2-4cac-9cd8-d510bcbcc38a.s3Instance"
+          },
+          "tags" : "Container Instance"
+        } ],
+        "environment" : "Production",
+        "id" : "83",
+        "instances" : "1",
+        "name" : "S3",
+        "properties" : {
+          "structurizr.dsl.identifier" : "production.3f45cdb5-505c-4eca-a6e9-e427d0ac38ca.6319619e-a2d2-4cac-9cd8-d510bcbcc38a"
+        },
+        "tags" : "Element,Deployment Node"
+      }, {
+        "containerInstances" : [ {
+          "containerId" : "12",
+          "deploymentGroups" : [ "Default" ],
+          "environment" : "Production",
+          "id" : "86",
+          "instanceId" : 1,
+          "properties" : {
+            "structurizr.dsl.identifier" : "production.3f45cdb5-505c-4eca-a6e9-e427d0ac38ca.1ac3f822-33e7-484b-97cc-b33f5df23b4c.messagingQueueInstance"
+          },
+          "relationships" : [ {
+            "description" : "Delivers Phase 2 calculation triggers. KEDA ScaledObject scales 0→N on queue depth.",
+            "destinationId" : "98",
+            "id" : "100",
+            "linkedRelationshipId" : "41",
+            "sourceId" : "86",
+            "technology" : "SQS ReceiveMessage"
+          } ],
+          "tags" : "Container Instance"
+        } ],
+        "environment" : "Production",
+        "id" : "85",
+        "instances" : "1",
+        "name" : "SQS (Phase 2 triggers only)",
+        "properties" : {
+          "structurizr.dsl.identifier" : "production.3f45cdb5-505c-4eca-a6e9-e427d0ac38ca.1ac3f822-33e7-484b-97cc-b33f5df23b4c"
+        },
+        "tags" : "Element,Deployment Node"
+      }, {
+        "environment" : "Production",
+        "id" : "87",
+        "infrastructureNodes" : [ {
+          "description" : "LLM-1 + LLM-2 invocation endpoints",
+          "environment" : "Production",
+          "id" : "88",
+          "name" : "AWS Bedrock Runtime",
+          "properties" : {
+            "structurizr.dsl.identifier" : "production.3f45cdb5-505c-4eca-a6e9-e427d0ac38ca.af973542-b0e3-499e-ad06-371c86a57a60.bedrockRef"
+          },
+          "tags" : "Element,Infrastructure Node",
+          "technology" : "AWS Bedrock"
+        } ],
+        "instances" : "1",
+        "name" : "Bedrock (managed LLM)",
+        "properties" : {
+          "structurizr.dsl.identifier" : "production.3f45cdb5-505c-4eca-a6e9-e427d0ac38ca.af973542-b0e3-499e-ad06-371c86a57a60"
+        },
+        "tags" : "Element,Deployment Node"
+      }, {
+        "children" : [ {
+          "environment" : "Production",
+          "id" : "90",
+          "infrastructureNodes" : [ {
+            "description" : "HTTPS termination",
+            "environment" : "Production",
+            "id" : "91",
+            "name" : "Application Load Balancer",
+            "properties" : {
+              "structurizr.dsl.identifier" : "production.3f45cdb5-505c-4eca-a6e9-e427d0ac38ca.2d1e130b-2079-49d7-a4cd-7b96405c3c82.f06d27ac-ca1d-43c1-97b3-93ce5e6efb41.alb"
+            },
+            "tags" : "Element,Infrastructure Node",
+            "technology" : "AWS ALB"
+          } ],
+          "instances" : "1",
+          "name" : "Public Subnet",
+          "properties" : {
+            "structurizr.dsl.identifier" : "production.3f45cdb5-505c-4eca-a6e9-e427d0ac38ca.2d1e130b-2079-49d7-a4cd-7b96405c3c82.f06d27ac-ca1d-43c1-97b3-93ce5e6efb41"
+          },
+          "tags" : "Element,Deployment Node"
+        }, {
+          "children" : [ {
+            "children" : [ {
+              "containerInstances" : [ {
+                "containerId" : "5",
+                "deploymentGroups" : [ "Default" ],
+                "environment" : "Production",
+                "id" : "95",
+                "instanceId" : 1,
+                "properties" : {
+                  "structurizr.dsl.identifier" : "production.3f45cdb5-505c-4eca-a6e9-e427d0ac38ca.2d1e130b-2079-49d7-a4cd-7b96405c3c82.3883d915-38f0-43c8-8d8a-61558d1d8cc0.1a47ee31-58e2-4af9-b1ef-b59661b5a6f0.6f56abfb-b0c5-49af-9767-74a419225808.apiServerInstance"
+                },
+                "relationships" : [ {
+                  "description" : "Publishes Phase 2 calculation triggers (one message per state × rule_version × client)",
+                  "destinationId" : "86",
+                  "id" : "96",
+                  "linkedRelationshipId" : "37",
+                  "sourceId" : "95",
+                  "technology" : "SQS SendMessage"
+                }, {
+                  "description" : "Reads/writes business data",
+                  "destinationId" : "108",
+                  "id" : "109",
+                  "linkedRelationshipId" : "38",
+                  "sourceId" : "95",
+                  "technology" : "PostgreSQL protocol"
+                } ],
+                "tags" : "Container Instance"
+              } ],
+              "environment" : "Production",
+              "id" : "94",
+              "instances" : "1",
+              "name" : "API Server (Deployment, HPA 2–4)",
+              "properties" : {
+                "structurizr.dsl.identifier" : "production.3f45cdb5-505c-4eca-a6e9-e427d0ac38ca.2d1e130b-2079-49d7-a4cd-7b96405c3c82.3883d915-38f0-43c8-8d8a-61558d1d8cc0.1a47ee31-58e2-4af9-b1ef-b59661b5a6f0.6f56abfb-b0c5-49af-9767-74a419225808"
+              },
+              "tags" : "Element,Deployment Node"
+            }, {
+              "containerInstances" : [ {
+                "containerId" : "14",
+                "deploymentGroups" : [ "Default" ],
+                "environment" : "Production",
+                "id" : "98",
+                "instanceId" : 1,
+                "properties" : {
+                  "structurizr.dsl.identifier" : "production.3f45cdb5-505c-4eca-a6e9-e427d0ac38ca.2d1e130b-2079-49d7-a4cd-7b96405c3c82.3883d915-38f0-43c8-8d8a-61558d1d8cc0.1a47ee31-58e2-4af9-b1ef-b59661b5a6f0.8dd8651a-7aae-4a11-a176-add9b2517503.pipelineWorkerInstance"
+                },
+                "relationships" : [ {
+                  "description" : "Writes raw scraped content with provenance; reads prior object for content-hash diff",
+                  "destinationId" : "84",
+                  "id" : "99",
+                  "linkedRelationshipId" : "46",
+                  "sourceId" : "98",
+                  "technology" : "S3 API"
+                }, {
+                  "description" : "Writes staged regulations (Phase 1), compliance snapshots (Phase 2), compliance alerts (daily scan)",
+                  "destinationId" : "95",
+                  "id" : "101",
+                  "linkedRelationshipId" : "48",
+                  "sourceId" : "98",
+                  "technology" : "HTTP + Ed25519 JWT"
+                }, {
+                  "description" : "Direct reads (employer profiles, approved regulations, compliance_snapshots, alert_events)",
+                  "destinationId" : "108",
+                  "id" : "110",
+                  "linkedRelationshipId" : "47",
+                  "sourceId" : "98",
+                  "technology" : "PostgreSQL protocol"
+                } ],
+                "tags" : "Container Instance"
+              } ],
+              "environment" : "Production",
+              "id" : "97",
+              "instances" : "1",
+              "name" : "Pipeline Worker (KEDA ScaledObject, 0–N)",
+              "properties" : {
+                "structurizr.dsl.identifier" : "production.3f45cdb5-505c-4eca-a6e9-e427d0ac38ca.2d1e130b-2079-49d7-a4cd-7b96405c3c82.3883d915-38f0-43c8-8d8a-61558d1d8cc0.1a47ee31-58e2-4af9-b1ef-b59661b5a6f0.8dd8651a-7aae-4a11-a176-add9b2517503"
+              },
+              "tags" : "Element,Deployment Node"
+            }, {
+              "containerInstances" : [ {
+                "containerId" : "13",
+                "deploymentGroups" : [ "Default" ],
+                "environment" : "Production",
+                "id" : "103",
+                "instanceId" : 1,
+                "properties" : {
+                  "structurizr.dsl.identifier" : "production.3f45cdb5-505c-4eca-a6e9-e427d0ac38ca.2d1e130b-2079-49d7-a4cd-7b96405c3c82.3883d915-38f0-43c8-8d8a-61558d1d8cc0.1a47ee31-58e2-4af9-b1ef-b59661b5a6f0.b77e83e7-2570-475b-a496-5cf5ffe3d8f9.cronInstance"
+                },
+                "relationships" : [ {
+                  "description" : "Weekly Phase 1 ingestion run (K8s CronJob creates worker pod)",
+                  "destinationId" : "98",
+                  "id" : "104",
+                  "linkedRelationshipId" : "39",
+                  "sourceId" : "103"
+                }, {
+                  "description" : "Daily alert-scan run (K8s CronJob creates worker pod)",
+                  "destinationId" : "98",
+                  "id" : "105",
+                  "linkedRelationshipId" : "40",
+                  "sourceId" : "103"
+                } ],
+                "tags" : "Container Instance"
+              } ],
+              "environment" : "Production",
+              "id" : "102",
+              "instances" : "1",
+              "name" : "K8s CronJobs (weekly ingest + daily alert scan)",
+              "properties" : {
+                "structurizr.dsl.identifier" : "production.3f45cdb5-505c-4eca-a6e9-e427d0ac38ca.2d1e130b-2079-49d7-a4cd-7b96405c3c82.3883d915-38f0-43c8-8d8a-61558d1d8cc0.1a47ee31-58e2-4af9-b1ef-b59661b5a6f0.b77e83e7-2570-475b-a496-5cf5ffe3d8f9"
+              },
+              "tags" : "Element,Deployment Node"
+            } ],
+            "environment" : "Production",
+            "id" : "93",
+            "instances" : "1",
+            "name" : "EKS Kubernetes Cluster",
+            "properties" : {
+              "structurizr.dsl.identifier" : "production.3f45cdb5-505c-4eca-a6e9-e427d0ac38ca.2d1e130b-2079-49d7-a4cd-7b96405c3c82.3883d915-38f0-43c8-8d8a-61558d1d8cc0.1a47ee31-58e2-4af9-b1ef-b59661b5a6f0"
+            },
+            "tags" : "Element,Deployment Node"
+          }, {
+            "children" : [ {
+              "containerInstances" : [ {
+                "containerId" : "22",
+                "deploymentGroups" : [ "Default" ],
+                "environment" : "Production",
+                "id" : "108",
+                "instanceId" : 1,
+                "properties" : {
+                  "structurizr.dsl.identifier" : "production.3f45cdb5-505c-4eca-a6e9-e427d0ac38ca.2d1e130b-2079-49d7-a4cd-7b96405c3c82.3883d915-38f0-43c8-8d8a-61558d1d8cc0.bd4166e9-fdad-42ef-a0d2-6887d32a73a6.c6f34d80-dae6-4412-9732-e605a8b1fe21.dbInstance"
+                },
+                "tags" : "Container Instance"
+              } ],
+              "environment" : "Production",
+              "id" : "107",
+              "instances" : "1",
+              "name" : "PostgreSQL 17",
+              "properties" : {
+                "structurizr.dsl.identifier" : "production.3f45cdb5-505c-4eca-a6e9-e427d0ac38ca.2d1e130b-2079-49d7-a4cd-7b96405c3c82.3883d915-38f0-43c8-8d8a-61558d1d8cc0.bd4166e9-fdad-42ef-a0d2-6887d32a73a6.c6f34d80-dae6-4412-9732-e605a8b1fe21"
+              },
+              "tags" : "Element,Deployment Node"
+            } ],
+            "environment" : "Production",
+            "id" : "106",
+            "instances" : "1",
+            "name" : "Amazon RDS",
+            "properties" : {
+              "structurizr.dsl.identifier" : "production.3f45cdb5-505c-4eca-a6e9-e427d0ac38ca.2d1e130b-2079-49d7-a4cd-7b96405c3c82.3883d915-38f0-43c8-8d8a-61558d1d8cc0.bd4166e9-fdad-42ef-a0d2-6887d32a73a6"
+            },
+            "tags" : "Element,Deployment Node"
+          } ],
+          "environment" : "Production",
+          "id" : "92",
+          "instances" : "1",
+          "name" : "Private Subnet",
+          "properties" : {
+            "structurizr.dsl.identifier" : "production.3f45cdb5-505c-4eca-a6e9-e427d0ac38ca.2d1e130b-2079-49d7-a4cd-7b96405c3c82.3883d915-38f0-43c8-8d8a-61558d1d8cc0"
+          },
+          "tags" : "Element,Deployment Node"
+        } ],
+        "environment" : "Production",
+        "id" : "89",
+        "instances" : "1",
+        "name" : "VPC: logixian-vpc",
+        "properties" : {
+          "structurizr.dsl.identifier" : "production.3f45cdb5-505c-4eca-a6e9-e427d0ac38ca.2d1e130b-2079-49d7-a4cd-7b96405c3c82"
+        },
+        "tags" : "Element,Deployment Node"
+      } ],
+      "environment" : "Production",
+      "id" : "82",
+      "instances" : "1",
+      "name" : "AWS Cloud",
+      "properties" : {
+        "structurizr.dsl.identifier" : "production.3f45cdb5-505c-4eca-a6e9-e427d0ac38ca"
+      },
+      "tags" : "Element,Deployment Node,Amazon Web Services"
+    } ],
+    "people" : [ {
+      "description" : "Compliance staff with strong experience in regulatory rules.",
+      "id" : "1",
+      "name" : "IRALOGIX Compliance Team",
+      "properties" : {
+        "structurizr.dsl.identifier" : "iralogixCT"
+      },
+      "relationships" : [ {
+        "description" : "Reviews/Approves/Rejects regulation",
+        "destinationId" : "24",
+        "id" : "28",
+        "sourceId" : "1",
+        "tags" : "Relationship"
+      } ],
+      "tags" : "Element,Person,Indirect"
+    }, {
+      "description" : "Administrative staff responsible for managing system.",
+      "id" : "2",
+      "name" : "IRALOGIX Admin Team",
+      "properties" : {
+        "structurizr.dsl.identifier" : "iralogixAdmin"
+      },
+      "relationships" : [ {
+        "description" : "Registers and manages IRALOGIX users",
+        "destinationId" : "24",
+        "id" : "29",
+        "sourceId" : "2",
+        "tags" : "Relationship"
+      } ],
+      "tags" : "Element,Person,Indirect"
+    }, {
+      "description" : "Handles employer onboarding and relays compliance results to employers.",
+      "id" : "3",
+      "name" : "IRALOGIX Customer Team",
+      "properties" : {
+        "structurizr.dsl.identifier" : "iralogixCustomer"
+      },
+      "relationships" : [ {
+        "description" : "Onboards employer accounts; relays compliance results to employers",
+        "destinationId" : "24",
+        "id" : "30",
+        "sourceId" : "3",
+        "tags" : "Relationship"
+      } ],
+      "tags" : "Element,Person,Indirect"
+    } ],
+    "softwareSystems" : [ {
+      "containers" : [ {
+        "components" : [ {
+          "description" : "Validates external Auth0 JWTs and internal Ed25519 JWTs; resolves scopes.",
+          "documentation" : { },
+          "id" : "6",
+          "name" : "Auth Middleware",
+          "properties" : {
+            "structurizr.dsl.identifier" : "lce.apiServer.authMiddleware"
+          },
+          "relationships" : [ {
+            "description" : "Authenticated external request (Auth0 JWT + scopes)",
+            "destinationId" : "7",
+            "id" : "53",
+            "sourceId" : "6",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Authenticated internal request (Ed25519 JWT)",
+            "destinationId" : "8",
+            "id" : "54",
+            "sourceId" : "6",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Looks up client registry (enabled flag + scopes) for authorization",
+            "destinationId" : "11",
+            "id" : "55",
+            "sourceId" : "6",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "FastAPI Middleware"
+        }, {
+          "description" : "IRALOGIX-facing route handlers (Auth0 JWT, scoped).",
+          "documentation" : { },
+          "id" : "7",
+          "name" : "External API",
+          "properties" : {
+            "structurizr.dsl.identifier" : "lce.apiServer.externalAPI"
+          },
+          "relationships" : [ {
+            "description" : "Fans out Phase 2 triggers on regulation approval or employer profile update",
+            "destinationId" : "9",
+            "id" : "56",
+            "sourceId" : "7",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Reads/writes business data",
+            "destinationId" : "11",
+            "id" : "57",
+            "sourceId" : "7",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Emits regulation.change_detected on state transition",
+            "destinationId" : "10",
+            "id" : "58",
+            "sourceId" : "7",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "FastAPI Routers"
+        }, {
+          "description" : "Write-back route handlers for the Pipeline Worker (Ed25519 JWT).",
+          "documentation" : { },
+          "id" : "8",
+          "name" : "Internal API",
+          "properties" : {
+            "structurizr.dsl.identifier" : "lce.apiServer.internalAPI"
+          },
+          "relationships" : [ {
+            "description" : "Persists staged regulations, compliance snapshots, alert_events from Pipeline Worker",
+            "destinationId" : "11",
+            "id" : "59",
+            "sourceId" : "8",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Emits regulation.change_detected, compliance.snapshot_updated, compliance.alert on internal writes",
+            "destinationId" : "10",
+            "id" : "60",
+            "sourceId" : "8",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "FastAPI Routers"
+        }, {
+          "description" : "Fans out Phase 2 triggers to the messaging queue.",
+          "documentation" : { },
+          "id" : "9",
+          "name" : "SQS Producer",
+          "properties" : {
+            "structurizr.dsl.identifier" : "lce.apiServer.sqsProducer"
+          },
+          "relationships" : [ {
+            "description" : "Sends Phase 2 trigger messages",
+            "destinationId" : "12",
+            "id" : "61",
+            "sourceId" : "9",
+            "tags" : "Relationship",
+            "technology" : "AWS SDK"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Adapter"
+        }, {
+          "description" : "Signs and delivers webhook events; exponential-backoff retry.",
+          "documentation" : { },
+          "id" : "10",
+          "name" : "Webhook Dispatcher",
+          "properties" : {
+            "structurizr.dsl.identifier" : "lce.apiServer.webhookDispatcher"
+          },
+          "relationships" : [ {
+            "description" : "Delivers signed webhook events",
+            "destinationId" : "24",
+            "id" : "62",
+            "sourceId" : "10",
+            "tags" : "Relationship",
+            "technology" : "HTTPS + Ed25519"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Adapter"
+        }, {
+          "description" : "SQLAlchemy ORM for all business tables.",
+          "documentation" : { },
+          "id" : "11",
+          "name" : "Data Access Layer",
+          "properties" : {
+            "structurizr.dsl.identifier" : "lce.apiServer.dataAccess"
+          },
+          "relationships" : [ {
+            "description" : "SQL queries",
+            "destinationId" : "22",
+            "id" : "63",
+            "sourceId" : "11",
+            "tags" : "Relationship",
+            "technology" : "SQLAlchemy"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "SQLAlchemy"
+        } ],
+        "description" : "External API surface. Auth, business logic, internal write-back endpoints, Phase 2 trigger fan-out, webhook dispatch.",
+        "documentation" : { },
+        "id" : "5",
+        "name" : "API Server",
+        "properties" : {
+          "structurizr.dsl.identifier" : "lce.apiServer"
+        },
+        "relationships" : [ {
+          "description" : "Dispatches webhooks (regulation.change_detected, compliance.snapshot_updated, compliance.alert)",
+          "destinationId" : "24",
+          "id" : "33",
+          "sourceId" : "5",
+          "tags" : "Relationship",
+          "technology" : "HTTPS + Ed25519"
+        }, {
+          "description" : "Publishes Phase 2 calculation triggers (one message per state × rule_version × client)",
+          "destinationId" : "12",
+          "id" : "37",
+          "sourceId" : "5",
+          "tags" : "Relationship",
+          "technology" : "SQS SendMessage"
+        }, {
+          "description" : "Reads/writes business data",
+          "destinationId" : "22",
+          "id" : "38",
+          "sourceId" : "5",
+          "tags" : "Relationship",
+          "technology" : "PostgreSQL protocol"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "Python / FastAPI"
+      }, {
+        "description" : "Carries Phase 2 calculation triggers only (per state × rule_version × client). Cron jobs do NOT route through this queue.",
+        "documentation" : { },
+        "id" : "12",
+        "name" : "Messaging Queue",
+        "properties" : {
+          "structurizr.dsl.identifier" : "lce.messagingQueue"
+        },
+        "relationships" : [ {
+          "description" : "Delivers Phase 2 calculation triggers. KEDA ScaledObject scales 0→N on queue depth.",
+          "destinationId" : "14",
+          "id" : "41",
+          "sourceId" : "12",
+          "tags" : "Relationship",
+          "technology" : "SQS ReceiveMessage"
+        }, {
+          "description" : "Delivers Phase 2 calculation triggers (KEDA consumer)",
+          "destinationId" : "15",
+          "id" : "66",
+          "sourceId" : "12",
+          "tags" : "Relationship",
+          "technology" : "SQS ReceiveMessage"
+        } ],
+        "tags" : "Element,Container,Queue",
+        "technology" : "AWS SQS"
+      }, {
+        "description" : "K8s CronJobs that invoke the Pipeline Worker directly (no queue hop). Two schedules: weekly Phase 1 ingestion run and daily alert-scan run.",
+        "documentation" : { },
+        "id" : "13",
+        "name" : "Scheduler",
+        "properties" : {
+          "structurizr.dsl.identifier" : "lce.cron"
+        },
+        "relationships" : [ {
+          "description" : "Weekly Phase 1 ingestion run (K8s CronJob creates worker pod)",
+          "destinationId" : "14",
+          "id" : "39",
+          "sourceId" : "13",
+          "tags" : "Relationship"
+        }, {
+          "description" : "Daily alert-scan run (K8s CronJob creates worker pod)",
+          "destinationId" : "14",
+          "id" : "40",
+          "sourceId" : "13",
+          "tags" : "Relationship"
+        }, {
+          "description" : "Weekly Phase 1 ingestion trigger",
+          "destinationId" : "15",
+          "id" : "64",
+          "sourceId" : "13",
+          "tags" : "Relationship"
+        }, {
+          "description" : "Daily alert-scan trigger",
+          "destinationId" : "15",
+          "id" : "65",
+          "sourceId" : "13",
+          "tags" : "Relationship"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "K8s CronJob"
+      }, {
+        "components" : [ {
+          "description" : "Dispatches by invocation source: weekly cron → Ingestion, daily cron → Alert Scanner, SQS → Calculator.",
+          "documentation" : { },
+          "id" : "15",
+          "name" : "Trigger Router",
+          "properties" : {
+            "structurizr.dsl.identifier" : "lce.pipelineWorker.triggerRouter"
+          },
+          "relationships" : [ {
+            "description" : "Invokes Phase 1 ingestion",
+            "destinationId" : "16",
+            "id" : "67",
+            "sourceId" : "15",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Invokes Phase 2 calculation",
+            "destinationId" : "19",
+            "id" : "68",
+            "sourceId" : "15",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Invokes daily alert scan",
+            "destinationId" : "20",
+            "id" : "69",
+            "sourceId" : "15",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Python Entrypoint"
+        }, {
+          "description" : "Fetches raw HTML/PDF from configured state-source scopes.",
+          "documentation" : { },
+          "id" : "16",
+          "name" : "Scraper",
+          "properties" : {
+            "structurizr.dsl.identifier" : "lce.pipelineWorker.scraper"
+          },
+          "relationships" : [ {
+            "description" : "Fetches raw HTML/PDF",
+            "destinationId" : "26",
+            "id" : "70",
+            "sourceId" : "16",
+            "tags" : "Relationship",
+            "technology" : "HTTPS"
+          }, {
+            "description" : "Hands raw content for store + diff",
+            "destinationId" : "17",
+            "id" : "71",
+            "sourceId" : "16",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Scrape failure → LLM-1 source resolution",
+            "destinationId" : "18",
+            "id" : "72",
+            "sourceId" : "16",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "HTTP Client"
+        }, {
+          "description" : "Writes raw to S3; reads prior object; content-hash compare for short-circuit.",
+          "documentation" : { },
+          "id" : "17",
+          "name" : "Source Store & Differ",
+          "properties" : {
+            "structurizr.dsl.identifier" : "lce.pipelineWorker.sourceStore"
+          },
+          "relationships" : [ {
+            "description" : "R/W raw content; content-hash diff",
+            "destinationId" : "23",
+            "id" : "73",
+            "sourceId" : "17",
+            "tags" : "Relationship",
+            "technology" : "S3 API"
+          }, {
+            "description" : "Diff detected → LLM-2 rule parsing",
+            "destinationId" : "18",
+            "id" : "74",
+            "sourceId" : "17",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "S3 Client"
+        }, {
+          "description" : "Bedrock calls: LLM-1 (source resolution) and LLM-2 (rule parsing).",
+          "documentation" : { },
+          "id" : "18",
+          "name" : "LLM Orchestrator",
+          "properties" : {
+            "structurizr.dsl.identifier" : "lce.pipelineWorker.llmOrchestrator"
+          },
+          "relationships" : [ {
+            "description" : "Invokes LLM-1 / LLM-2",
+            "destinationId" : "27",
+            "id" : "75",
+            "sourceId" : "18",
+            "tags" : "Relationship",
+            "technology" : "HTTPS / Bedrock API"
+          }, {
+            "description" : "Post staged PENDING rule_version",
+            "destinationId" : "21",
+            "id" : "76",
+            "sourceId" : "18",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Bedrock Client"
+        }, {
+          "description" : "Phase 2 pure function: frozen inputs → per-state compliance snapshot.",
+          "documentation" : { },
+          "id" : "19",
+          "name" : "Calculator",
+          "properties" : {
+            "structurizr.dsl.identifier" : "lce.pipelineWorker.calculator"
+          },
+          "relationships" : [ {
+            "description" : "Reads frozen employer profile + approved rule version",
+            "destinationId" : "22",
+            "id" : "77",
+            "sourceId" : "19",
+            "tags" : "Relationship",
+            "technology" : "PostgreSQL protocol"
+          }, {
+            "description" : "Post per-state compliance snapshot",
+            "destinationId" : "21",
+            "id" : "78",
+            "sourceId" : "19",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Python"
+        }, {
+          "description" : "Walks active snapshots; applies 30/7/1 graduated schedule.",
+          "documentation" : { },
+          "id" : "20",
+          "name" : "Alert Scanner",
+          "properties" : {
+            "structurizr.dsl.identifier" : "lce.pipelineWorker.alertScanner"
+          },
+          "relationships" : [ {
+            "description" : "Queries active snapshots; reads prior alert_events",
+            "destinationId" : "22",
+            "id" : "79",
+            "sourceId" : "20",
+            "tags" : "Relationship",
+            "technology" : "PostgreSQL protocol"
+          }, {
+            "description" : "Post alert_events + compliance.alert payloads",
+            "destinationId" : "21",
+            "id" : "80",
+            "sourceId" : "20",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Python"
+        }, {
+          "description" : "Ed25519-JWT write-back to API Server internal endpoints.",
+          "documentation" : { },
+          "id" : "21",
+          "name" : "API Client",
+          "properties" : {
+            "structurizr.dsl.identifier" : "lce.pipelineWorker.apiClient"
+          },
+          "relationships" : [ {
+            "description" : "HTTP POST /internal/* (Ed25519 JWT)",
+            "destinationId" : "5",
+            "id" : "81",
+            "sourceId" : "21",
+            "tags" : "Relationship",
+            "technology" : "HTTPS"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "HTTP Client"
+        } ],
+        "description" : "Three invocation paths: weekly cron Phase 1 ingestion, daily cron alert scan, KEDA-scaled Phase 2 calculation.",
+        "documentation" : { },
+        "id" : "14",
+        "name" : "Pipeline Worker",
+        "properties" : {
+          "structurizr.dsl.identifier" : "lce.pipelineWorker"
+        },
+        "relationships" : [ {
+          "description" : "Scrapes raw regulation data (HTML/PDF) — Phase 1",
+          "destinationId" : "26",
+          "id" : "42",
+          "sourceId" : "14",
+          "tags" : "Relationship",
+          "technology" : "HTTPS"
+        }, {
+          "description" : "LLM-1: resolves broken data source; LLM-2: parses raw content into rule schema — Phase 1",
+          "destinationId" : "27",
+          "id" : "44",
+          "sourceId" : "14",
+          "tags" : "Relationship",
+          "technology" : "HTTPS / Bedrock API"
+        }, {
+          "description" : "Writes raw scraped content with provenance; reads prior object for content-hash diff",
+          "destinationId" : "23",
+          "id" : "46",
+          "sourceId" : "14",
+          "tags" : "Relationship",
+          "technology" : "S3 API"
+        }, {
+          "description" : "Direct reads (employer profiles, approved regulations, compliance_snapshots, alert_events)",
+          "destinationId" : "22",
+          "id" : "47",
+          "sourceId" : "14",
+          "tags" : "Relationship",
+          "technology" : "PostgreSQL protocol"
+        }, {
+          "description" : "Writes staged regulations (Phase 1), compliance snapshots (Phase 2), compliance alerts (daily scan)",
+          "destinationId" : "5",
+          "id" : "48",
+          "sourceId" : "14",
+          "tags" : "Relationship",
+          "technology" : "HTTP + Ed25519 JWT"
+        }, {
+          "description" : "Writes staged regulations, snapshots, alerts (Ed25519 JWT)",
+          "destinationId" : "6",
+          "id" : "51",
+          "sourceId" : "14",
+          "tags" : "Relationship",
+          "technology" : "HTTP"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "Python"
+      }, {
+        "description" : "Single source of truth (employers, regulations, pipeline_jobs, compliance_snapshots, alert_events, client_registry, webhook_subscriptions).",
+        "documentation" : { },
+        "id" : "22",
+        "name" : "PostgreSQL Database",
+        "properties" : {
+          "structurizr.dsl.identifier" : "lce.db"
+        },
+        "tags" : "Element,Container,Database",
+        "technology" : "PostgreSQL 17 / AWS RDS"
+      }, {
+        "description" : "Original PDFs/HTML with provenance metadata. Phase 1 stores scraped content and compares against the prior object hash to short-circuit LLM calls when content is unchanged.",
+        "documentation" : { },
+        "id" : "23",
+        "name" : "Raw Source Archive",
+        "properties" : {
+          "structurizr.dsl.identifier" : "lce.s3"
+        },
+        "tags" : "Element,Container,Database",
+        "technology" : "AWS S3"
+      } ],
+      "description" : "Rules engine that evaluates employer compliance across state-mandated retirement programs.",
+      "documentation" : { },
+      "id" : "4",
+      "name" : "Logixian Compliance Engine",
+      "properties" : {
+        "structurizr.dsl.identifier" : "lce"
+      },
+      "relationships" : [ {
+        "description" : "Dispatches webhooks (regulation.change_detected, compliance.snapshot_updated, compliance.alert)",
+        "destinationId" : "24",
+        "id" : "34",
+        "linkedRelationshipId" : "33",
+        "sourceId" : "4",
+        "technology" : "HTTPS + Ed25519"
+      }, {
+        "description" : "Scrapes raw regulation data (HTML/PDF) — Phase 1",
+        "destinationId" : "26",
+        "id" : "43",
+        "linkedRelationshipId" : "42",
+        "sourceId" : "4",
+        "technology" : "HTTPS"
+      }, {
+        "description" : "LLM-1: resolves broken data source; LLM-2: parses raw content into rule schema — Phase 1",
+        "destinationId" : "27",
+        "id" : "45",
+        "linkedRelationshipId" : "44",
+        "sourceId" : "4",
+        "technology" : "HTTPS / Bedrock API"
+      } ],
+      "tags" : "Element,Software System,Internal"
+    }, {
+      "description" : "IRALOGIX's internal systems. Serves as the portal for employers, compliance, and admin.",
+      "documentation" : { },
+      "id" : "24",
+      "name" : "IRALOGIX Platform",
+      "properties" : {
+        "structurizr.dsl.identifier" : "iralogixPlatform"
+      },
+      "relationships" : [ {
+        "description" : "Manages employer data, compliance, and onboarding",
+        "destinationId" : "5",
+        "id" : "31",
+        "sourceId" : "24",
+        "tags" : "Relationship",
+        "technology" : "JSON/HTTPS + Auth0 JWT"
+      }, {
+        "description" : "Manages employer data, compliance, and onboarding",
+        "destinationId" : "4",
+        "id" : "32",
+        "linkedRelationshipId" : "31",
+        "sourceId" : "24",
+        "technology" : "JSON/HTTPS + Auth0 JWT"
+      }, {
+        "description" : "Sends requests with Auth0 JWT",
+        "destinationId" : "6",
+        "id" : "49",
+        "sourceId" : "24",
+        "tags" : "Relationship",
+        "technology" : "HTTPS"
+      }, {
+        "description" : "Fetches webhook public keys (JWKS, unauthenticated)",
+        "destinationId" : "7",
+        "id" : "52",
+        "sourceId" : "24",
+        "tags" : "Relationship",
+        "technology" : "HTTPS"
+      } ],
+      "tags" : "Element,Software System,External"
+    }, {
+      "description" : "Authorization server issuing OAuth 2.0 JWTs via Client Credentials flow.",
+      "documentation" : { },
+      "id" : "25",
+      "name" : "Auth0",
+      "properties" : {
+        "structurizr.dsl.identifier" : "auth0"
+      },
+      "relationships" : [ {
+        "description" : "Issues JWTs, JWKS endpoint for JWT verification",
+        "destinationId" : "5",
+        "id" : "35",
+        "sourceId" : "25",
+        "tags" : "Relationship",
+        "technology" : "HTTPS"
+      }, {
+        "description" : "Issues JWTs, JWKS endpoint for JWT verification",
+        "destinationId" : "4",
+        "id" : "36",
+        "linkedRelationshipId" : "35",
+        "sourceId" : "25",
+        "technology" : "HTTPS"
+      }, {
+        "description" : "JWKS endpoint for JWT verification",
+        "destinationId" : "6",
+        "id" : "50",
+        "sourceId" : "25",
+        "tags" : "Relationship",
+        "technology" : "HTTPS"
+      } ],
+      "tags" : "Element,Software System,External"
+    }, {
+      "description" : "Official state retirement program websites (e.g. CalSavers, IL Secure Choice).",
+      "documentation" : { },
+      "id" : "26",
+      "name" : "State Portals",
+      "properties" : {
+        "structurizr.dsl.identifier" : "statePortals"
+      },
+      "tags" : "Element,Software System,External"
+    }, {
+      "description" : "Managed LLM service. LLM-1 resolves/repairs broken data sources (Phase 1a). LLM-2 parses scraped raw content into the rule schema (Phase 1b).",
+      "documentation" : { },
+      "id" : "27",
+      "name" : "AWS Bedrock",
+      "properties" : {
+        "structurizr.dsl.identifier" : "bedrock"
+      },
+      "tags" : "Element,Software System,External"
+    } ]
+  },
+  "name" : "Logixian Compliance Engine",
+  "properties" : {
+    "structurizr.inspection.error" : "57",
+    "structurizr.dsl" : "d29ya3NwYWNlICJMb2dpeGlhbiBDb21wbGlhbmNlIEVuZ2luZSIgIkxvZ2l4aWFuIENvbXBsaWFuY2UgRW5naW5lIiB7CiAgICAhaWRlbnRpZmllcnMgaGllcmFyY2hpY2FsCiAgICBtb2RlbCB7CgogICAgICAgICMg4pSA4pSAIFBlb3BsZSAoSW5kaXJlY3Qg4oCUIGludGVyYWN0IHZpYSBJUkFMT0dJWCBQbGF0Zm9ybSkg4pSA4pSACiAgICAgICAgaXJhbG9naXhDVCA9IHBlcnNvbiAiSVJBTE9HSVggQ29tcGxpYW5jZSBUZWFtIiAiQ29tcGxpYW5jZSBzdGFmZiB3aXRoIHN0cm9uZyBleHBlcmllbmNlIGluIHJlZ3VsYXRvcnkgcnVsZXMuIiB7CiAgICAgICAgICAgIHRhZ3MgIkluZGlyZWN0IgogICAgICAgIH0KICAgICAgICBpcmFsb2dpeEFkbWluID0gcGVyc29uICJJUkFMT0dJWCBBZG1pbiBUZWFtIiAiQWRtaW5pc3RyYXRpdmUgc3RhZmYgcmVzcG9uc2libGUgZm9yIG1hbmFnaW5nIHN5c3RlbS4iIHsKICAgICAgICAgICAgdGFncyAiSW5kaXJlY3QiCiAgICAgICAgfQogICAgICAgIGlyYWxvZ2l4Q3VzdG9tZXIgPSBwZXJzb24gIklSQUxPR0lYIEN1c3RvbWVyIFRlYW0iICJIYW5kbGVzIGVtcGxveWVyIG9uYm9hcmRpbmcgYW5kIHJlbGF5cyBjb21wbGlhbmNlIHJlc3VsdHMgdG8gZW1wbG95ZXJzLiIgewogICAgICAgICAgICB0YWdzICJJbmRpcmVjdCIKICAgICAgICB9CgogICAgICAgICMg4pSA4pSAIFNvZnR3YXJlIFN5c3RlbXMg4pSA4pSACgogICAgICAgICMgTG9naXhpYW4gQ29tcGxpYW5jZSBFbmdpbmUgKGludGVybmFsKQogICAgICAgIGxjZSA9IHNvZnR3YXJlU3lzdGVtICJMb2dpeGlhbiBDb21wbGlhbmNlIEVuZ2luZSIgIlJ1bGVzIGVuZ2luZSB0aGF0IGV2YWx1YXRlcyBlbXBsb3llciBjb21wbGlhbmNlIGFjcm9zcyBzdGF0ZS1tYW5kYXRlZCByZXRpcmVtZW50IHByb2dyYW1zLiIgewogICAgICAgICAgICB0YWdzICJJbnRlcm5hbCIKCiAgICAgICAgICAgIGFwaVNlcnZlciA9IGNvbnRhaW5lciAiQVBJIFNlcnZlciIgIkV4dGVybmFsIEFQSSBzdXJmYWNlLiBBdXRoLCBidXNpbmVzcyBsb2dpYywgaW50ZXJuYWwgd3JpdGUtYmFjayBlbmRwb2ludHMsIFBoYXNlIDIgdHJpZ2dlciBmYW4tb3V0LCB3ZWJob29rIGRpc3BhdGNoLiIgIlB5dGhvbiAvIEZhc3RBUEkiIHsKCiAgICAgICAgICAgICAgICBhdXRoTWlkZGxld2FyZSA9IGNvbXBvbmVudCAiQXV0aCBNaWRkbGV3YXJlIiAiVmFsaWRhdGVzIGV4dGVybmFsIEF1dGgwIEpXVHMgYW5kIGludGVybmFsIEVkMjU1MTkgSldUczsgcmVzb2x2ZXMgc2NvcGVzLiIgIkZhc3RBUEkgTWlkZGxld2FyZSIKCiAgICAgICAgICAgICAgICBleHRlcm5hbEFQSSA9IGNvbXBvbmVudCAiRXh0ZXJuYWwgQVBJIiAiSVJBTE9HSVgtZmFjaW5nIHJvdXRlIGhhbmRsZXJzIChBdXRoMCBKV1QsIHNjb3BlZCkuIiAiRmFzdEFQSSBSb3V0ZXJzIgoKICAgICAgICAgICAgICAgIGludGVybmFsQVBJID0gY29tcG9uZW50ICJJbnRlcm5hbCBBUEkiICJXcml0ZS1iYWNrIHJvdXRlIGhhbmRsZXJzIGZvciB0aGUgUGlwZWxpbmUgV29ya2VyIChFZDI1NTE5IEpXVCkuIiAiRmFzdEFQSSBSb3V0ZXJzIgoKICAgICAgICAgICAgICAgIHNxc1Byb2R1Y2VyID0gY29tcG9uZW50ICJTUVMgUHJvZHVjZXIiICJGYW5zIG91dCBQaGFzZSAyIHRyaWdnZXJzIHRvIHRoZSBtZXNzYWdpbmcgcXVldWUuIiAiQWRhcHRlciIKCiAgICAgICAgICAgICAgICB3ZWJob29rRGlzcGF0Y2hlciA9IGNvbXBvbmVudCAiV2ViaG9vayBEaXNwYXRjaGVyIiAiU2lnbnMgYW5kIGRlbGl2ZXJzIHdlYmhvb2sgZXZlbnRzOyBleHBvbmVudGlhbC1iYWNrb2ZmIHJldHJ5LiIgIkFkYXB0ZXIiCgogICAgICAgICAgICAgICAgZGF0YUFjY2VzcyA9IGNvbXBvbmVudCAiRGF0YSBBY2Nlc3MgTGF5ZXIiICJTUUxBbGNoZW15IE9STSBmb3IgYWxsIGJ1c2luZXNzIHRhYmxlcy4iICJTUUxBbGNoZW15IgogICAgICAgICAgICB9CgogICAgICAgICAgICBtZXNzYWdpbmdRdWV1ZSA9IGNvbnRhaW5lciAiTWVzc2FnaW5nIFF1ZXVlIiAiQ2FycmllcyBQaGFzZSAyIGNhbGN1bGF0aW9uIHRyaWdnZXJzIG9ubHkgKHBlciBzdGF0ZSDDlyBydWxlX3ZlcnNpb24gw5cgY2xpZW50KS4gQ3JvbiBqb2JzIGRvIE5PVCByb3V0ZSB0aHJvdWdoIHRoaXMgcXVldWUuIiAiQVdTIFNRUyIgewogICAgICAgICAgICAgICAgdGFncyAiUXVldWUiCiAgICAgICAgICAgIH0KCiAgICAgICAgICAgIGNyb24gPSBjb250YWluZXIgIlNjaGVkdWxlciIgIks4cyBDcm9uSm9icyB0aGF0IGludm9rZSB0aGUgUGlwZWxpbmUgV29ya2VyIGRpcmVjdGx5IChubyBxdWV1ZSBob3ApLiBUd28gc2NoZWR1bGVzOiB3ZWVrbHkgUGhhc2UgMSBpbmdlc3Rpb24gcnVuIGFuZCBkYWlseSBhbGVydC1zY2FuIHJ1bi4iICJLOHMgQ3JvbkpvYiIgewogICAgICAgICAgICAgICAgdGFncyAiQ29udGFpbmVyIgogICAgICAgICAgICB9CgogICAgICAgICAgICBwaXBlbGluZVdvcmtlciA9IGNvbnRhaW5lciAiUGlwZWxpbmUgV29ya2VyIiAiVGhyZWUgaW52b2NhdGlvbiBwYXRoczogd2Vla2x5IGNyb24gUGhhc2UgMSBpbmdlc3Rpb24sIGRhaWx5IGNyb24gYWxlcnQgc2NhbiwgS0VEQS1zY2FsZWQgUGhhc2UgMiBjYWxjdWxhdGlvbi4iICJQeXRob24iIHsKCiAgICAgICAgICAgICAgICB0cmlnZ2VyUm91dGVyID0gY29tcG9uZW50ICJUcmlnZ2VyIFJvdXRlciIgIkRpc3BhdGNoZXMgYnkgaW52b2NhdGlvbiBzb3VyY2U6IHdlZWtseSBjcm9uIOKGkiBJbmdlc3Rpb24sIGRhaWx5IGNyb24g4oaSIEFsZXJ0IFNjYW5uZXIsIFNRUyDihpIgQ2FsY3VsYXRvci4iICJQeXRob24gRW50cnlwb2ludCIKCiAgICAgICAgICAgICAgICBzY3JhcGVyID0gY29tcG9uZW50ICJTY3JhcGVyIiAiRmV0Y2hlcyByYXcgSFRNTC9QREYgZnJvbSBjb25maWd1cmVkIHN0YXRlLXNvdXJjZSBzY29wZXMuIiAiSFRUUCBDbGllbnQiCgogICAgICAgICAgICAgICAgc291cmNlU3RvcmUgPSBjb21wb25lbnQgIlNvdXJjZSBTdG9yZSAmIERpZmZlciIgIldyaXRlcyByYXcgdG8gUzM7IHJlYWRzIHByaW9yIG9iamVjdDsgY29udGVudC1oYXNoIGNvbXBhcmUgZm9yIHNob3J0LWNpcmN1aXQuIiAiUzMgQ2xpZW50IgoKICAgICAgICAgICAgICAgIGxsbU9yY2hlc3RyYXRvciA9IGNvbXBvbmVudCAiTExNIE9yY2hlc3RyYXRvciIgIkJlZHJvY2sgY2FsbHM6IExMTS0xIChzb3VyY2UgcmVzb2x1dGlvbikgYW5kIExMTS0yIChydWxlIHBhcnNpbmcpLiIgIkJlZHJvY2sgQ2xpZW50IgoKICAgICAgICAgICAgICAgIGNhbGN1bGF0b3IgPSBjb21wb25lbnQgIkNhbGN1bGF0b3IiICJQaGFzZSAyIHB1cmUgZnVuY3Rpb246IGZyb3plbiBpbnB1dHMg4oaSIHBlci1zdGF0ZSBjb21wbGlhbmNlIHNuYXBzaG90LiIgIlB5dGhvbiIKCiAgICAgICAgICAgICAgICBhbGVydFNjYW5uZXIgPSBjb21wb25lbnQgIkFsZXJ0IFNjYW5uZXIiICJXYWxrcyBhY3RpdmUgc25hcHNob3RzOyBhcHBsaWVzIDMwLzcvMSBncmFkdWF0ZWQgc2NoZWR1bGUuIiAiUHl0aG9uIgoKICAgICAgICAgICAgICAgIGFwaUNsaWVudCA9IGNvbXBvbmVudCAiQVBJIENsaWVudCIgIkVkMjU1MTktSldUIHdyaXRlLWJhY2sgdG8gQVBJIFNlcnZlciBpbnRlcm5hbCBlbmRwb2ludHMuIiAiSFRUUCBDbGllbnQiCiAgICAgICAgICAgIH0KCiAgICAgICAgICAgIGRiID0gY29udGFpbmVyICJQb3N0Z3JlU1FMIERhdGFiYXNlIiAiU2luZ2xlIHNvdXJjZSBvZiB0cnV0aCAoZW1wbG95ZXJzLCByZWd1bGF0aW9ucywgcGlwZWxpbmVfam9icywgY29tcGxpYW5jZV9zbmFwc2hvdHMsIGFsZXJ0X2V2ZW50cywgY2xpZW50X3JlZ2lzdHJ5LCB3ZWJob29rX3N1YnNjcmlwdGlvbnMpLiIgIlBvc3RncmVTUUwgMTcgLyBBV1MgUkRTIiB7CiAgICAgICAgICAgICAgICB0YWdzICJEYXRhYmFzZSIKICAgICAgICAgICAgfQoKICAgICAgICAgICAgczMgPSBjb250YWluZXIgIlJhdyBTb3VyY2UgQXJjaGl2ZSIgIk9yaWdpbmFsIFBERnMvSFRNTCB3aXRoIHByb3ZlbmFuY2UgbWV0YWRhdGEuIFBoYXNlIDEgc3RvcmVzIHNjcmFwZWQgY29udGVudCBhbmQgY29tcGFyZXMgYWdhaW5zdCB0aGUgcHJpb3Igb2JqZWN0IGhhc2ggdG8gc2hvcnQtY2lyY3VpdCBMTE0gY2FsbHMgd2hlbiBjb250ZW50IGlzIHVuY2hhbmdlZC4iICJBV1MgUzMiIHsKICAgICAgICAgICAgICAgIHRhZ3MgIkRhdGFiYXNlIgogICAgICAgICAgICB9CiAgICAgICAgfQoKICAgICAgICAjIElSQUxPR0lYIFBsYXRmb3JtIOKAlCBleHRlcm5hbCBwb3J0YWwgaG9zdGluZyBjb21wbGlhbmNlICsgYWRtaW4gVUlzCiAgICAgICAgaXJhbG9naXhQbGF0Zm9ybSA9IHNvZnR3YXJlU3lzdGVtICJJUkFMT0dJWCBQbGF0Zm9ybSIgIklSQUxPR0lYJ3MgaW50ZXJuYWwgc3lzdGVtcy4gU2VydmVzIGFzIHRoZSBwb3J0YWwgZm9yIGVtcGxveWVycywgY29tcGxpYW5jZSwgYW5kIGFkbWluLiIgewogICAgICAgICAgICB0YWdzICJFeHRlcm5hbCIKICAgICAgICB9CgogICAgICAgICMgQXV0aDAg4oCUIGV4dGVybmFsIGF1dGhvcml6YXRpb24gc2VydmVyCiAgICAgICAgYXV0aDAgPSBzb2Z0d2FyZVN5c3RlbSAiQXV0aDAiICJBdXRob3JpemF0aW9uIHNlcnZlciBpc3N1aW5nIE9BdXRoIDIuMCBKV1RzIHZpYSBDbGllbnQgQ3JlZGVudGlhbHMgZmxvdy4iIHsKICAgICAgICAgICAgdGFncyAiRXh0ZXJuYWwiCiAgICAgICAgfQoKICAgICAgICAjIFN0YXRlIFBvcnRhbHMg4oCUIHNjcmFwZWQgcmVndWxhdGlvbiBzb3VyY2VzCiAgICAgICAgc3RhdGVQb3J0YWxzID0gc29mdHdhcmVTeXN0ZW0gIlN0YXRlIFBvcnRhbHMiICJPZmZpY2lhbCBzdGF0ZSByZXRpcmVtZW50IHByb2dyYW0gd2Vic2l0ZXMgKGUuZy4gQ2FsU2F2ZXJzLCBJTCBTZWN1cmUgQ2hvaWNlKS4iIHsKICAgICAgICAgICAgdGFncyAiRXh0ZXJuYWwiCiAgICAgICAgfQoKICAgICAgICAjIEFXUyBCZWRyb2NrIOKAlCBtYW5hZ2VkIExMTSBzZXJ2aWNlIGZvciBQaGFzZSAxIHBhcnNpbmcgYW5kIHNvdXJjZSByZXNvbHV0aW9uCiAgICAgICAgYmVkcm9jayA9IHNvZnR3YXJlU3lzdGVtICJBV1MgQmVkcm9jayIgIk1hbmFnZWQgTExNIHNlcnZpY2UuIExMTS0xIHJlc29sdmVzL3JlcGFpcnMgYnJva2VuIGRhdGEgc291cmNlcyAoUGhhc2UgMWEpLiBMTE0tMiBwYXJzZXMgc2NyYXBlZCByYXcgY29udGVudCBpbnRvIHRoZSBydWxlIHNjaGVtYSAoUGhhc2UgMWIpLiIgewogICAgICAgICAgICB0YWdzICJFeHRlcm5hbCIKICAgICAgICB9CgogICAgICAgICMg4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSACiAgICAgICAgIyBTeXN0ZW0gQ29udGV4dCByZWxhdGlvbnNoaXBzIChMZXZlbCAxKQogICAgICAgICMg4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSACgogICAgICAgIGlyYWxvZ2l4Q1QgLT4gaXJhbG9naXhQbGF0Zm9ybSAiUmV2aWV3cy9BcHByb3Zlcy9SZWplY3RzIHJlZ3VsYXRpb24iCiAgICAgICAgaXJhbG9naXhBZG1pbiAtPiBpcmFsb2dpeFBsYXRmb3JtICJSZWdpc3RlcnMgYW5kIG1hbmFnZXMgSVJBTE9HSVggdXNlcnMiCiAgICAgICAgaXJhbG9naXhDdXN0b21lciAtPiBpcmFsb2dpeFBsYXRmb3JtICJPbmJvYXJkcyBlbXBsb3llciBhY2NvdW50czsgcmVsYXlzIGNvbXBsaWFuY2UgcmVzdWx0cyB0byBlbXBsb3llcnMiCgogICAgICAgICMg4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSACiAgICAgICAgIyBDb250YWluZXItbGV2ZWwgcmVsYXRpb25zaGlwcyAoTGV2ZWwgMikKICAgICAgICAjIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgAoKICAgICAgICAjIElSQUxPR0lYIFBsYXRmb3JtIDwtPiBBUEkgU2VydmVyCiAgICAgICAgaXJhbG9naXhQbGF0Zm9ybSAtPiBsY2UuYXBpU2VydmVyICJNYW5hZ2VzIGVtcGxveWVyIGRhdGEsIGNvbXBsaWFuY2UsIGFuZCBvbmJvYXJkaW5nIiAiSlNPTi9IVFRQUyArIEF1dGgwIEpXVCIKICAgICAgICBsY2UuYXBpU2VydmVyIC0+IGlyYWxvZ2l4UGxhdGZvcm0gIkRpc3BhdGNoZXMgd2ViaG9va3MgKHJlZ3VsYXRpb24uY2hhbmdlX2RldGVjdGVkLCBjb21wbGlhbmNlLnNuYXBzaG90X3VwZGF0ZWQsIGNvbXBsaWFuY2UuYWxlcnQpIiAiSFRUUFMgKyBFZDI1NTE5IgoKICAgICAgICAjIEF1dGgwIC0+IEFQSSBTZXJ2ZXIKICAgICAgICBhdXRoMCAtPiBsY2UuYXBpU2VydmVyICJJc3N1ZXMgSldUcywgSldLUyBlbmRwb2ludCBmb3IgSldUIHZlcmlmaWNhdGlvbiIgIkhUVFBTIgoKICAgICAgICAjIEFQSSBTZXJ2ZXIgLT4gaW50ZXJuYWwgY29udGFpbmVycwogICAgICAgIGxjZS5hcGlTZXJ2ZXIgLT4gbGNlLm1lc3NhZ2luZ1F1ZXVlICJQdWJsaXNoZXMgUGhhc2UgMiBjYWxjdWxhdGlvbiB0cmlnZ2VycyAob25lIG1lc3NhZ2UgcGVyIHN0YXRlIMOXIHJ1bGVfdmVyc2lvbiDDlyBjbGllbnQpIiAiU1FTIFNlbmRNZXNzYWdlIgogICAgICAgIGxjZS5hcGlTZXJ2ZXIgLT4gbGNlLmRiICJSZWFkcy93cml0ZXMgYnVzaW5lc3MgZGF0YSIgIlBvc3RncmVTUUwgcHJvdG9jb2wiCgogICAgICAgICMgU2NoZWR1bGVyIC0+IFBpcGVsaW5lIFdvcmtlciAoZGlyZWN0OyBOTyBxdWV1ZSkKICAgICAgICBsY2UuY3JvbiAtPiBsY2UucGlwZWxpbmVXb3JrZXIgIldlZWtseSBQaGFzZSAxIGluZ2VzdGlvbiBydW4gKEs4cyBDcm9uSm9iIGNyZWF0ZXMgd29ya2VyIHBvZCkiCiAgICAgICAgbGNlLmNyb24gLT4gbGNlLnBpcGVsaW5lV29ya2VyICJEYWlseSBhbGVydC1zY2FuIHJ1biAoSzhzIENyb25Kb2IgY3JlYXRlcyB3b3JrZXIgcG9kKSIKCiAgICAgICAgIyBNZXNzYWdpbmcgUXVldWUgLT4gUGlwZWxpbmUgV29ya2VyIChQaGFzZSAyIG9ubHkpCiAgICAgICAgbGNlLm1lc3NhZ2luZ1F1ZXVlIC0+IGxjZS5waXBlbGluZVdvcmtlciAiRGVsaXZlcnMgUGhhc2UgMiBjYWxjdWxhdGlvbiB0cmlnZ2Vycy4gS0VEQSBTY2FsZWRPYmplY3Qgc2NhbGVzIDDihpJOIG9uIHF1ZXVlIGRlcHRoLiIgIlNRUyBSZWNlaXZlTWVzc2FnZSIKCiAgICAgICAgIyBQaXBlbGluZSBXb3JrZXIg4oCUIG91dGJvdW5kCiAgICAgICAgbGNlLnBpcGVsaW5lV29ya2VyIC0+IHN0YXRlUG9ydGFscyAiU2NyYXBlcyByYXcgcmVndWxhdGlvbiBkYXRhIChIVE1ML1BERikg4oCUIFBoYXNlIDEiICJIVFRQUyIKICAgICAgICBsY2UucGlwZWxpbmVXb3JrZXIgLT4gYmVkcm9jayAiTExNLTE6IHJlc29sdmVzIGJyb2tlbiBkYXRhIHNvdXJjZTsgTExNLTI6IHBhcnNlcyByYXcgY29udGVudCBpbnRvIHJ1bGUgc2NoZW1hIOKAlCBQaGFzZSAxIiAiSFRUUFMgLyBCZWRyb2NrIEFQSSIKICAgICAgICBsY2UucGlwZWxpbmVXb3JrZXIgLT4gbGNlLnMzICJXcml0ZXMgcmF3IHNjcmFwZWQgY29udGVudCB3aXRoIHByb3ZlbmFuY2U7IHJlYWRzIHByaW9yIG9iamVjdCBmb3IgY29udGVudC1oYXNoIGRpZmYiICJTMyBBUEkiCiAgICAgICAgbGNlLnBpcGVsaW5lV29ya2VyIC0+IGxjZS5kYiAiRGlyZWN0IHJlYWRzIChlbXBsb3llciBwcm9maWxlcywgYXBwcm92ZWQgcmVndWxhdGlvbnMsIGNvbXBsaWFuY2Vfc25hcHNob3RzLCBhbGVydF9ldmVudHMpIiAiUG9zdGdyZVNRTCBwcm90b2NvbCIKICAgICAgICBsY2UucGlwZWxpbmVXb3JrZXIgLT4gbGNlLmFwaVNlcnZlciAiV3JpdGVzIHN0YWdlZCByZWd1bGF0aW9ucyAoUGhhc2UgMSksIGNvbXBsaWFuY2Ugc25hcHNob3RzIChQaGFzZSAyKSwgY29tcGxpYW5jZSBhbGVydHMgKGRhaWx5IHNjYW4pIiAiSFRUUCArIEVkMjU1MTkgSldUIgoKICAgICAgICAjIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgAogICAgICAgICMgQ29tcG9uZW50LWxldmVsIHJlbGF0aW9uc2hpcHMgKExldmVsIDMg4oCUIGluc2lkZSBBUEkgU2VydmVyKQogICAgICAgICMg4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSACgogICAgICAgICMgSW5ib3VuZCAtPiBBdXRoIE1pZGRsZXdhcmUKICAgICAgICBpcmFsb2dpeFBsYXRmb3JtIC0+IGxjZS5hcGlTZXJ2ZXIuYXV0aE1pZGRsZXdhcmUgIlNlbmRzIHJlcXVlc3RzIHdpdGggQXV0aDAgSldUIiAiSFRUUFMiCiAgICAgICAgYXV0aDAgLT4gbGNlLmFwaVNlcnZlci5hdXRoTWlkZGxld2FyZSAiSldLUyBlbmRwb2ludCBmb3IgSldUIHZlcmlmaWNhdGlvbiIgIkhUVFBTIgogICAgICAgIGxjZS5waXBlbGluZVdvcmtlciAtPiBsY2UuYXBpU2VydmVyLmF1dGhNaWRkbGV3YXJlICJXcml0ZXMgc3RhZ2VkIHJlZ3VsYXRpb25zLCBzbmFwc2hvdHMsIGFsZXJ0cyAoRWQyNTUxOSBKV1QpIiAiSFRUUCIKCiAgICAgICAgIyBJbmJvdW5kIC0+IEV4dGVybmFsIEFQSSAodW5hdXRoZW50aWNhdGVkIHBhdGgpCiAgICAgICAgaXJhbG9naXhQbGF0Zm9ybSAtPiBsY2UuYXBpU2VydmVyLmV4dGVybmFsQVBJICJGZXRjaGVzIHdlYmhvb2sgcHVibGljIGtleXMgKEpXS1MsIHVuYXV0aGVudGljYXRlZCkiICJIVFRQUyIKCiAgICAgICAgIyBBdXRoIE1pZGRsZXdhcmUgLT4gQVBJIGJvdW5kYXJpZXMKICAgICAgICBsY2UuYXBpU2VydmVyLmF1dGhNaWRkbGV3YXJlIC0+IGxjZS5hcGlTZXJ2ZXIuZXh0ZXJuYWxBUEkgIkF1dGhlbnRpY2F0ZWQgZXh0ZXJuYWwgcmVxdWVzdCAoQXV0aDAgSldUICsgc2NvcGVzKSIKICAgICAgICBsY2UuYXBpU2VydmVyLmF1dGhNaWRkbGV3YXJlIC0+IGxjZS5hcGlTZXJ2ZXIuaW50ZXJuYWxBUEkgIkF1dGhlbnRpY2F0ZWQgaW50ZXJuYWwgcmVxdWVzdCAoRWQyNTUxOSBKV1QpIgogICAgICAgIGxjZS5hcGlTZXJ2ZXIuYXV0aE1pZGRsZXdhcmUgLT4gbGNlLmFwaVNlcnZlci5kYXRhQWNjZXNzICJMb29rcyB1cCBjbGllbnQgcmVnaXN0cnkgKGVuYWJsZWQgZmxhZyArIHNjb3BlcykgZm9yIGF1dGhvcml6YXRpb24iCgogICAgICAgICMgRXh0ZXJuYWwgQVBJIC0+IG91dGJvdW5kCiAgICAgICAgbGNlLmFwaVNlcnZlci5leHRlcm5hbEFQSSAtPiBsY2UuYXBpU2VydmVyLnNxc1Byb2R1Y2VyICJGYW5zIG91dCBQaGFzZSAyIHRyaWdnZXJzIG9uIHJlZ3VsYXRpb24gYXBwcm92YWwgb3IgZW1wbG95ZXIgcHJvZmlsZSB1cGRhdGUiCiAgICAgICAgbGNlLmFwaVNlcnZlci5leHRlcm5hbEFQSSAtPiBsY2UuYXBpU2VydmVyLmRhdGFBY2Nlc3MgIlJlYWRzL3dyaXRlcyBidXNpbmVzcyBkYXRhIgogICAgICAgIGxjZS5hcGlTZXJ2ZXIuZXh0ZXJuYWxBUEkgLT4gbGNlLmFwaVNlcnZlci53ZWJob29rRGlzcGF0Y2hlciAiRW1pdHMgcmVndWxhdGlvbi5jaGFuZ2VfZGV0ZWN0ZWQgb24gc3RhdGUgdHJhbnNpdGlvbiIKCiAgICAgICAgIyBJbnRlcm5hbCBBUEkgLT4gb3V0Ym91bmQKICAgICAgICBsY2UuYXBpU2VydmVyLmludGVybmFsQVBJIC0+IGxjZS5hcGlTZXJ2ZXIuZGF0YUFjY2VzcyAiUGVyc2lzdHMgc3RhZ2VkIHJlZ3VsYXRpb25zLCBjb21wbGlhbmNlIHNuYXBzaG90cywgYWxlcnRfZXZlbnRzIGZyb20gUGlwZWxpbmUgV29ya2VyIgogICAgICAgIGxjZS5hcGlTZXJ2ZXIuaW50ZXJuYWxBUEkgLT4gbGNlLmFwaVNlcnZlci53ZWJob29rRGlzcGF0Y2hlciAiRW1pdHMgcmVndWxhdGlvbi5jaGFuZ2VfZGV0ZWN0ZWQsIGNvbXBsaWFuY2Uuc25hcHNob3RfdXBkYXRlZCwgY29tcGxpYW5jZS5hbGVydCBvbiBpbnRlcm5hbCB3cml0ZXMiCgogICAgICAgICMgQWRhcHRlcnMgLT4gZXh0ZXJuYWwgc3lzdGVtcy9jb250YWluZXJzCiAgICAgICAgbGNlLmFwaVNlcnZlci5zcXNQcm9kdWNlciAtPiBsY2UubWVzc2FnaW5nUXVldWUgIlNlbmRzIFBoYXNlIDIgdHJpZ2dlciBtZXNzYWdlcyIgIkFXUyBTREsiCiAgICAgICAgbGNlLmFwaVNlcnZlci53ZWJob29rRGlzcGF0Y2hlciAtPiBpcmFsb2dpeFBsYXRmb3JtICJEZWxpdmVycyBzaWduZWQgd2ViaG9vayBldmVudHMiICJIVFRQUyArIEVkMjU1MTkiCiAgICAgICAgbGNlLmFwaVNlcnZlci5kYXRhQWNjZXNzIC0+IGxjZS5kYiAiU1FMIHF1ZXJpZXMiICJTUUxBbGNoZW15IgoKICAgICAgICAjIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgAogICAgICAgICMgQ29tcG9uZW50LWxldmVsIHJlbGF0aW9uc2hpcHMgKExldmVsIDMg4oCUIGluc2lkZSBQaXBlbGluZSBXb3JrZXIpCiAgICAgICAgIyDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAKCiAgICAgICAgIyBJbmJvdW5kIC0+IFRyaWdnZXIgUm91dGVyCiAgICAgICAgbGNlLmNyb24gLT4gbGNlLnBpcGVsaW5lV29ya2VyLnRyaWdnZXJSb3V0ZXIgIldlZWtseSBQaGFzZSAxIGluZ2VzdGlvbiB0cmlnZ2VyIgogICAgICAgIGxjZS5jcm9uIC0+IGxjZS5waXBlbGluZVdvcmtlci50cmlnZ2VyUm91dGVyICJEYWlseSBhbGVydC1zY2FuIHRyaWdnZXIiCiAgICAgICAgbGNlLm1lc3NhZ2luZ1F1ZXVlIC0+IGxjZS5waXBlbGluZVdvcmtlci50cmlnZ2VyUm91dGVyICJEZWxpdmVycyBQaGFzZSAyIGNhbGN1bGF0aW9uIHRyaWdnZXJzIChLRURBIGNvbnN1bWVyKSIgIlNRUyBSZWNlaXZlTWVzc2FnZSIKCiAgICAgICAgIyBUcmlnZ2VyIFJvdXRlciAtPiBoYW5kbGVycwogICAgICAgIGxjZS5waXBlbGluZVdvcmtlci50cmlnZ2VyUm91dGVyIC0+IGxjZS5waXBlbGluZVdvcmtlci5zY3JhcGVyICJJbnZva2VzIFBoYXNlIDEgaW5nZXN0aW9uIgogICAgICAgIGxjZS5waXBlbGluZVdvcmtlci50cmlnZ2VyUm91dGVyIC0+IGxjZS5waXBlbGluZVdvcmtlci5jYWxjdWxhdG9yICJJbnZva2VzIFBoYXNlIDIgY2FsY3VsYXRpb24iCiAgICAgICAgbGNlLnBpcGVsaW5lV29ya2VyLnRyaWdnZXJSb3V0ZXIgLT4gbGNlLnBpcGVsaW5lV29ya2VyLmFsZXJ0U2Nhbm5lciAiSW52b2tlcyBkYWlseSBhbGVydCBzY2FuIgoKICAgICAgICAjIFBoYXNlIDEgZmxvdwogICAgICAgIGxjZS5waXBlbGluZVdvcmtlci5zY3JhcGVyIC0+IHN0YXRlUG9ydGFscyAiRmV0Y2hlcyByYXcgSFRNTC9QREYiICJIVFRQUyIKICAgICAgICBsY2UucGlwZWxpbmVXb3JrZXIuc2NyYXBlciAtPiBsY2UucGlwZWxpbmVXb3JrZXIuc291cmNlU3RvcmUgIkhhbmRzIHJhdyBjb250ZW50IGZvciBzdG9yZSArIGRpZmYiCiAgICAgICAgbGNlLnBpcGVsaW5lV29ya2VyLnNjcmFwZXIgLT4gbGNlLnBpcGVsaW5lV29ya2VyLmxsbU9yY2hlc3RyYXRvciAiU2NyYXBlIGZhaWx1cmUg4oaSIExMTS0xIHNvdXJjZSByZXNvbHV0aW9uIgogICAgICAgIGxjZS5waXBlbGluZVdvcmtlci5zb3VyY2VTdG9yZSAtPiBsY2UuczMgIlIvVyByYXcgY29udGVudDsgY29udGVudC1oYXNoIGRpZmYiICJTMyBBUEkiCiAgICAgICAgbGNlLnBpcGVsaW5lV29ya2VyLnNvdXJjZVN0b3JlIC0+IGxjZS5waXBlbGluZVdvcmtlci5sbG1PcmNoZXN0cmF0b3IgIkRpZmYgZGV0ZWN0ZWQg4oaSIExMTS0yIHJ1bGUgcGFyc2luZyIKICAgICAgICBsY2UucGlwZWxpbmVXb3JrZXIubGxtT3JjaGVzdHJhdG9yIC0+IGJlZHJvY2sgIkludm9rZXMgTExNLTEgLyBMTE0tMiIgIkhUVFBTIC8gQmVkcm9jayBBUEkiCiAgICAgICAgbGNlLnBpcGVsaW5lV29ya2VyLmxsbU9yY2hlc3RyYXRvciAtPiBsY2UucGlwZWxpbmVXb3JrZXIuYXBpQ2xpZW50ICJQb3N0IHN0YWdlZCBQRU5ESU5HIHJ1bGVfdmVyc2lvbiIKCiAgICAgICAgIyBQaGFzZSAyIGZsb3cKICAgICAgICBsY2UucGlwZWxpbmVXb3JrZXIuY2FsY3VsYXRvciAtPiBsY2UuZGIgIlJlYWRzIGZyb3plbiBlbXBsb3llciBwcm9maWxlICsgYXBwcm92ZWQgcnVsZSB2ZXJzaW9uIiAiUG9zdGdyZVNRTCBwcm90b2NvbCIKICAgICAgICBsY2UucGlwZWxpbmVXb3JrZXIuY2FsY3VsYXRvciAtPiBsY2UucGlwZWxpbmVXb3JrZXIuYXBpQ2xpZW50ICJQb3N0IHBlci1zdGF0ZSBjb21wbGlhbmNlIHNuYXBzaG90IgoKICAgICAgICAjIEFsZXJ0IGZsb3cKICAgICAgICBsY2UucGlwZWxpbmVXb3JrZXIuYWxlcnRTY2FubmVyIC0+IGxjZS5kYiAiUXVlcmllcyBhY3RpdmUgc25hcHNob3RzOyByZWFkcyBwcmlvciBhbGVydF9ldmVudHMiICJQb3N0Z3JlU1FMIHByb3RvY29sIgogICAgICAgIGxjZS5waXBlbGluZVdvcmtlci5hbGVydFNjYW5uZXIgLT4gbGNlLnBpcGVsaW5lV29ya2VyLmFwaUNsaWVudCAiUG9zdCBhbGVydF9ldmVudHMgKyBjb21wbGlhbmNlLmFsZXJ0IHBheWxvYWRzIgoKICAgICAgICAjIEFQSSBDbGllbnQgLT4gQVBJIFNlcnZlcgogICAgICAgIGxjZS5waXBlbGluZVdvcmtlci5hcGlDbGllbnQgLT4gbGNlLmFwaVNlcnZlciAiSFRUUCBQT1NUIC9pbnRlcm5hbC8qIChFZDI1NTE5IEpXVCkiICJIVFRQUyIKCiAgICAgICAgIyDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAKICAgICAgICAjIERlcGxveW1lbnQKICAgICAgICAjIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgAoKICAgICAgICBwcm9kdWN0aW9uID0gZGVwbG95bWVudEVudmlyb25tZW50ICJQcm9kdWN0aW9uIiB7CgogICAgICAgICAgICBkZXBsb3ltZW50Tm9kZSAiQVdTIENsb3VkIiB7CiAgICAgICAgICAgICAgICB0YWdzICJBbWF6b24gV2ViIFNlcnZpY2VzIgoKICAgICAgICAgICAgICAgIGRlcGxveW1lbnROb2RlICJTMyIgewogICAgICAgICAgICAgICAgICAgIHMzSW5zdGFuY2UgPSBjb250YWluZXJJbnN0YW5jZSBsY2UuczMKICAgICAgICAgICAgICAgIH0KCiAgICAgICAgICAgICAgICBkZXBsb3ltZW50Tm9kZSAiU1FTIChQaGFzZSAyIHRyaWdnZXJzIG9ubHkpIiB7CiAgICAgICAgICAgICAgICAgICAgbWVzc2FnaW5nUXVldWVJbnN0YW5jZSA9IGNvbnRhaW5lckluc3RhbmNlIGxjZS5tZXNzYWdpbmdRdWV1ZQogICAgICAgICAgICAgICAgfQoKICAgICAgICAgICAgICAgIGRlcGxveW1lbnROb2RlICJCZWRyb2NrIChtYW5hZ2VkIExMTSkiIHsKICAgICAgICAgICAgICAgICAgICBiZWRyb2NrUmVmID0gaW5mcmFzdHJ1Y3R1cmVOb2RlICJBV1MgQmVkcm9jayBSdW50aW1lIiAiTExNLTEgKyBMTE0tMiBpbnZvY2F0aW9uIGVuZHBvaW50cyIgIkFXUyBCZWRyb2NrIgogICAgICAgICAgICAgICAgfQoKICAgICAgICAgICAgICAgIGRlcGxveW1lbnROb2RlICJWUEM6IGxvZ2l4aWFuLXZwYyIgewoKICAgICAgICAgICAgICAgICAgICBkZXBsb3ltZW50Tm9kZSAiUHVibGljIFN1Ym5ldCIgewogICAgICAgICAgICAgICAgICAgICAgICBhbGIgPSBpbmZyYXN0cnVjdHVyZU5vZGUgIkFwcGxpY2F0aW9uIExvYWQgQmFsYW5jZXIiICJIVFRQUyB0ZXJtaW5hdGlvbiIgIkFXUyBBTEIiCiAgICAgICAgICAgICAgICAgICAgfQoKICAgICAgICAgICAgICAgICAgICBkZXBsb3ltZW50Tm9kZSAiUHJpdmF0ZSBTdWJuZXQiIHsKCiAgICAgICAgICAgICAgICAgICAgICAgIGRlcGxveW1lbnROb2RlICJFS1MgS3ViZXJuZXRlcyBDbHVzdGVyIiB7CgogICAgICAgICAgICAgICAgICAgICAgICAgICAgZGVwbG95bWVudE5vZGUgIkFQSSBTZXJ2ZXIgKERlcGxveW1lbnQsIEhQQSAy4oCTNCkiIHsKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBhcGlTZXJ2ZXJJbnN0YW5jZSA9IGNvbnRhaW5lckluc3RhbmNlIGxjZS5hcGlTZXJ2ZXIKICAgICAgICAgICAgICAgICAgICAgICAgICAgIH0KCiAgICAgICAgICAgICAgICAgICAgICAgICAgICBkZXBsb3ltZW50Tm9kZSAiUGlwZWxpbmUgV29ya2VyIChLRURBIFNjYWxlZE9iamVjdCwgMOKAk04pIiB7CiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgcGlwZWxpbmVXb3JrZXJJbnN0YW5jZSA9IGNvbnRhaW5lckluc3RhbmNlIGxjZS5waXBlbGluZVdvcmtlcgogICAgICAgICAgICAgICAgICAgICAgICAgICAgfQoKICAgICAgICAgICAgICAgICAgICAgICAgICAgIGRlcGxveW1lbnROb2RlICJLOHMgQ3JvbkpvYnMgKHdlZWtseSBpbmdlc3QgKyBkYWlseSBhbGVydCBzY2FuKSIgewogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGNyb25JbnN0YW5jZSA9IGNvbnRhaW5lckluc3RhbmNlIGxjZS5jcm9uCiAgICAgICAgICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICAgICAgICAgIH0KCiAgICAgICAgICAgICAgICAgICAgICAgIGRlcGxveW1lbnROb2RlICJBbWF6b24gUkRTIiB7CiAgICAgICAgICAgICAgICAgICAgICAgICAgICBkZXBsb3ltZW50Tm9kZSAiUG9zdGdyZVNRTCAxNyIgewogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGRiSW5zdGFuY2UgPSBjb250YWluZXJJbnN0YW5jZSBsY2UuZGIKICAgICAgICAgICAgICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgfQogICAgICAgIH0KICAgIH0KCiAgICB2aWV3cyB7CgogICAgICAgIHN5c3RlbUNvbnRleHQgbGNlICJTeXN0ZW1Db250ZXh0IiAiTGV2ZWwgMSDigJQgU3lzdGVtIENvbnRleHQgZGlhZ3JhbSBmb3IgTG9naXhpYW4gQ29tcGxpYW5jZSBFbmdpbmUiIHsKICAgICAgICAgICAgaW5jbHVkZSAqCiAgICAgICAgICAgIGluY2x1ZGUgaXJhbG9naXhDVAogICAgICAgICAgICBpbmNsdWRlIGlyYWxvZ2l4QWRtaW4KICAgICAgICAgICAgaW5jbHVkZSBpcmFsb2dpeEN1c3RvbWVyCiAgICAgICAgICAgIGluY2x1ZGUgYmVkcm9jawogICAgICAgICAgICBleGNsdWRlIGF1dGgwCiAgICAgICAgICAgIGF1dG9MYXlvdXQgbHIKICAgICAgICB9CgogICAgICAgIGNvbnRhaW5lciBsY2UgIkNvbnRhaW5lciIgIkxldmVsIDIg4oCUIENvbnRhaW5lciBkaWFncmFtIGZvciBMb2dpeGlhbiBDb21wbGlhbmNlIEVuZ2luZSIgewogICAgICAgICAgICBpbmNsdWRlICoKICAgICAgICAgICAgYXV0b0xheW91dCB0YgogICAgICAgIH0KCiAgICAgICAgY29tcG9uZW50IGxjZS5hcGlTZXJ2ZXIgIkFQSVNlcnZlckNvbXBvbmVudHMiICJMZXZlbCAzIOKAlCBDb21wb25lbnQgZGlhZ3JhbSBmb3IgdGhlIEFQSSBTZXJ2ZXIiIHsKICAgICAgICAgICAgaW5jbHVkZSAqCiAgICAgICAgICAgIGF1dG9MYXlvdXQgbHIgMzAwIDEwMAogICAgICAgIH0KCiAgICAgICAgY29tcG9uZW50IGxjZS5waXBlbGluZVdvcmtlciAiUGlwZWxpbmVXb3JrZXJDb21wb25lbnRzIiAiTGV2ZWwgMyDigJQgQ29tcG9uZW50IGRpYWdyYW0gZm9yIHRoZSBQaXBlbGluZSBXb3JrZXIiIHsKICAgICAgICAgICAgaW5jbHVkZSAqCiAgICAgICAgICAgIGF1dG9MYXlvdXQgbHIgMzAwIDEwMAogICAgICAgIH0KCiAgICAgICAgZGVwbG95bWVudCBsY2UgcHJvZHVjdGlvbiAiRGVwbG95bWVudCIgIlByb2R1Y3Rpb24gZGVwbG95bWVudCBvbiBBV1MiIHsKICAgICAgICAgICAgaW5jbHVkZSAqCiAgICAgICAgICAgIGF1dG9MYXlvdXQgbHIKICAgICAgICB9CgogICAgICAgIHN0eWxlcyB7CiAgICAgICAgICAgIGVsZW1lbnQgIlBlcnNvbiIgewogICAgICAgICAgICAgICAgc2hhcGUgUGVyc29uCiAgICAgICAgICAgICAgICBiYWNrZ3JvdW5kICMwODQyN0IKICAgICAgICAgICAgICAgIGNvbG9yICNmZmZmZmYKICAgICAgICAgICAgfQogICAgICAgICAgICBlbGVtZW50ICJJbmRpcmVjdCIgewogICAgICAgICAgICAgICAgYmFja2dyb3VuZCAjOTk5OTk5CiAgICAgICAgICAgICAgICBjb2xvciAjZmZmZmZmCiAgICAgICAgICAgIH0KICAgICAgICAgICAgZWxlbWVudCAiU29mdHdhcmUgU3lzdGVtIiB7CiAgICAgICAgICAgICAgICBiYWNrZ3JvdW5kICMxMTY4QkQKICAgICAgICAgICAgICAgIGNvbG9yICNmZmZmZmYKICAgICAgICAgICAgfQogICAgICAgICAgICBlbGVtZW50ICJJbnRlcm5hbCIgewogICAgICAgICAgICAgICAgYmFja2dyb3VuZCAjMTE2OEJECiAgICAgICAgICAgICAgICBjb2xvciAjZmZmZmZmCiAgICAgICAgICAgIH0KICAgICAgICAgICAgZWxlbWVudCAiRXh0ZXJuYWwiIHsKICAgICAgICAgICAgICAgIGJhY2tncm91bmQgIzk5OTk5OQogICAgICAgICAgICAgICAgY29sb3IgI2ZmZmZmZgogICAgICAgICAgICB9CiAgICAgICAgICAgIGVsZW1lbnQgIkNvbnRhaW5lciIgewogICAgICAgICAgICAgICAgYmFja2dyb3VuZCAjNDM4REQ1CiAgICAgICAgICAgICAgICBjb2xvciAjZmZmZmZmCiAgICAgICAgICAgIH0KICAgICAgICAgICAgZWxlbWVudCAiQ29tcG9uZW50IiB7CiAgICAgICAgICAgICAgICBiYWNrZ3JvdW5kICM4NUJCRjAKICAgICAgICAgICAgICAgIGNvbG9yICMwMDAwMDAKICAgICAgICAgICAgfQogICAgICAgICAgICBlbGVtZW50ICJEYXRhYmFzZSIgewogICAgICAgICAgICAgICAgc2hhcGUgQ3lsaW5kZXIKICAgICAgICAgICAgfQogICAgICAgICAgICBlbGVtZW50ICJRdWV1ZSIgewogICAgICAgICAgICAgICAgc2hhcGUgUGlwZQogICAgICAgICAgICB9CiAgICAgICAgICAgIGVsZW1lbnQgIkFkYXB0ZXIiIHsKICAgICAgICAgICAgICAgIGJhY2tncm91bmQgI0Y1REE4MQogICAgICAgICAgICAgICAgY29sb3IgIzAwMDAwMAogICAgICAgICAgICB9CiAgICAgICAgICAgIGVsZW1lbnQgIlNRTEFsY2hlbXkiIHsKICAgICAgICAgICAgICAgIGJhY2tncm91bmQgI0MzRTZDQgogICAgICAgICAgICAgICAgY29sb3IgIzAwMDAwMAogICAgICAgICAgICB9CiAgICAgICAgICAgIGVsZW1lbnQgIkZhc3RBUEkgTWlkZGxld2FyZSIgewogICAgICAgICAgICAgICAgYmFja2dyb3VuZCAjRDRBNUY1CiAgICAgICAgICAgICAgICBjb2xvciAjMDAwMDAwCiAgICAgICAgICAgIH0KICAgICAgICAgICAgZWxlbWVudCAiRmFzdEFQSSBSb3V0ZXJzIiB7CiAgICAgICAgICAgICAgICBiYWNrZ3JvdW5kICM4NUJCRjAKICAgICAgICAgICAgICAgIGNvbG9yICMwMDAwMDAKICAgICAgICAgICAgfQogICAgICAgIH0KICAgIH0KfQ==",
+    "structurizr.inspection.info" : "0",
+    "structurizr.inspection.ignore" : "0",
+    "structurizr.inspection.warning" : "0"
+  },
+  "views" : {
+    "componentViews" : [ {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 100,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 300,
+        "vertices" : true
+      },
+      "containerId" : "5",
+      "description" : "Level 3 — Component diagram for the API Server",
+      "elements" : [ {
+        "id" : "6",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "7",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "8",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "9",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "10",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "11",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "12",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "14",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "22",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "24",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "25",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalContainerBoundariesVisible" : false,
+      "key" : "APIServerComponents",
+      "name" : "Component View: Logixian Compliance Engine - API Server",
+      "order" : 3,
+      "relationships" : [ {
+        "id" : "41"
+      }, {
+        "id" : "47"
+      }, {
+        "id" : "49"
+      }, {
+        "id" : "50"
+      }, {
+        "id" : "51"
+      }, {
+        "id" : "52"
+      }, {
+        "id" : "53"
+      }, {
+        "id" : "54"
+      }, {
+        "id" : "55"
+      }, {
+        "id" : "56"
+      }, {
+        "id" : "57"
+      }, {
+        "id" : "58"
+      }, {
+        "id" : "59"
+      }, {
+        "id" : "60"
+      }, {
+        "id" : "61"
+      }, {
+        "id" : "62"
+      }, {
+        "id" : "63"
+      } ]
+    }, {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 100,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 300,
+        "vertices" : true
+      },
+      "containerId" : "14",
+      "description" : "Level 3 — Component diagram for the Pipeline Worker",
+      "elements" : [ {
+        "id" : "5",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "12",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "13",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "15",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "16",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "17",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "18",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "19",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "20",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "21",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "22",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "23",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "26",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "27",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalContainerBoundariesVisible" : false,
+      "key" : "PipelineWorkerComponents",
+      "name" : "Component View: Logixian Compliance Engine - Pipeline Worker",
+      "order" : 4,
+      "relationships" : [ {
+        "id" : "37"
+      }, {
+        "id" : "38"
+      }, {
+        "id" : "64"
+      }, {
+        "id" : "65"
+      }, {
+        "id" : "66"
+      }, {
+        "id" : "67"
+      }, {
+        "id" : "68"
+      }, {
+        "id" : "69"
+      }, {
+        "id" : "70"
+      }, {
+        "id" : "71"
+      }, {
+        "id" : "72"
+      }, {
+        "id" : "73"
+      }, {
+        "id" : "74"
+      }, {
+        "id" : "75"
+      }, {
+        "id" : "76"
+      }, {
+        "id" : "77"
+      }, {
+        "id" : "78"
+      }, {
+        "id" : "79"
+      }, {
+        "id" : "80"
+      }, {
+        "id" : "81"
+      } ]
+    } ],
+    "configuration" : {
+      "styles" : {
+        "elements" : [ {
+          "background" : "#f5da81",
+          "color" : "#000000",
+          "tag" : "Adapter"
+        }, {
+          "background" : "#85bbf0",
+          "color" : "#000000",
+          "tag" : "Component"
+        }, {
+          "background" : "#438dd5",
+          "color" : "#ffffff",
+          "tag" : "Container"
+        }, {
+          "shape" : "Cylinder",
+          "tag" : "Database"
+        }, {
+          "background" : "#999999",
+          "color" : "#ffffff",
+          "tag" : "External"
+        }, {
+          "background" : "#d4a5f5",
+          "color" : "#000000",
+          "tag" : "FastAPI Middleware"
+        }, {
+          "background" : "#85bbf0",
+          "color" : "#000000",
+          "tag" : "FastAPI Routers"
+        }, {
+          "background" : "#999999",
+          "color" : "#ffffff",
+          "tag" : "Indirect"
+        }, {
+          "background" : "#1168bd",
+          "color" : "#ffffff",
+          "tag" : "Internal"
+        }, {
+          "background" : "#08427b",
+          "color" : "#ffffff",
+          "shape" : "Person",
+          "tag" : "Person"
+        }, {
+          "shape" : "Pipe",
+          "tag" : "Queue"
+        }, {
+          "background" : "#c3e6cb",
+          "color" : "#000000",
+          "tag" : "SQLAlchemy"
+        }, {
+          "background" : "#1168bd",
+          "color" : "#ffffff",
+          "tag" : "Software System"
+        } ]
+      },
+      "terminology" : { }
+    },
+    "containerViews" : [ {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "TopBottom",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "description" : "Level 2 — Container diagram for Logixian Compliance Engine",
+      "elements" : [ {
+        "id" : "5",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "12",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "13",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "14",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "22",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "23",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "24",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "25",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "26",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "27",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalSoftwareSystemBoundariesVisible" : false,
+      "key" : "Container",
+      "name" : "Container View: Logixian Compliance Engine",
+      "order" : 2,
+      "relationships" : [ {
+        "id" : "31"
+      }, {
+        "id" : "33"
+      }, {
+        "id" : "35"
+      }, {
+        "id" : "37"
+      }, {
+        "id" : "38"
+      }, {
+        "id" : "39"
+      }, {
+        "id" : "40"
+      }, {
+        "id" : "41"
+      }, {
+        "id" : "42"
+      }, {
+        "id" : "44"
+      }, {
+        "id" : "46"
+      }, {
+        "id" : "47"
+      }, {
+        "id" : "48"
+      } ],
+      "softwareSystemId" : "4"
+    } ],
+    "deploymentViews" : [ {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "description" : "Production deployment on AWS",
+      "elements" : [ {
+        "id" : "82",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "83",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "84",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "85",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "86",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "87",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "88",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "89",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "90",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "91",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "92",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "93",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "94",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "95",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "97",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "98",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "102",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "103",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "106",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "107",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "108",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "environment" : "Production",
+      "key" : "Deployment",
+      "name" : "Deployment View: Logixian Compliance Engine - Production",
+      "order" : 5,
+      "relationships" : [ {
+        "id" : "100"
+      }, {
+        "id" : "101"
+      }, {
+        "id" : "104"
+      }, {
+        "id" : "105"
+      }, {
+        "id" : "109"
+      }, {
+        "id" : "110"
+      }, {
+        "id" : "96"
+      }, {
+        "id" : "99"
+      } ],
+      "softwareSystemId" : "4"
+    } ],
+    "systemContextViews" : [ {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "description" : "Level 1 — System Context diagram for Logixian Compliance Engine",
+      "elements" : [ {
+        "id" : "1",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "2",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "3",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "4",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "24",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "26",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "27",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "enterpriseBoundaryVisible" : true,
+      "key" : "SystemContext",
+      "name" : "System Context View: Logixian Compliance Engine",
+      "order" : 1,
+      "relationships" : [ {
+        "id" : "28"
+      }, {
+        "id" : "29"
+      }, {
+        "id" : "30"
+      }, {
+        "id" : "32"
+      }, {
+        "id" : "34"
+      }, {
+        "id" : "43"
+      }, {
+        "id" : "45"
+      } ],
+      "softwareSystemId" : "4"
+    } ]
+  }
+}
