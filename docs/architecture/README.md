@@ -5,8 +5,7 @@ for the Logixian Compliance Engine (C4 model).
 
 | File | Description |
 |------|-------------|
-| `workspace.dsl` | Top-level workspace: System Context, Containers, and API Server components |
-| `api-server-components.dsl` | Standalone API Server component view (superseded by `workspace.dsl`) |
+| `workspace.dsl` | Top-level workspace: Context, Containers, Components, dynamic scenarios, and deployment views |
 | `workspace.json` | Auto-generated workspace state (layout, last-used view). Do not edit by hand. |
 | `images/` | Exported PNG diagrams (checked in for Confluence embedding) |
 
