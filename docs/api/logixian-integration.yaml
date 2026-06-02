@@ -21,13 +21,29 @@
 #   Outbound (Logixian -> Subscriber):      Ed25519 signature (single key pair)
 #
 # Downstream tickets (IRA-46, IRA-47, IRA-87) implement against this spec.
+#
+# -----------------------------------------------------------------------------
+# IRA-230 DRAFT (two-phase eligibility/compliance split) — 2026-06-02
+# Pending team review. Key model changes vs 0.3.0:
+#   1. Eligibility and compliance are now TWO phases, not one calculation.
+#   2. Eligibility is a cheap yes/no gate, evaluated SYNCHRONOUSLY on the API
+#      server (request-reply, ~real-time, satisfies QA P3 500ms). It does not
+#      go through the worker pipeline.
+#   3. Compliance needs employer-supplied behavioural data we cannot observe.
+#      A new regulation no longer auto-produces a fresh compliance snapshot —
+#      it recomputes eligibility and marks affected compliance as PENDING_INPUT,
+#      asking the employer (via IRALOGIX) to resubmit current status.
+#   4. Data collection is two-stage and adaptive: evaluate eligibility first;
+#      only if eligible do we request the (state-specific) compliance inputs.
+#   5. Inner shapes still TBD: the compliance submission body, the compliance
+#      snapshot detail, and the required-input descriptor are envelope-only here.
 # =============================================================================
 
 openapi: 3.1.0
 
 info:
   title: Logixian Integration API
-  version: 0.3.0-draft
+  version: 0.4.0-draft
   description: |
     Top-level integration contract between the **Logixian Compliance Engine**
     and the **IRALOGIX Platform**.
@@ -37,9 +53,25 @@ info:
     | # | Category | Direction | Mechanism |
     |---|----------|-----------|-----------|
     | 1 | Regulation Updates | Logixian -> IRALOGIX (webhook) + IRALOGIX -> Logixian (API) | Event + Query |
-    | 2 | Client Data | IRALOGIX -> Logixian (API) | Push |
-    | 3 | Compliance Snapshot | Logixian -> IRALOGIX (webhook) + IRALOGIX -> Logixian (API) | Event + Query |
-    | 4 | Alerting | Logixian -> IRALOGIX (webhook) | Event |
+    | 2 | Eligibility Evaluation (Phase 1) | IRALOGIX -> Logixian (API) | Synchronous request-reply |
+    | 3 | Compliance Submission (Phase 2) | IRALOGIX -> Logixian (API) | Push (async, eligible employers only) |
+    | 4 | Compliance Snapshot | Logixian -> IRALOGIX (webhook) + IRALOGIX -> Logixian (API) | Event + Query |
+    | 5 | Alerting | Logixian -> IRALOGIX (webhook) | Event |
+
+    ## Two-Phase Eligibility / Compliance Flow (IRA-230)
+
+    1. **Eligibility (synchronous gate).** IRALOGIX submits the employer's
+       eligibility data; Logixian compares it to the active rule model in-process
+       and returns per-state `is_eligible` immediately. Not eligible → store the
+       result and stop (no compliance questions asked).
+    2. **Compliance (adaptive, async).** For eligible states, the eligibility
+       response carries the set of compliance inputs still required. IRALOGIX
+       collects those from the employer and submits them; Logixian queues a
+       compliance evaluation and emits `compliance.snapshot_updated`.
+    3. **Regulation change.** Approving a rule recomputes eligibility for
+       affected employers and flips their compliance to `PENDING_INPUT`, emitting
+       `compliance.input_required`. It does NOT mass-recalculate compliance —
+       fresh employer input is required first.
 
     ## Two Credentials, One Onboarding Flow
 
@@ -78,8 +110,10 @@ tags:
     description: Query and manage regulation rules (IRALOGIX -> Logixian)
   - name: Employers
     description: Push employer profile data (IRALOGIX -> Logixian)
+  - name: Eligibility
+    description: Synchronous eligibility evaluation — Phase 1 gate (IRALOGIX -> Logixian)
   - name: Compliance
-    description: Retrieve compliance snapshots (IRALOGIX -> Logixian)
+    description: Submit compliance inputs (Phase 2) and retrieve compliance snapshots (IRALOGIX -> Logixian)
   - name: Webhooks
     description: Manage webhook subscriptions (IRALOGIX -> Logixian)
   - name: Admin
@@ -180,7 +214,13 @@ paths:
       summary: Approve a pending regulation
       description: |
         Human-in-the-loop approval. Transitions rule status from `PENDING` to
-        `ACTIVE`. Triggers recalculation of all affected compliance snapshots.
+        `ACTIVE`.
+
+        **IRA-230:** Approval recomputes *eligibility* for affected employers
+        (cheap, in-process) and flips their compliance evaluations to
+        `PENDING_INPUT`, emitting `compliance.input_required`. It does NOT
+        mass-recalculate compliance snapshots — compliance needs fresh
+        employer-supplied input that a rule change cannot provide.
       security:
         - bearerAuth: [regulations:approve]
       parameters:
@@ -313,8 +353,13 @@ paths:
         **Privacy:** No PII is accepted. The payload contains only the
         `employer_uuid` and compliance-relevant metrics.
 
-        On success, the engine queues a compliance recalculation against
-        this new profile version.
+        **IRA-230:** A profile push recomputes *eligibility* synchronously and
+        flips compliance for eligible states to `PENDING_INPUT`. It does NOT by
+        itself produce a compliance snapshot — the employer must then submit the
+        required compliance inputs via `POST /employers/{uuid}/compliance`.
+        For the interactive path, prefer `POST /employers/{uuid}/eligibility`,
+        which returns the eligibility result and the inputs still required in
+        one round-trip.
       security:
         - bearerAuth: [employers:write]
       parameters:
@@ -399,7 +444,123 @@ paths:
           $ref: "#/components/responses/NotFound"
 
   # ---------------------------------------------------------------------------
-  # Category 3: Compliance Snapshot
+  # Category 2 (Phase 1): Eligibility — synchronous gate
+  # ---------------------------------------------------------------------------
+  /employers/{employer_uuid}/eligibility:
+    post:
+      operationId: evaluateEligibility
+      tags: [Eligibility]
+      summary: Evaluate employer eligibility (synchronous)
+      description: |
+        **IRA-230 — Phase 1.** Evaluates whether the employer is eligible
+        (MANDATED / VOLUNTARY / EXEMPT) per state, by comparing the supplied
+        eligibility data against the active rule model in-process. Returns
+        immediately (target < 500ms, QA P3) — this path does NOT use the worker
+        pipeline.
+
+        The result is persisted as the eligibility portion of the employer's
+        compliance snapshot (`compliance_status = PENDING_INPUT` for newly
+        eligible states until compliance inputs are submitted).
+
+        For each eligible state, the response includes
+        `required_compliance_inputs` — the set of compliance questions the
+        employer still needs to answer. Not-eligible states carry no compliance
+        inputs (adaptive: we only ask what is needed). Submit the answers via
+        `POST /employers/{employer_uuid}/compliance`.
+      security:
+        - bearerAuth: [employers:write]
+      parameters:
+        - $ref: "#/components/parameters/EmployerUuid"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EligibilityCheckRequest"
+      responses:
+        "200":
+          description: Per-state eligibility result and required compliance inputs.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EligibilityCheckResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "422":
+          description: Validation error (missing required eligibility fields).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ---------------------------------------------------------------------------
+  # Category 3 (Phase 2): Compliance submission — adaptive, async
+  # ---------------------------------------------------------------------------
+  /employers/{employer_uuid}/compliance:
+    post:
+      operationId: submitComplianceInputs
+      tags: [Compliance]
+      summary: Submit employer compliance inputs (Phase 2)
+      description: |
+        **IRA-230 — Phase 2.** Submits the employer-supplied compliance inputs
+        for states where the employer is eligible (the inputs named by
+        `required_compliance_inputs` in the eligibility response). Logixian
+        queues a compliance evaluation; on completion it emits
+        `compliance.snapshot_updated`.
+
+        Accepted asynchronously (202) so the employer-facing submit stays fast
+        and the heavier compliance evaluation runs on the worker pipeline. If
+        compliance evaluation is later confirmed deterministic and cheap, this
+        may collapse to a synchronous response — TBD, pending team decision.
+
+        **Body shape is TBD** (depends on the in-flight compliance schema work,
+        IRA-93 / IRA-223 / IRA-163). Modelled here as an open object.
+      security:
+        - bearerAuth: [compliance:write]
+      parameters:
+        - $ref: "#/components/parameters/EmployerUuid"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ComplianceSubmission"
+      responses:
+        "202":
+          description: Inputs accepted; compliance evaluation queued.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [employer_uuid, states_accepted]
+                properties:
+                  employer_uuid:
+                    type: string
+                    format: uuid
+                  states_accepted:
+                    type: array
+                    items:
+                      type: string
+                    example: ["CA", "IL"]
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "409":
+          description: |
+            One or more submitted states are not eligible (no compliance inputs
+            were requested for them). Re-run eligibility first.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: Validation error (missing required compliance inputs).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ---------------------------------------------------------------------------
+  # Category 4: Compliance Snapshot
   # ---------------------------------------------------------------------------
   /employers/{employer_uuid}/snapshot:
     get:
@@ -491,6 +652,7 @@ paths:
                     type: string
                     enum:
                       - regulation.change_detected
+                      - compliance.input_required
                       - compliance.snapshot_updated
                       - compliance.alert
                   description: Event types to subscribe to.
@@ -559,6 +721,7 @@ paths:
                     type: string
                     enum:
                       - regulation.change_detected
+                      - compliance.input_required
                       - compliance.snapshot_updated
                       - compliance.alert
                   description: New set of event types (replaces existing list).
@@ -831,7 +994,60 @@ webhooks:
           description: Acknowledged.
 
   # ---------------------------------------------------------------------------
-  # Category 3: Compliance snapshot updated
+  # Category 3: Compliance input required (IRA-230)
+  # ---------------------------------------------------------------------------
+  compliance.input_required:
+    post:
+      operationId: onComplianceInputRequired
+      summary: Compliance input required
+      description: |
+        **IRA-230.** Fired when an employer's compliance snapshot can no longer
+        be trusted and fresh employer input is needed before it can be
+        recomputed. Typical trigger: a regulation change was approved that
+        affects this employer, so compliance was flipped to `PENDING_INPUT`.
+
+        IRALOGIX should collect the listed inputs from the employer and submit
+        them via `POST /employers/{employer_uuid}/compliance`.
+      parameters:
+        - $ref: "#/components/parameters/WebhookSignature"
+        - $ref: "#/components/parameters/WebhookTimestamp"
+        - $ref: "#/components/parameters/WebhookKeyId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/WebhookEnvelope"
+                - type: object
+                  required: [payload]
+                  properties:
+                    payload:
+                      type: object
+                      required: [employer_uuid, states_pending, reason]
+                      properties:
+                        employer_uuid:
+                          type: string
+                          format: uuid
+                        states_pending:
+                          type: array
+                          items:
+                            type: string
+                          example: ["CA", "IL"]
+                          description: States whose compliance is now PENDING_INPUT.
+                        reason:
+                          type: string
+                          enum: [RULE_CHANGE, PROFILE_CHANGE, PERIODIC_REVALIDATION]
+                        rule_version_id:
+                          type: string
+                          nullable: true
+                          description: The approved rule version that triggered this, if any.
+      responses:
+        "200":
+          description: Acknowledged.
+
+  # ---------------------------------------------------------------------------
+  # Category 4: Compliance snapshot updated
   # ---------------------------------------------------------------------------
   compliance.snapshot_updated:
     post:
@@ -1117,6 +1333,7 @@ components:
               - employers:write
               - employers:read
               - compliance:read
+              - compliance:write
               - webhooks:manage
               - admin
           description: Initial scopes to grant.
@@ -1142,6 +1359,7 @@ components:
               - employers:write
               - employers:read
               - compliance:read
+              - compliance:write
               - webhooks:manage
               - admin
           description: Full replacement of the client's scope set.
@@ -1711,7 +1929,119 @@ components:
             employer. Starts IL's 120-day cure window.
 
     # =========================================================================
-    # Category 3: Compliance Snapshot
+    # Category 2 (Phase 1): Eligibility check — IRA-230
+    # =========================================================================
+    EligibilityCheckRequest:
+      type: object
+      description: |
+        IRA-230: the eligibility-relevant subset of the employer profile —
+        enough to run the synchronous eligibility gate. This is a projection of
+        ClientDataPayload (no operational/compliance fields). Submitting this
+        also persists a new profile version under the hood.
+      required:
+        - company_hq_state
+        - incorporation_date
+        - entity_type
+        - offers_qualified_plan
+        - state_headcounts
+      properties:
+        company_hq_state:
+          type: string
+          example: CA
+        incorporation_date:
+          type: string
+          format: date
+        entity_type:
+          type: string
+          enum: [FOR_PROFIT, NONPROFIT, GOVERNMENT, RELIGIOUS, TRIBAL, OWNER_ONLY, SELF_EMPLOYED]
+        offers_qualified_plan:
+          type: boolean
+        qualified_plan_ended_date:
+          type: string
+          format: date
+          nullable: true
+        state_headcounts:
+          type: object
+          description: |
+            Keyed by ISO 3166-2 state code; value is the employee headcount for
+            that state. Only states where the employer operates need be included.
+          additionalProperties:
+            $ref: "#/components/schemas/EmployeeHeadcount"
+
+    EligibilityCheckResult:
+      type: object
+      required: [employer_uuid, evaluated_at, results]
+      properties:
+        employer_uuid:
+          type: string
+          format: uuid
+        evaluated_at:
+          type: string
+          format: date-time
+        profile_version:
+          type: integer
+          minimum: 1
+          description: Profile version created by this evaluation.
+        results:
+          type: array
+          items:
+            type: object
+            required: [state_code, rule_version_id, is_eligible, eligibility_status, eligibility_reasoning_code]
+            properties:
+              state_code:
+                type: string
+              rule_version_id:
+                type: string
+                description: Active rule version used for this evaluation (audit lineage, R1/R4).
+              is_eligible:
+                type: boolean
+                description: Convenience flag. False ⇒ EXEMPT; no compliance inputs requested.
+              eligibility_status:
+                type: string
+                enum: [MANDATED, EXEMPT, VOLUNTARY]
+              eligibility_reasoning_code:
+                type: string
+                enum:
+                  - MEETS_ALL_CRITERIA
+                  - EXEMPT_ENTITY_TYPE
+                  - EXEMPT_QUALIFIED_PLAN
+                  - EXEMPT_CERTIFIED
+                  - EXEMPT_BUSINESS_AGE
+                  - VOLUNTARY_ELIGIBLE
+              required_compliance_inputs:
+                type: array
+                nullable: true
+                description: |
+                  IRA-230 — TBD. The set of compliance questions/inputs the
+                  employer must still answer for this state before compliance can
+                  be evaluated. Present only for eligible states. Inner shape
+                  depends on the in-flight compliance schema work
+                  (IRA-93 / IRA-223 / IRA-163); modelled as an open list for now.
+                items:
+                  type: object
+                  additionalProperties: true
+
+    # =========================================================================
+    # Category 3 (Phase 2): Compliance submission — IRA-230
+    # =========================================================================
+    ComplianceSubmission:
+      type: object
+      description: |
+        IRA-230 — TBD. Employer-supplied compliance inputs for eligible states,
+        answering the `required_compliance_inputs` from the eligibility result.
+        Keyed by ISO 3166-2 state code. Inner shape depends on the in-flight
+        compliance schema work; modelled as an open object pending that design.
+      required: [state_inputs]
+      properties:
+        state_inputs:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties: true
+          description: Keyed by state code; value is that state's compliance answers (shape TBD).
+
+    # =========================================================================
+    # Category 4: Compliance Snapshot
     # Source: Confluence 2.2 Part 4
     # =========================================================================
     ComplianceSnapshot:
@@ -1767,7 +2097,13 @@ components:
             - VOLUNTARY_ELIGIBLE
         compliance_status:
           type: string
-          enum: [COMPLIANT, NON_COMPLIANT, ACTION_REQUIRED, GRACE_PERIOD]
+          enum: [PENDING_INPUT, COMPLIANT, NON_COMPLIANT, ACTION_REQUIRED, GRACE_PERIOD]
+          description: |
+            IRA-230: `PENDING_INPUT` means the employer is eligible but the
+            compliance inputs needed to evaluate compliance have not been
+            submitted (or were invalidated by a rule/profile change). It is
+            distinct from `NON_COMPLIANT` — we simply do not know yet.
+            Not-eligible states do not carry a compliance evaluation.
         applicable_deadline:
           type: string
           format: date
