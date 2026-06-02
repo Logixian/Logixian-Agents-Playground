@@ -85,7 +85,7 @@ Top-level folders are unnumbered in Confluence. Sub-pages inside each section ca
 | — 1. Overview | Thesis + metamodel + evidence | Kuan | Skeleton | Draft in `docs/software-engineering-system.md` |
 | — 2. Processes | Four loops in ETVX form | Kuan | Skeleton | Source §3 in working draft |
 | — 3. Resources | Skills, tools, humans, information architecture | Kuan | Skeleton | Source §4 and §2.4 in working draft |
-| — 4. Measurement Plan | Engineering-process metrics | Kuan | Placeholder | Responds to coach 2026-04-21 |
+| — 4. Measurement Plan | Engineering-process metrics, two-phase strategy | Kuan | Drafted (see §5) | Phase 2 instrumentation begins summer |
 | — 5. SDLC Approach | Branching, CI/CD, release cadence, Agile framing | Leif | Thin; Agile preamble only | Populate from 2026-04-20 Construction Coach notes |
 | — Software Engineering System (legacy) | Prior outline content, preserved | — | Archived | To be superseded by 4.1 Overview |
 | Release Notes | Release cadence documentation | TBD (Leif, tentative) | Not started | Convention starts when first release ships |
@@ -281,17 +281,93 @@ Structural knowledge is packaged alongside project context in each skill. The co
 
 All metrics below are about the *engineering system*, not the product. Product runtime metrics (Phase 1 parse accuracy, LLM-2 hallucination rate, snapshot correctness) live on the Quality Management page and drive the product's observability plan.
 
-| Metric | Definition | Collection | Target or trend |
-|---|---|---|---|
-| ADR review acceptance | % of ADRs approved without major revision in first review round | Confluence version history | Trend up over time |
-| AI-output rejection count | Times per sprint a human reviewer rejects an AI draft and redoes it | Sprint retro log | Trend down as prompts mature |
-| ADR cycle time | Days from Draft to Approved | Confluence history | Flat or down; stable team target TBD |
-| Digest action completion | % of digest action items closed by next digest | Jira cross-check | >= 75% |
-| PR cycle time | PR open to merge | GitHub | Flat or down in summer |
-| Unassisted-task check-in | Periodic coding or design work without LLM assistance | Quarterly reflection in sprint retro | At least one per quarter per developer |
-| Skill revision count | Commits touching `.claude/skills/` per sprint | git log | Decreasing after each skill stabilizes |
+### 5.1 Two-phase measurement strategy
 
-Feedback loop: metrics reviewed in sprint retro. Skill revisions triggered by two rejections in a sprint. Cycle time trends surfaced in weekly digest.
+Measurement is split into two phases, with a deliberate decision to under-invest in instrumentation right now.
+
+| Phase | Primary purpose | Primary tool | Metric character |
+|---|---|---|---|
+| **Phase 1 — current** | Correctness assurance, drive internal and external discussion, accommodate workflows that resist standardization (e.g. drafter iterates 2-3 times locally with custom prompts before publishing) | Human gates G1–G5 | Subjective, recorded in retros, observed by humans |
+| **Phase 2 — planned** | Optimize model usage once correctness is bounded by gates and the process is standardized enough that metric movements attribute cleanly to LLM behaviour | Systematic instrumentation | Deterministic, auto-collected from APIs and version histories |
+
+**Why we under-invest in measurement now**: Phase 1's metric signal is noisy because the loop is not yet standardized. Concrete example: ADR review acceptance is 3/5 today, which looks bad in isolation. Root cause for the two ADRs that needed extensive post-draft discussion is *human ambiguity about direction*, not /architect output quality. Tuning prompts on this metric at this stage would optimize the wrong thing.
+
+Phase 2 starts when the loop is standardized enough that metric movements attribute to LLM behaviour rather than human direction-finding.
+
+### 5.2 Phase 1 metrics (currently operational)
+
+Honest list of what we actually collect today, including the rough ones.
+
+| Metric | Definition | Collection | State |
+|---|---|---|---|
+| Digest action completion | % of digest action items closed by next digest | Jira cross-check | Operational |
+| ADR cycle time | Days from Draft to Approved | Confluence version history | Operational |
+| Skill revision count | Commits touching `.claude/skills/` per sprint | git log | Operational |
+| AI-output rejection count | Times per sprint a human reviewer rejects an AI draft | Sprint retro log | Rough, relies on what people remember |
+| Unassisted-task check-in | Periodic coding or design work without LLM assistance | Quarterly reflection in retro | Rough, self-reported |
+
+Feedback loop: metrics reviewed in sprint retro. Cycle time trends surfaced in weekly digest. Skill revisions triggered by two rejections in a sprint.
+
+### 5.3 Phase 2 metrics (planned instrumentation)
+
+Four categories, ordered by priority for our context.
+
+**Cost and efficiency** — top priority because /architect and /pm commands are large. A single invocation can load 30K+ tokens (course lecture summaries, Confluence subtree, Jira board, related ADRs). At summer scale this is real money plus latency.
+
+| Metric | Why | Collection |
+|---|---|---|
+| Avg input tokens per skill invocation | Quantify command size growth | API response usage field |
+| p50 / p95 cost per invocation | Catch outliers and set per-skill budget | API response usage field |
+| Cache hit rate | Verify prompt caching is actually working | `cache_read_input_tokens` field |
+| `architect/ref/` and `pm/ref/` byte growth | Prevent unbounded ingestion of new material | git diff size or pre-commit hook |
+| Context utilization | Tokens loaded vs actually referenced in output | Proxy via citation match in draft |
+
+**Cycle metrics**
+
+| Metric | Collection |
+|---|---|
+| Ticket Draft to Estimated days | Jira |
+| PR open to merge | GitHub (summer onward) |
+
+**Stability metrics** — behavioural outcomes that replace subjective rejection counts.
+
+| Metric | Collection |
+|---|---|
+| ADR 4-week supersede rate | Confluence diff |
+| Ticket re-open after merge rate | Jira |
+| Skill `SKILL.md` revision frequency | git log |
+
+**Trigger condition** for Phase 2 onset: when (a) every artifact loop has its human gate operational and (b) we have at least one summer sprint of throughput so metric movements are statistically meaningful at our team size.
+
+### 5.4 Deliberately not measured
+
+Choosing not to measure is itself a measurement decision. This list is part of the plan, not an absence.
+
+| Not measured | Why |
+|---|---|
+| Single-invocation success rate | Drafters iterate 2-3 times locally before publishing; we cannot attribute success to one call |
+| LLM hallucination rate | Human gates catch this before publish, production exposure is zero. Revisit if gates ever bypass |
+| Skill A/B comparison | Five-person team makes sample size statistically meaningless |
+| Exploratory-use effectiveness | "Alternatives generated, blind spots surfaced" is real value but operational definition is unclear; left as open question |
+
+### 5.5 Decision log: three measurement trade-offs
+
+The three explicit decisions about what we are and are not doing on measurement, with reasoning and implications.
+
+**Decision 1 — Phase 1 deliberately under-invests in systematic measurement**
+- Reasoning: process is not yet standardized, so metric signal is noisy and would mis-direct prompt tuning
+- Trade-off: no real-time dashboard today
+- Implication: human gate quality is what we are actually betting on for correctness. If a gate fails, measurement will not catch it because measurement is not there yet
+
+**Decision 2 — Token cost is the first Phase 2 instrument**
+- Reasoning: /architect and /pm commands load multiple stores per invocation; single-call token cost is already high and will scale poorly with summer team size and ticket volume
+- Trade-off: cost instrumentation gives only efficiency signal, not quality signal
+- Implication: we will know when commands get too fat before paying a runtime cost spike, but we will not learn anything about output correctness from this metric
+
+**Decision 3 — Behavioural outcomes replace subjective review counts**
+- Reasoning: retro-recorded "AI rejection count" relies on what people remember; behavioural metrics like ADR supersede rate and ticket re-open rate auto-collect from existing Jira and Confluence
+- Trade-off: behavioural metrics have longer feedback delay (weeks, not sprints)
+- Implication: we trade fast-but-unreliable signal for slow-but-trustworthy signal, which is the right call once Phase 1 gates are stable
 
 ---
 
