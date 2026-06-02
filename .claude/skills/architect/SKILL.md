@@ -23,16 +23,39 @@ You are the **Logixian System Architect**. Your job is to make and document syst
 
 ## Static Context (always load first)
 
-Read these files at the start of every architect session:
+The architect skill carries two layers of static knowledge: project context (specific to Logixian) and structural knowledge (CMU 17-633 Software Architecture, snapshot 2026-04-24).
+
+### Project context — load on every invocation
 
 | File | Purpose |
 |------|---------|
 | `docs/project-description.md` | Project scope, milestones, tech stack |
 | `docs/state-market-brief.md` | Per-state rules: eligibility, deadlines, penalties |
-| `.claude/skills/architect/ref/L16-agile-architecture.md` | ADD 3.0, ACDM, agile architecture design process — use when structuring design work or scoping architecture tickets |
-| `.claude/skills/architect/ref/L17-documentation.md` | Views (module, C&C, allocation), interface specs, hierarchy, UML conventions — use when deciding what artifacts a design ticket should produce |
-| `.claude/skills/architect/ref/adr-nygard-template.md` | Nygard ADR template, when-to-write criteria, core rationale — use when drafting or reviewing ADRs |
-| `.claude/skills/architect/ref/adr-in-practice-keeling.md` | Keeling guest lecture: decision cycle, contextual forces, alternative formats (Y-Decision, MADR), review checklist, team adoption — use for ADR quality review and coaching |
+
+### Structural knowledge — `.claude/skills/architect/ref/`
+
+Mirror of `arch-coach` concept summaries. 27 files covering all 26 lectures plus the Nygard ADR reading. Load files from this folder as relevant to the current task; you do not need to read all of them on every invocation.
+
+| Pattern | What it covers |
+|---|---|
+| `01-course-intro.md` | Course framing, role of the architect |
+| `02-arch-concepts.md` to `05-intro-arch-styles.md` | Foundations: views, drivers, QA scenarios, style taxonomy |
+| `06-dataflow.md` to `09-repository-styles-practice.md` | C&C styles in depth |
+| `10-tactics.md`, `11-modifiability-usability-tactics.md` | Tactics for QAs |
+| `12-platforms-product-lines.md`, `13-ecosystems-mismatch.md` | Platforms, mismatch, ecosystems |
+| `14-` and `15-` case studies | ROS, Duolingo, EweToob, Kubernetes |
+| `16-agile-architecture.md` | ADD 3.0, ACDM, agile architecture process |
+| `17-documentation.md` | Documentation: views, context diagrams, UML conventions |
+| `18-adr-in-practice-keeling.md` | Keeling: decision cycle, alternative formats, review checklist |
+| `19-modeling-and-analysis.md` | Acme/ADL, formal modeling, style conformance |
+| `20-evaluation.md` | ARB, NASA SARB, ATAM, continuous evaluation |
+| `21-tactics-ai-enabled-systems.md` | Tactics for AI-enabled systems |
+| `22-sa-for-ml.md` | Software architecture for ML systems |
+| `23-ai-assisted-software-architecture.md` | AI-assisted architecture practices |
+| `24-c4-and-architecture-as-code.md` | C4 model, Structurizr DSL — directly relevant to our diagrams |
+| `25-closing-architecture-code-gap.md` | Closing the architecture-code gap |
+| `26-arch-at-run-time.md` | Architecture at runtime, including ML runtime |
+| `adr-architecture-decision-records.md` | Nygard reading: ADR template, when-to-write, core rationale |
 
 ## Live Context (fetch via MCP)
 
@@ -40,10 +63,12 @@ Use `cloudId: mse-iralogix.atlassian.net` for all Confluence calls.
 
 | Confluence Page | Page ID | Purpose |
 |----------------|---------|---------|
-| 2.1 System Boundaries & Assumptions | `47742977` | API contracts, data flow, integration patterns |
+| 2.1 System Boundaries & Assumptions | `47742977` | API contracts, data flow, integration patterns (historical title; lives under 3.2 Requirements) |
 | 2.2 Data Model & Integration Strategy | `73138177` | Schema definitions (defer detailed schema review to `/data-model-coach`) |
 | AWS Cost Analysis | `89391105` | Dev environment infra costs — use when drafting ADRs about service selection, scaling, or infra tradeoffs |
-| 3. Architecture (root) | `1245203` | Architecture section root — non-ADR subpages go here (e.g., 3.1 API Server, 3.2 Data Pipeline) |
+| 3. Architecture (root) | `1245203` | Architecture section root — consolidated IRA-90/67/68 narrative, links to 3.1 / 3.2 / ADRs |
+| 3.1 API Server | `136445963` | IRA-67 deliverable — API Server component decomposition |
+| 3.2 Pipeline Worker | `154501121` | IRA-68 deliverable — Pipeline Worker component decomposition |
 | ADR (folder) | `104955905` | Parent for all ADRs — create new ADRs as subpages here |
 
 > **Note:** IRA project Confluence space (`iralogix.atlassian.net`) MCP access is pending re-authorization. When configured, fetch pages from the IRA space using `cloudId: iralogix.atlassian.net`. Page IDs will be provided at that time.

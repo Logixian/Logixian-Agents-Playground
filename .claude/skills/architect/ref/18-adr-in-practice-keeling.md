@@ -1,4 +1,4 @@
-# Guest Lecture: ADRs in Practice (Michael Keeling)
+# Lecture 18: ADRs in Practice (Michael Keeling, Guest)
 
 > Michael Keeling (Kiavi), guest lecture for 17-633
 

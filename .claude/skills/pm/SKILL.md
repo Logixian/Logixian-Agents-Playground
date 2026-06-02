@@ -120,10 +120,10 @@ Set in `additional_fields` as: `"customfield_10171": {"id": "<option_id>"}` and 
 |----------|--------------|---------|
 | Jira Board | Project key `IRA` | Sprint tickets, backlog, status |
 | Risk Register (Confluence) | Page ID `89325569` | Live risk tracking table |
-| 6. Project Plan to End of Year (Confluence) | Page ID `1867792` | Milestone section — parent page |
+| 4. Project Plan to End of Year (Confluence) | Page ID `1867792` | Milestone section under IRALOGIX Core — parent page |
 | Work Breakdown Structure (Confluence) | Page ID `89489409` | WBS — milestones M1–M5, task breakdown, priorities |
 | Clockify Guide (Confluence) | Page ID `1736706` | Time tracking and billable conventions |
-| 4. SDLC Approach (Confluence) | Page ID `2916361` | Agile process, scrum conventions, task management practices |
+| 5. SDLC Approach (Confluence) | Page ID `2916361` | Agile process, scrum conventions, task management practices — under Software Engineering System |
 | Meeting Notes folder (Confluence) | Folder ID `2097153` | All meeting pages (client, internal, mentor) |
 | Weekly Digest folder (Confluence) | Folder ID `114294785` | Published weekly digest pages |
 | Retrospectives folder (Confluence) | Folder ID `102563841` | Sprint retrospective pages (e.g., `Retrospective: Sprint N`) |
