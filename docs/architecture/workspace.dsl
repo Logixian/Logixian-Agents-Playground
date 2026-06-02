@@ -36,7 +36,7 @@ workspace "Logixian Compliance Engine" "Logixian Compliance Engine" {
                 dataAccess = component "Data Access Layer" "SQLAlchemy ORM for all business tables." "SQLAlchemy"
             }
 
-            messagingQueue = container "Messaging Queue" "Carries Phase 2 compliance-evaluation triggers. IRA-230: triggered per employer compliance submission, NOT by mass fan-out on regulation approval. Cron jobs do NOT route through this queue." "AWS SQS" {
+            messagingQueue = container "Messaging Queue" "Carries Phase 2 compliance-evaluation triggers. IRA-230: triggered per employer profile submission (eligibility + compliance answers, after the atomic consistency check), NOT by mass fan-out on regulation approval. Cron jobs do NOT route through this queue." "AWS SQS" {
                 tags "Queue"
             }
 
@@ -110,7 +110,7 @@ workspace "Logixian Compliance Engine" "Logixian Compliance Engine" {
         auth0 -> lce.apiServer "Issues JWTs, JWKS endpoint for JWT verification" "HTTPS"
 
         # API Server -> internal containers
-        lce.apiServer -> lce.messagingQueue "Publishes Phase 2 compliance-evaluation triggers on employer compliance submission (IRA-230)" "SQS SendMessage"
+        lce.apiServer -> lce.messagingQueue "Publishes Phase 2 compliance-evaluation triggers on employer profile submission, after the atomic consistency check (IRA-230)" "SQS SendMessage"
         lce.apiServer -> lce.db "Reads/writes business data" "PostgreSQL protocol"
 
         # Scheduler -> Pipeline Worker (direct; NO queue)
@@ -145,13 +145,13 @@ workspace "Logixian Compliance Engine" "Logixian Compliance Engine" {
         lce.apiServer.authMiddleware -> lce.apiServer.dataAccess "Looks up client registry (enabled flag + scopes) for authorization"
 
         # External API -> outbound
-        lce.apiServer.externalAPI -> lce.apiServer.eligibilityEngine "Evaluates eligibility synchronously (Phase 1, IRA-230)"
-        lce.apiServer.externalAPI -> lce.apiServer.sqsProducer "Fans out Phase 2 compliance-evaluation trigger on employer compliance submission"
+        lce.apiServer.externalAPI -> lce.apiServer.eligibilityEngine "Eligibility check (stateless preview) AND profile-submission consistency re-derivation (Phase 1, IRA-230)"
+        lce.apiServer.externalAPI -> lce.apiServer.sqsProducer "Fans out Phase 2 compliance-evaluation trigger on profile submission, after consistency check"
         lce.apiServer.externalAPI -> lce.apiServer.dataAccess "Reads/writes business data"
         lce.apiServer.externalAPI -> lce.apiServer.webhookDispatcher "Emits regulation.change_detected on state transition; compliance.input_required when a rule approval or profile change invalidates compliance"
 
         # Eligibility Engine (synchronous, in-process)
-        lce.apiServer.eligibilityEngine -> lce.apiServer.dataAccess "Reads active rule model + employer eligibility data; persists eligibility result"
+        lce.apiServer.eligibilityEngine -> lce.apiServer.dataAccess "Reads active rule model + employer data. Stateless for /eligibility:check; on profile submission the result is persisted and compliance answers validated against it"
 
         # Internal API -> outbound
         lce.apiServer.internalAPI -> lce.apiServer.dataAccess "Persists staged regulations, compliance snapshots, alert_events from Pipeline Worker"
