@@ -19,11 +19,13 @@ workspace "Logixian Compliance Engine" "Logixian Compliance Engine" {
         lce = softwareSystem "Logixian Compliance Engine" "Rules engine that evaluates employer compliance across state-mandated retirement programs." {
             tags "Internal"
 
-            apiServer = container "API Server" "External API surface. Auth, business logic, internal write-back endpoints, Phase 2 trigger fan-out, webhook dispatch." "Python / FastAPI" {
+            apiServer = container "API Server" "External API surface. Auth, business logic, synchronous eligibility evaluation, Phase 2 (compliance) trigger fan-out, internal write-back endpoints, webhook dispatch." "Python / FastAPI" {
 
                 authMiddleware = component "Auth Middleware" "Validates external Auth0 JWTs and internal Ed25519 JWTs; resolves scopes." "FastAPI Middleware"
 
                 externalAPI = component "External API" "IRALOGIX-facing route handlers (Auth0 JWT, scoped)." "FastAPI Routers"
+
+                eligibilityEngine = component "Eligibility Engine" "IRA-230: evaluates eligibility synchronously in-process (rule model vs supplied employer data). Cheap yes/no gate, ~real-time (QA P3). Does NOT use the worker pipeline." "Python"
 
                 internalAPI = component "Internal API" "Write-back route handlers for the Pipeline Worker (Ed25519 JWT)." "FastAPI Routers"
 
@@ -34,7 +36,7 @@ workspace "Logixian Compliance Engine" "Logixian Compliance Engine" {
                 dataAccess = component "Data Access Layer" "SQLAlchemy ORM for all business tables." "SQLAlchemy"
             }
 
-            messagingQueue = container "Messaging Queue" "Carries Phase 2 calculation triggers only (per state × rule_version × client). Cron jobs do NOT route through this queue." "AWS SQS" {
+            messagingQueue = container "Messaging Queue" "Carries Phase 2 compliance-evaluation triggers. IRA-230: triggered per employer profile submission (eligibility + compliance answers, after the atomic consistency check), NOT by mass fan-out on regulation approval. Cron jobs do NOT route through this queue." "AWS SQS" {
                 tags "Queue"
             }
 
@@ -52,7 +54,7 @@ workspace "Logixian Compliance Engine" "Logixian Compliance Engine" {
 
                 llmOrchestrator = component "LLM Orchestrator" "Bedrock calls: LLM-1 (source resolution) and LLM-2 (rule parsing)." "Bedrock Client"
 
-                calculator = component "Calculator" "Phase 2 pure function: frozen inputs → per-state compliance snapshot." "Python"
+                calculator = component "Calculator" "Phase 2 compliance evaluation: submitted compliance inputs + frozen profile + active rule → per-state compliance snapshot. (Eligibility now runs synchronously in the API Server, not here.)" "Python"
 
                 alertScanner = component "Alert Scanner" "Walks active snapshots; applies 30/7/1 graduated schedule." "Python"
 
@@ -102,13 +104,13 @@ workspace "Logixian Compliance Engine" "Logixian Compliance Engine" {
 
         # IRALOGIX Platform <-> API Server
         iralogixPlatform -> lce.apiServer "Manages employer data, compliance, and onboarding" "JSON/HTTPS + Auth0 JWT"
-        lce.apiServer -> iralogixPlatform "Dispatches webhooks (regulation.change_detected, compliance.snapshot_updated, compliance.alert)" "HTTPS + Ed25519"
+        lce.apiServer -> iralogixPlatform "Dispatches webhooks (regulation.change_detected, compliance.input_required, compliance.snapshot_updated, compliance.alert)" "HTTPS + Ed25519"
 
         # Auth0 -> API Server
         auth0 -> lce.apiServer "Issues JWTs, JWKS endpoint for JWT verification" "HTTPS"
 
         # API Server -> internal containers
-        lce.apiServer -> lce.messagingQueue "Publishes Phase 2 calculation triggers (one message per state × rule_version × client)" "SQS SendMessage"
+        lce.apiServer -> lce.messagingQueue "Publishes Phase 2 compliance-evaluation triggers on employer profile submission, after the atomic consistency check (IRA-230)" "SQS SendMessage"
         lce.apiServer -> lce.db "Reads/writes business data" "PostgreSQL protocol"
 
         # Scheduler -> Pipeline Worker (direct; NO queue)
@@ -143,13 +145,17 @@ workspace "Logixian Compliance Engine" "Logixian Compliance Engine" {
         lce.apiServer.authMiddleware -> lce.apiServer.dataAccess "Looks up client registry (enabled flag + scopes) for authorization"
 
         # External API -> outbound
-        lce.apiServer.externalAPI -> lce.apiServer.sqsProducer "Fans out Phase 2 triggers on regulation approval or employer profile update"
+        lce.apiServer.externalAPI -> lce.apiServer.eligibilityEngine "Eligibility check (stateless preview) AND profile-submission consistency re-derivation (Phase 1, IRA-230)"
+        lce.apiServer.externalAPI -> lce.apiServer.sqsProducer "Fans out Phase 2 compliance-evaluation trigger on profile submission, after consistency check"
         lce.apiServer.externalAPI -> lce.apiServer.dataAccess "Reads/writes business data"
-        lce.apiServer.externalAPI -> lce.apiServer.webhookDispatcher "Emits regulation.change_detected on state transition"
+        lce.apiServer.externalAPI -> lce.apiServer.webhookDispatcher "Emits regulation.change_detected on state transition; compliance.input_required to notify affected employers to resubmit after a rule change (no recompute, no PENDING_INPUT)"
+
+        # Eligibility Engine (synchronous, in-process)
+        lce.apiServer.eligibilityEngine -> lce.apiServer.dataAccess "Reads active rule model + employer data. Stateless for /eligibility:check; on profile submission the result is persisted and compliance answers validated against it"
 
         # Internal API -> outbound
         lce.apiServer.internalAPI -> lce.apiServer.dataAccess "Persists staged regulations, compliance snapshots, alert_events from Pipeline Worker"
-        lce.apiServer.internalAPI -> lce.apiServer.webhookDispatcher "Emits regulation.change_detected, compliance.snapshot_updated, compliance.alert on internal writes"
+        lce.apiServer.internalAPI -> lce.apiServer.webhookDispatcher "Emits regulation.change_detected, compliance.input_required, compliance.snapshot_updated, compliance.alert on internal writes"
 
         # Adapters -> external systems/containers
         lce.apiServer.sqsProducer -> lce.messagingQueue "Sends Phase 2 trigger messages" "AWS SDK"

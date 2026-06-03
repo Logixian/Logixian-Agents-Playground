@@ -21,13 +21,34 @@
 #   Outbound (Logixian -> Subscriber):      Ed25519 signature (single key pair)
 #
 # Downstream tickets (IRA-46, IRA-47, IRA-87) implement against this spec.
+#
+# -----------------------------------------------------------------------------
+# IRA-230 DRAFT (two-phase eligibility/compliance split) — rev. 2026-06-02 meeting
+# Pending review with Brett. Key model changes vs 0.3.0:
+#   1. Eligibility and compliance are now TWO phases, not one calculation.
+#   2. Eligibility is a cheap yes/no gate, evaluated SYNCHRONOUSLY and STATELESSLY
+#      on the API server (~real-time, satisfies QA P3 500ms). It returns ONLY the
+#      eligibility status, not questions. It does not use the worker pipeline.
+#   3. The questionnaire is fetched once up front (separate endpoint); questions
+#      are fixed per rule version (determined in Phase 1), independent of the
+#      employer. The eligibility check only decides whether the front end shows
+#      the compliance section.
+#   4. Persistence happens once, atomically, at POST /profiles (eligibility +
+#      compliance answers together), with a server-side self-consistency check.
+#   5. A regulation change does NOT recompute or store anything and there is NO
+#      PENDING_INPUT state — the system notifies affected employers to resubmit
+#      (compliance.input_required) and tracks who was notified to avoid dupes.
+#   6. Exemptible-but-not-yet-filed employers stay ELIGIBLE (filing is a
+#      compliance action) — eligibility and exemption are independent.
+#   7. Inner shapes still TBD: the questionnaire/question schema and the
+#      compliance snapshot detail (IRA-93 / IRA-223 / IRA-163).
 # =============================================================================
 
 openapi: 3.1.0
 
 info:
   title: Logixian Integration API
-  version: 0.3.0-draft
+  version: 0.4.0-draft
   description: |
     Top-level integration contract between the **Logixian Compliance Engine**
     and the **IRALOGIX Platform**.
@@ -37,9 +58,37 @@ info:
     | # | Category | Direction | Mechanism |
     |---|----------|-----------|-----------|
     | 1 | Regulation Updates | Logixian -> IRALOGIX (webhook) + IRALOGIX -> Logixian (API) | Event + Query |
-    | 2 | Client Data | IRALOGIX -> Logixian (API) | Push |
-    | 3 | Compliance Snapshot | Logixian -> IRALOGIX (webhook) + IRALOGIX -> Logixian (API) | Event + Query |
-    | 4 | Alerting | Logixian -> IRALOGIX (webhook) | Event |
+    | 2 | Eligibility Check (Phase 1) | IRALOGIX -> Logixian (API) | Synchronous, **stateless** |
+    | 3 | Profile Submission (eligibility + compliance, atomic) | IRALOGIX -> Logixian (API) | Push (persists; Phase 2 queued) |
+    | 4 | Compliance Snapshot | Logixian -> IRALOGIX (webhook) + IRALOGIX -> Logixian (API) | Event + Query |
+    | 5 | Alerting | Logixian -> IRALOGIX (webhook) | Event |
+
+    ## Two-Phase Eligibility / Compliance Flow (IRA-230)
+
+    The interaction is two-stage, but **persistence happens exactly once**, atomically.
+
+    0. **Fetch questionnaire (once, up front).** The front end fetches the full
+       question form for the relevant state(s) via the questionnaire endpoint.
+       Questions are fixed per rule version (set during Phase 1), independent of
+       the employer.
+    1. **Eligibility check (synchronous, stateless).** `POST /eligibility:check`
+       compares the supplied eligibility data to the active rule model and returns
+       per-state `is_eligible` only — **not** the questions (the front end already
+       has them). **Stores nothing.** It only decides whether the front end shows
+       the compliance section.
+    2. **Profile submission (atomic, persisted).** `POST /employers/{uuid}/profiles`
+       carries the eligibility data AND the compliance answers together. The server
+       re-derives eligibility from this payload and validates the compliance answers
+       against it; **self-contradictory submissions are rejected whole and nothing
+       is stored** (guards against the client changing eligibility after the check).
+       On success it persists, then queues Phase 2 compliance evaluation and emits
+       `compliance.snapshot_updated`. There is no separate compliance-submission
+       endpoint — collecting both together is what makes consistency enforceable.
+    3. **Regulation change.** Approving a rule does NOT recompute eligibility or
+       compliance and stores no placeholder. The questionnaire for the new rule
+       version changes, and the system notifies affected employers to resubmit
+       (`compliance.input_required`), tracking who was notified to avoid dupes.
+       The prior snapshot is retained but is not reused for the new rules.
 
     ## Two Credentials, One Onboarding Flow
 
@@ -78,8 +127,10 @@ tags:
     description: Query and manage regulation rules (IRALOGIX -> Logixian)
   - name: Employers
     description: Push employer profile data (IRALOGIX -> Logixian)
+  - name: Eligibility
+    description: Synchronous, stateless eligibility check — Phase 1 (IRALOGIX -> Logixian)
   - name: Compliance
-    description: Retrieve compliance snapshots (IRALOGIX -> Logixian)
+    description: Retrieve compliance snapshots (IRALOGIX -> Logixian). Compliance answers are submitted atomically with the employer profile, not here.
   - name: Webhooks
     description: Manage webhook subscriptions (IRALOGIX -> Logixian)
   - name: Admin
@@ -180,7 +231,15 @@ paths:
       summary: Approve a pending regulation
       description: |
         Human-in-the-loop approval. Transitions rule status from `PENDING` to
-        `ACTIVE`. Triggers recalculation of all affected compliance snapshots.
+        `ACTIVE`.
+
+        **IRA-230 (per 2026-06-02 meeting):** Approval does NOT recompute
+        eligibility or compliance and stores no placeholder snapshot. The new
+        rule version carries its own questionnaire (set in Phase 1). The system
+        notifies affected employers to resubmit their profile
+        (`compliance.input_required`) and tracks who was notified to avoid
+        duplicate alerts. The prior snapshot is retained but not reused for the
+        new rules — only a fresh employer submission can produce a new one.
       security:
         - bearerAuth: [regulations:approve]
       parameters:
@@ -313,8 +372,25 @@ paths:
         **Privacy:** No PII is accepted. The payload contains only the
         `employer_uuid` and compliance-relevant metrics.
 
-        On success, the engine queues a compliance recalculation against
-        this new profile version.
+        **IRA-230 — this is the single, atomic persistence path.** The payload
+        carries BOTH the eligibility data and the compliance answers together
+        (the answers obtained after `POST /eligibility:check`). The server does
+        not trust the prior stateless check; it processes everything in one
+        transaction:
+
+        1. Re-derive eligibility per state from the eligibility fields in *this*
+           payload.
+        2. Validate consistency. **Self-contradictory payloads are rejected
+           whole (422 `ELIGIBILITY_COMPLIANCE_MISMATCH`) and nothing is stored** —
+           e.g. compliance answers present for a state that is not eligible per
+           this payload, or answers for a stale question set because eligibility
+           was changed after the check. (The front end should prevent this, but
+           we do not own it, so the server enforces it.)
+        3. On success: persist the new profile version, store the eligibility
+           result, and queue Phase 2 compliance evaluation for the eligible
+           states (emits `compliance.snapshot_updated` on completion). There is
+           no `PENDING_INPUT` state — a submission for an eligible state is
+           expected to include its compliance answers.
       security:
         - bearerAuth: [employers:write]
       parameters:
@@ -327,7 +403,9 @@ paths:
               $ref: "#/components/schemas/ClientDataPayload"
       responses:
         "201":
-          description: Profile version created; compliance recalculation queued.
+          description: |
+            Profile version created. Eligibility stored; Phase 2 compliance
+            evaluation queued for eligible states.
           content:
             application/json:
               schema:
@@ -335,7 +413,11 @@ paths:
         "400":
           $ref: "#/components/responses/BadRequest"
         "422":
-          description: Validation error (e.g., missing required state profile fields).
+          description: |
+            Validation error. Either missing required eligibility/profile fields,
+            or `ELIGIBILITY_COMPLIANCE_MISMATCH` — the compliance answers are not
+            consistent with the eligibility re-derived from this payload (IRA-230).
+            On mismatch the whole submission is rejected and nothing is stored.
           content:
             application/json:
               schema:
@@ -399,7 +481,113 @@ paths:
           $ref: "#/components/responses/NotFound"
 
   # ---------------------------------------------------------------------------
+  # Category 2 (Phase 0): Questionnaire — fetched once, up front
+  # ---------------------------------------------------------------------------
+  /states/{state_code}/questionnaire:
+    get:
+      operationId: getStateQuestionnaire
+      tags: [Eligibility]
+      summary: Fetch the full question form for a state (eligibility + compliance)
+      description: |
+        **IRA-230.** Returns the complete question set for a state — both the
+        eligibility questions and the compliance questions. The front end fetches
+        this once at the start of the flow, then uses `POST /eligibility:check`
+        mid-flow only to decide whether to display the compliance section.
+
+        Questions are **fixed per rule version** (determined during Phase 1 rule
+        processing) and do not depend on the employer or on any interaction.
+
+        **Response schema is TBD** — it depends on the in-flight question/compliance
+        schema work (IRA-93 / IRA-223 / IRA-163), and on whether any intra-form
+        conditional logic (decision tree) is encoded for the front end to honour.
+        The team's current decision is "show all questions" (no backend-driven
+        decision tree) for now. Modelled as an open object pending that design.
+      security:
+        - bearerAuth: [regulations:read]
+      parameters:
+        - name: state_code
+          in: path
+          required: true
+          schema:
+            type: string
+            example: CA
+          description: ISO 3166-2 state code.
+        - name: rule_version_id
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Pin to a specific rule version. Defaults to the active version.
+      responses:
+        "200":
+          description: The state's question form (shape TBD).
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # ---------------------------------------------------------------------------
+  # Category 2 (Phase 1): Eligibility — synchronous, STATELESS check
+  # ---------------------------------------------------------------------------
+  /eligibility:check:
+    post:
+      operationId: checkEligibility
+      tags: [Eligibility]
+      summary: Check eligibility (synchronous, stateless — stores nothing)
+      description: |
+        **IRA-230 — Phase 1 check.** Pure computation: compares the supplied
+        eligibility data against the active rule model in-process and returns,
+        per state, `is_eligible` (MANDATED / VOLUNTARY / EXEMPT) **only**. It does
+        NOT return questions — the front end already fetched the full form from
+        the questionnaire endpoint. The front end uses this result solely to
+        decide whether to show the compliance section.
+
+        **Stateless: this endpoint persists NOTHING.** No employer profile, no
+        snapshot, no version. Returns immediately (target < 500ms, QA P3); does
+        NOT use the worker pipeline.
+
+        Persistence happens only at final profile submission
+        (`POST /employers/{employer_uuid}/profiles`), which re-derives
+        eligibility from the submitted payload and validates the compliance
+        answers against it (see that endpoint). The result here is therefore
+        advisory — the client must not assume it will still hold at submit time.
+
+        > Open: POST vs GET is undecided (a GET carrying a body is awkward, but
+        > the call is read-only / creates nothing). Pending Leif's call.
+      security:
+        - bearerAuth: [employers:read]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EligibilityCheckRequest"
+      responses:
+        "200":
+          description: Per-state eligibility result (status only). Nothing stored.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EligibilityCheckResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "422":
+          description: Validation error (missing required eligibility fields).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ---------------------------------------------------------------------------
   # Category 3: Compliance Snapshot
+  # NOTE (IRA-230): there is no separate compliance-submission endpoint.
+  # Eligibility data + compliance answers are submitted together, atomically,
+  # via POST /employers/{employer_uuid}/profiles, which validates that the two
+  # are mutually consistent (see that endpoint). This is the single persistence
+  # path and prevents eligibility/compliance drift from the stateless check.
   # ---------------------------------------------------------------------------
   /employers/{employer_uuid}/snapshot:
     get:
@@ -491,6 +679,7 @@ paths:
                     type: string
                     enum:
                       - regulation.change_detected
+                      - compliance.input_required
                       - compliance.snapshot_updated
                       - compliance.alert
                   description: Event types to subscribe to.
@@ -559,6 +748,7 @@ paths:
                     type: string
                     enum:
                       - regulation.change_detected
+                      - compliance.input_required
                       - compliance.snapshot_updated
                       - compliance.alert
                   description: New set of event types (replaces existing list).
@@ -831,7 +1021,64 @@ webhooks:
           description: Acknowledged.
 
   # ---------------------------------------------------------------------------
-  # Category 3: Compliance snapshot updated
+  # Category 3: Compliance input required (IRA-230)
+  # ---------------------------------------------------------------------------
+  compliance.input_required:
+    post:
+      operationId: onComplianceInputRequired
+      summary: Compliance input required
+      description: |
+        **IRA-230 (per 2026-06-02 meeting).** A pure notification asking the
+        employer to come back and resubmit their profile. Fired when an existing
+        snapshot can no longer be trusted — typically a regulation change whose
+        new rule version may require forms/answers we never asked for. The system
+        does NOT recompute, does NOT mark anything `PENDING_INPUT`, and does NOT
+        reuse the prior snapshot; it just notifies (and tracks who was notified
+        to avoid duplicates).
+
+        IRALOGIX should have the employer re-answer the questionnaire and resubmit
+        via `POST /employers/{employer_uuid}/profiles` (the single atomic
+        submission that re-validates eligibility + compliance).
+      parameters:
+        - $ref: "#/components/parameters/WebhookSignature"
+        - $ref: "#/components/parameters/WebhookTimestamp"
+        - $ref: "#/components/parameters/WebhookKeyId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/WebhookEnvelope"
+                - type: object
+                  required: [payload]
+                  properties:
+                    payload:
+                      type: object
+                      required: [employer_uuid, states_to_refill, reason]
+                      properties:
+                        employer_uuid:
+                          type: string
+                          format: uuid
+                        states_to_refill:
+                          type: array
+                          items:
+                            type: string
+                          example: ["CA", "IL"]
+                          description: States for which the employer should re-answer and resubmit.
+                        reason:
+                          type: string
+                          enum: [RULE_CHANGE, DEADLINE_APPROACHING, PERIODIC_REVALIDATION]
+                        rule_version_id:
+                          type: string
+                          nullable: true
+                          description: The approved rule version that triggered this, if any.
+      responses:
+        "200":
+          description: Acknowledged.
+
+  # ---------------------------------------------------------------------------
+  # Category 4: Compliance snapshot updated
   # ---------------------------------------------------------------------------
   compliance.snapshot_updated:
     post:
@@ -1711,7 +1958,95 @@ components:
             employer. Starts IL's 120-day cure window.
 
     # =========================================================================
-    # Category 3: Compliance Snapshot
+    # Category 2 (Phase 1): Eligibility check — IRA-230
+    # =========================================================================
+    EligibilityCheckRequest:
+      type: object
+      description: |
+        IRA-230: the eligibility-relevant subset of the employer profile —
+        enough to run the synchronous, stateless eligibility check. A projection
+        of ClientDataPayload (no operational/compliance fields). **Stateless:
+        nothing is persisted; no employer record is required.** Persistence
+        happens only at `POST /employers/{uuid}/profiles`.
+      required:
+        - company_hq_state
+        - incorporation_date
+        - entity_type
+        - offers_qualified_plan
+        - state_headcounts
+      properties:
+        company_hq_state:
+          type: string
+          example: CA
+        incorporation_date:
+          type: string
+          format: date
+        entity_type:
+          type: string
+          enum: [FOR_PROFIT, NONPROFIT, GOVERNMENT, RELIGIOUS, TRIBAL, OWNER_ONLY, SELF_EMPLOYED]
+        offers_qualified_plan:
+          type: boolean
+        qualified_plan_ended_date:
+          type: string
+          format: date
+          nullable: true
+        state_headcounts:
+          type: object
+          description: |
+            Keyed by ISO 3166-2 state code; value is the employee headcount for
+            that state. Only states where the employer operates need be included.
+          additionalProperties:
+            $ref: "#/components/schemas/EmployeeHeadcount"
+
+    EligibilityCheckResult:
+      type: object
+      description: |
+        IRA-230: stateless result of `POST /eligibility:check`. Advisory only —
+        no `employer_uuid`, no version, nothing stored. The same eligibility is
+        re-derived (and the compliance answers validated against it) at profile
+        submission, so a result here is not guaranteed to still hold then.
+      required: [evaluated_at, results]
+      properties:
+        evaluated_at:
+          type: string
+          format: date-time
+        results:
+          type: array
+          items:
+            type: object
+            required: [state_code, rule_version_id, is_eligible, eligibility_status, eligibility_reasoning_code]
+            properties:
+              state_code:
+                type: string
+              rule_version_id:
+                type: string
+                description: Active rule version used for this evaluation (audit lineage, R1/R4).
+              is_eligible:
+                type: boolean
+                description: |
+                  Convenience flag. The check returns ONLY eligibility — not the
+                  questions (the front end fetched the form up front from the
+                  questionnaire endpoint). The front end uses this flag to decide
+                  whether to show the compliance section.
+                  Note (exemption edge case): an employer who is *exemptible* but
+                  has not yet filed the required exemption document is NOT exempt
+                  yet, so remains eligible (`MANDATED`) — filing is a compliance
+                  action, not an eligibility one.
+              eligibility_status:
+                type: string
+                enum: [MANDATED, EXEMPT, VOLUNTARY]
+              eligibility_reasoning_code:
+                type: string
+                enum:
+                  - MEETS_ALL_CRITERIA
+                  - EXEMPT_ENTITY_TYPE
+                  - EXEMPT_QUALIFIED_PLAN
+                  - EXEMPT_CERTIFIED
+                  - EXEMPT_BUSINESS_AGE
+                  - VOLUNTARY_ELIGIBLE
+
+    # =========================================================================
+    # Category 4: Compliance Snapshot
     # Source: Confluence 2.2 Part 4
     # =========================================================================
     ComplianceSnapshot:
@@ -1768,6 +2103,13 @@ components:
         compliance_status:
           type: string
           enum: [COMPLIANT, NON_COMPLIANT, ACTION_REQUIRED, GRACE_PERIOD]
+          description: |
+            IRA-230 (per 2026-06-02 meeting): compliance is only ever computed
+            from a complete submitted profile (eligibility + compliance answers
+            together). There is NO `PENDING_INPUT` state — when a rule change
+            makes a snapshot stale we do not recompute or store a placeholder;
+            we notify the employer to resubmit (see `compliance.input_required`).
+            Not-eligible states carry no compliance evaluation.
         applicable_deadline:
           type: string
           format: date
