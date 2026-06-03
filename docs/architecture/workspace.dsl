@@ -148,7 +148,7 @@ workspace "Logixian Compliance Engine" "Logixian Compliance Engine" {
         lce.apiServer.externalAPI -> lce.apiServer.eligibilityEngine "Eligibility check (stateless preview) AND profile-submission consistency re-derivation (Phase 1, IRA-230)"
         lce.apiServer.externalAPI -> lce.apiServer.sqsProducer "Fans out Phase 2 compliance-evaluation trigger on profile submission, after consistency check"
         lce.apiServer.externalAPI -> lce.apiServer.dataAccess "Reads/writes business data"
-        lce.apiServer.externalAPI -> lce.apiServer.webhookDispatcher "Emits regulation.change_detected on state transition; compliance.input_required when a rule approval or profile change invalidates compliance"
+        lce.apiServer.externalAPI -> lce.apiServer.webhookDispatcher "Emits regulation.change_detected on state transition; compliance.input_required to notify affected employers to resubmit after a rule change (no recompute, no PENDING_INPUT)"
 
         # Eligibility Engine (synchronous, in-process)
         lce.apiServer.eligibilityEngine -> lce.apiServer.dataAccess "Reads active rule model + employer data. Stateless for /eligibility:check; on profile submission the result is persisted and compliance answers validated against it"
