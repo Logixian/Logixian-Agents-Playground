@@ -1,0 +1,1558 @@
+WEBVTT
+
+1
+00:00:00.290 --> 00:00:01.320
+Kuan Wu: And…
+
+2
+00:00:02.750 --> 00:00:18.399
+Kuan Wu: And I worked at a couple startups previously. I can… I will… I serve as a team leader of our project, and I will do the project management, and I focused on ETO pipeline before, and did some DevOps.
+
+3
+00:00:18.500 --> 00:00:32.590
+Kuan Wu: And also, we have Sao from Mexico, who has experience serving as a data scientist before, and he also has some IRA-related background, would be a big help of the team. And we also have
+
+4
+00:00:32.590 --> 00:00:42.499
+Kuan Wu: Chawit, aka Pan, he's from Thailand, and he worked as a web developer at a trading firm in Thailand.
+
+5
+00:00:42.630 --> 00:00:45.560
+Kuan Wu: And he also supported DevOps in the team.
+
+6
+00:00:45.730 --> 00:00:51.009
+Kuan Wu: And we got Li Fu, Li Fu… Li Fu is also from Taiwan, and…
+
+7
+00:00:51.120 --> 00:01:04.170
+Kuan Wu: he served as a full-stack development, development before, and Jay from China, who has experience of data scraping and graph database that might also help the project as well.
+
+8
+00:01:04.920 --> 00:01:20.719
+Kuan Wu: And also, and also Jonathan and Scott, are two, great mentors from MSC. Great to have them, and they will be with us for this year, along with this project, so…
+
+9
+00:01:20.940 --> 00:01:22.320
+Kuan Wu: Nice to meet you.
+
+10
+00:01:22.950 --> 00:01:23.630
+Brad Campbell: Okay.
+
+11
+00:01:23.990 --> 00:01:25.630
+Kuan Wu: Okay, so…
+
+12
+00:01:26.430 --> 00:01:44.860
+Kuan Wu: Let's go on. So I'll give a quick introduction of the high-level plan of our project. So we kind of, like, divided our whole journey into two major long-term goals. One is, of course, the RLogic core,
+
+13
+00:01:44.880 --> 00:01:53.690
+Kuan Wu: Lows all the project… loads all the features, from the requirement for the jurisdiction, intelligence, automatic eligibility.
+
+14
+00:01:53.840 --> 00:01:58.829
+Kuan Wu: this kind of thing, we'll list it out in the project, and we'll talk about it later. And…
+
+15
+00:01:59.020 --> 00:02:15.999
+Kuan Wu: A more special thing is, because the software engineering system is also a big goal in this course, and we definitely want to spend some time to explore the possibility of AI in this project. So.
+
+16
+00:02:16.000 --> 00:02:16.520
+Brad Campbell: Yep.
+
+17
+00:02:16.850 --> 00:02:26.840
+Kuan Wu: Yeah, so this software engineering system, we are aimed to build a kind of, like, multi-agent lab, and each of the agents will
+
+18
+00:02:27.050 --> 00:02:37.369
+Kuan Wu: We'll do different tasks for a team, from the beginning, from the requirements analysis, from strategy building, from task
+
+19
+00:02:37.370 --> 00:02:55.570
+Kuan Wu: planning, and also for development, and also for testing. This whole journey, this… the whole pipeline, it could be, it could include some partial manual… manual operation, but also it has the possibility to… could be, like, full automated.
+
+20
+00:02:55.730 --> 00:03:15.690
+Kuan Wu: And this will be a long-term goal for us, and we hope these two goals have, kind of, like, mutual enhancement to each other, and the software engineering system will… will be our, like, our property after this project as well. I'll give more detail in the next slide.
+
+21
+00:03:15.720 --> 00:03:25.160
+Kuan Wu: So… here's our… here's our roadmap. I'll start from the software engineering system first. So…
+
+22
+00:03:25.280 --> 00:03:36.260
+Kuan Wu: So, to build a… such a system, we… we don't expect we just jump into the whole naughty Agent system from now.
+
+23
+00:03:37.010 --> 00:03:44.340
+Kuan Wu: Like, for example, we were, like, because we all know, like, AI models, it will, like, generate some kind of…
+
+24
+00:03:44.440 --> 00:03:58.709
+Kuan Wu: hallucination sometimes. And actually, we believe all those hallucinations, most of the hallucinations are from the lack of context you feed to it, and also for the prompt. So.
+
+25
+00:03:58.850 --> 00:04:08.899
+Kuan Wu: no matter what this system will be, the first priority we have to do is we have to accumulate context that
+
+26
+00:04:08.900 --> 00:04:14.529
+Kuan Wu: May serve as… may serve as a potential input of this whole multi-agent system.
+
+27
+00:04:14.530 --> 00:04:24.180
+Kuan Wu: And what a contacts will include, like, every communication, every meeting, including now, we are… we are also recording for this.
+
+28
+00:04:24.180 --> 00:04:36.229
+Kuan Wu: And including all the documents, all the email, or all the code generated. And all of this… all of this information are the contacts that the AI should know, because
+
+29
+00:04:36.420 --> 00:04:50.090
+Kuan Wu: for human… for human doing every job, the human needs such context, and we might use this context, like, implicit, but AI won't know, and that's what we believe the reason caused the
+
+30
+00:04:50.120 --> 00:05:03.949
+Kuan Wu: AI hallucination. So, first… our first focus will be… we will investigate and organize those valuable contexts in a systematically way that
+
+31
+00:05:04.040 --> 00:05:20.830
+Kuan Wu: will serve as the input of our different tasks. And… and also, we will start to, build this system from some little tasks. We'll do, like, like, bottom-up. So… so, like, like, for example, currently, you are focused on
+
+32
+00:05:21.270 --> 00:05:26.519
+Kuan Wu: like, like, automated sound course, like, meeting. Like, for…
+
+33
+00:05:26.790 --> 00:05:33.719
+Kuan Wu: For example, if you want to arrange a meeting, you might need a meeting agenda, and what's the context for a meeting agenda? It might be…
+
+34
+00:05:33.730 --> 00:05:48.520
+Kuan Wu: a record for the last meeting, or certain different tasks or document we created that brings the goal for a certain meeting. And also, for after a meeting, you may need a transcript or AI summary.
+
+35
+00:05:48.610 --> 00:06:00.840
+Kuan Wu: And for now, we are… we are, like, we are trying to do these things, like, manually. We… our goal here is to focus on the process, and so we can, like.
+
+36
+00:06:00.950 --> 00:06:14.589
+Kuan Wu: if we, like, decouple the process and the model, and we can do some… and fine-tuning even later, like, for example, we can fine-tune what's the best model for a certain scenario, what's the best prompt.
+
+37
+00:06:14.640 --> 00:06:23.100
+Kuan Wu: And… but for now, in a system architecture view, we are fulfilling the functional requirement first to
+
+38
+00:06:23.330 --> 00:06:31.719
+Kuan Wu: deal with, more, like, little tasks, including planning, strategy, this kind of thing in the semester. And…
+
+39
+00:06:31.990 --> 00:06:49.829
+Kuan Wu: And yeah, that's… that's for spring semester. Oh, and we will have… we will divide the… the whole project into three parts. One is spring semester. For now, we will have, two hours of working capacity a week, and your summer and fall, you'll get 36 hours a week. And…
+
+40
+00:06:49.920 --> 00:07:08.089
+Kuan Wu: Yeah, and at the same time, the spring semester for the Aerologic core, we will target at first, we have to design the whole, the whole system architecture for the project, including the tech stack, including all the requirements, we have to figure it out, and…
+
+41
+00:07:08.130 --> 00:07:27.890
+Kuan Wu: And also includes the future milestone, for example, milestone 7 and 8. There will be some monitoring system and onboarding tool. We will kind of, like, dive into the holistic system architecture planning, and we are aimed to, complete milestone 1 to 3, which is
+
+42
+00:07:27.890 --> 00:07:35.110
+Kuan Wu: feed the real data into the jurisdiction knowledge base. And…
+
+43
+00:07:35.150 --> 00:07:52.579
+Kuan Wu: We might discuss this later, because we might, do… because, there's, like, 27 states are supported right now, so… so probably… probably, we will support, a subset of all… all the states, and we will expand that in the future.
+
+44
+00:07:52.660 --> 00:08:07.310
+Kuan Wu: And that's about last spring semester, and for the summer semester, our software engineering system, because we might start, to really, like, develop some system a summer. So.
+
+45
+00:08:07.530 --> 00:08:19.669
+Kuan Wu: the… the task of the agent, AI agent, will be, focusing on the dev agent, like coding, review, QA, monitoring, these kind of orgs, and…
+
+46
+00:08:19.680 --> 00:08:33.070
+Kuan Wu: Everyone knows there's, like, tons of… tons of tools and models to do such work, but we'll try to, like, standardize all the flow to find a standard, like, a process for the team.
+
+47
+00:08:33.299 --> 00:08:38.880
+Kuan Wu: And… and we will start, focusing on the multi-agent architecture that we might
+
+48
+00:08:39.010 --> 00:08:43.920
+Kuan Wu: I've ultimately had a chance to build it to automate all the flow.
+
+49
+00:08:44.140 --> 00:08:51.179
+Kuan Wu: N… And for the ARLogix core, we were expanding supported states, for the…
+
+50
+00:08:51.180 --> 00:09:06.600
+Kuan Wu: jurisdiction for the RIA knowledge base, and we'll focus on milestone 4 to 6, which is the implementation of the eligibility engine and the compilence deadline calculator. And…
+
+51
+00:09:06.600 --> 00:09:22.449
+Kuan Wu: And also, we are anticipating that we can have a chance to really, like, dig into how to investigate all this project with current IOLogic's workflow, because if these projects, like, couldn't work out, couldn't help the business, and…
+
+52
+00:09:22.450 --> 00:09:28.660
+Kuan Wu: And we don't… we don't want that, but if we have the chance, we would like to see
+
+53
+00:09:28.660 --> 00:09:30.279
+Kuan Wu: the possibility here.
+
+54
+00:09:30.280 --> 00:09:34.349
+Brad Campbell: Yeah, and yeah, and for last, for last semester.
+
+55
+00:09:34.350 --> 00:09:48.800
+Kuan Wu: We will, like, we will keep going on the integration, with our whole project, and we will focus on milestone 7 and 8, which is the onboarding tool, and… onboarding tool and the monitoring system. And…
+
+56
+00:09:48.810 --> 00:10:02.670
+Kuan Wu: And also, if the software engineering system goes well, we will really, like, build the multi-agent system, during the last semester. And that's pretty much about the whole roadmap, yeah.
+
+57
+00:10:03.420 --> 00:10:05.030
+Brad Campbell: Okay, yeah, that makes sense.
+
+58
+00:10:05.280 --> 00:10:08.270
+Kuan Wu: Okay, that's… Good for the next one.
+
+59
+00:10:08.380 --> 00:10:11.930
+Kuan Wu: Okay, so… we might… we might spend…
+
+60
+00:10:12.000 --> 00:10:25.260
+Kuan Wu: a couple times here. We want to, like, go through the whole journey about how Ivrologix deals with, your clients right now. And for a diagram you see at its size, it's actually…
+
+61
+00:10:25.260 --> 00:10:33.069
+Kuan Wu: We kind of, like, visualize our understanding of the whole iLogic system, and we would like to, like, discuss
+
+62
+00:10:33.070 --> 00:10:37.389
+Kuan Wu: The details here to see how things are really, really goes.
+
+63
+00:10:37.390 --> 00:10:53.880
+Kuan Wu: And I'll, like, give a, like, quick overview of how we are understanding. So, there are, there are, regulations, regulations, raw data from, from maybe government websites or some knowledge base, and…
+
+64
+00:10:54.070 --> 00:11:12.509
+Kuan Wu: we might need some, some kind of data processing to those… to those regulations, and so that's a… that's a… that's a note here. And the methods might be scraping or API, or maybe just manually insert some kind of text or PDF.
+
+65
+00:11:12.670 --> 00:11:27.780
+Kuan Wu: And on the other side is for the clients, and the clients' data might include their data from their employees. Their employees, maybe there's a SSN or income, or something, and…
+
+66
+00:11:28.080 --> 00:11:44.110
+Kuan Wu: and also some logistics data, some sort of, like, data of incorporation, something like that. And these data will feed into IroLogix system. We are not sure how this system works right now. It might be your Irologix specialist to…
+
+67
+00:11:44.110 --> 00:12:02.800
+Kuan Wu: To… to service, those clients, and… and we guess maybe there's a RLogix portal, where that's where, for milestone 7, we need to focus about, because there's an onboarding tool here, so we might can automate this flow to get those data from the company.
+
+68
+00:12:02.840 --> 00:12:08.270
+Kuan Wu: And combining the data from those regulations and clients.
+
+69
+00:12:08.270 --> 00:12:23.990
+Kuan Wu: We will, there might be two actions that occur. One is update the central database, for both the rules and the client data, and it might trigger some actions, like, for example, if the regulation change or the client data change.
+
+70
+00:12:23.990 --> 00:12:28.010
+Kuan Wu: it might trigger the engines, I might,
+
+71
+00:12:28.060 --> 00:12:40.429
+Kuan Wu: give their eligibility, new update, or maybe some compilence deadline update, it will trigger two things, update data and trigger these actions. And for this engine, it might
+
+72
+00:12:40.430 --> 00:12:49.769
+Kuan Wu: need to do some query to the database to calculate those data. And finally, finally, there might be a…
+
+73
+00:12:49.870 --> 00:13:07.550
+Kuan Wu: maybe dashboard to notify the user. We are not sure how this is going right now. So, yeah, that's pretty much about how we understand about the whole system right now. So, can… and can we… can… can Fred, like, like, walk us through about these details?
+
+74
+00:13:08.000 --> 00:13:13.250
+Brad Campbell: Yeah, I mean, it looks like you got a pretty good handle on what a high-level architecture looks like as far as, I mean.
+
+75
+00:13:13.640 --> 00:13:22.299
+Brad Campbell: Looks like everything's there as far as process goes, so yep, we're looking at external points of interest to figure out what the regulations are, you're…
+
+76
+00:13:22.890 --> 00:13:26.620
+Brad Campbell: Pulling them in some kind of way, depending on the context.
+
+77
+00:13:27.500 --> 00:13:30.799
+Brad Campbell: Okay, so database… yeah, I mean, I'm just kind of talking through it,
+
+78
+00:13:31.220 --> 00:13:36.249
+Brad Campbell: Yeah, I mean, this kind of lines up with what I had in my head.
+
+79
+00:13:36.400 --> 00:13:42.920
+Brad Campbell: I guess, for one detail, it looks like you're wondering whether, like, we actually onboard customers, like… I don't know.
+
+80
+00:13:43.230 --> 00:13:52.179
+Brad Campbell: like, have some person sit down with them and ask them a bunch of questions, and then, like, key that stuff in to a database almost directly. That's not really the case. The portal…
+
+81
+00:13:52.390 --> 00:13:56.729
+Brad Campbell: We do have a portal, basically around your milestone 7. So, like, right now, we have a…
+
+82
+00:13:57.330 --> 00:14:03.450
+Brad Campbell: an employer portal, which is kind of an additional product, right? So basically, when somebody comes and signs up.
+
+83
+00:14:04.230 --> 00:14:08.330
+Brad Campbell: for an account with us, like, those are people that, like.
+
+84
+00:14:08.620 --> 00:14:11.280
+Brad Campbell: Like, a person that actually has a retirement account
+
+85
+00:14:11.330 --> 00:14:28.959
+Brad Campbell: would not typically come sign up for an account with us, like, their employer would. So, like, that portal would be exposed to the employer, so, like, that would be where we would collect that information from them, like the company data, like, number of employees and all that stuff. So, most of those inputs would be kind of, like, your key…
+
+86
+00:14:29.040 --> 00:14:36.410
+Brad Campbell: cross-reference data points against, like, the regulations. So, like, you know, what zip code are they in? Like, how many employees do they have?
+
+87
+00:14:36.410 --> 00:14:49.170
+Brad Campbell: whether or not, like, the actual number of employees that they have ever actually sign up for an account with us is kind of almost a separate detail, because, employees… well, maybe in certain jurisdictions, but I don't think that we would actually have to, like.
+
+88
+00:14:49.240 --> 00:15:00.779
+Brad Campbell: track that number for compliance purposes. It would basically be on the employer to say, yes, I have between, you know, 5 and 20 employees, or 5 and 100, which is the way most of the regulations are written. So, yeah, I mean, this…
+
+89
+00:15:00.870 --> 00:15:04.870
+Brad Campbell: this looks pretty good for, you know, like I said, I tried to be…
+
+90
+00:15:05.880 --> 00:15:08.770
+Brad Campbell: It's kind of interesting, because I get so much…
+
+91
+00:15:09.520 --> 00:15:17.590
+Brad Campbell: I feel like I got a much different guide on how to put my presentation together versus kind of what I saw in the presentations that the other employers gave.
+
+92
+00:15:17.660 --> 00:15:24.830
+Brad Campbell: But I try to be very vague to kind of leave it up to y'all to come up with a design that makes sense, but I mean, this…
+
+93
+00:15:24.830 --> 00:15:47.160
+Brad Campbell: this looks really good. As far as, like, the only other thing that I think we could kind of… I mean, we'll… obviously, we'll flush a lot of this stuff out as we go along, but, milestone 8, I kind of envision the notifications engine working a little bit differently than maybe just a dashboard, like, we'd probably trigger emails, but long story short, you know, there are lots of different ways to broker messages into different systems, like, we could dump all this stuff in a queue somewhere.
+
+94
+00:15:47.220 --> 00:15:54.050
+Brad Campbell: You know, I don't know how much y'all have worked with different data queues, but, you know, something like RabbitMQ or ActiveMQ, something like that.
+
+95
+00:15:54.060 --> 00:16:10.869
+Brad Campbell: And then there could be multiple consumers to those messages that choose what to do with them. So, like, yeah, maybe they do line up in a web dashboard, but maybe we, you know, trigger text messages or emails off of them, or, you know, whatever the use case is. So, I mean, at a high level, this is pretty good. Like, I'm pretty impressed that you came up with this.
+
+96
+00:16:10.940 --> 00:16:13.480
+Brad Campbell: Based on a bunch of words in his line, so good job.
+
+97
+00:16:13.740 --> 00:16:14.130
+Saul Alvarez: Breath.
+
+98
+00:16:14.130 --> 00:16:15.689
+Kuan Wu: Alright, I appreciate it.
+
+99
+00:16:15.690 --> 00:16:23.699
+Saul Alvarez: A question from this. We understand that the upper right part is the part that IraLogix has already developed, right?
+
+100
+00:16:23.970 --> 00:16:24.420
+Brad Campbell: Correct.
+
+101
+00:16:24.420 --> 00:16:32.000
+Saul Alvarez: And, well, except for the central database, everything else will be needed… well, it's greenfield. It doesn't exist at all.
+
+102
+00:16:32.000 --> 00:16:38.850
+Brad Campbell: Correct. And so, by central database, you mean the database where we're storing everything relative to this project, right? Not like our customer database?
+
+103
+00:16:38.850 --> 00:16:39.430
+Kuan Wu: Yes.
+
+104
+00:16:39.430 --> 00:16:42.110
+Brad Campbell: Okay, yep, yep, that is… that is a correct statement.
+
+105
+00:16:43.710 --> 00:16:52.430
+Kuan Wu: Okay, then, so… so for the… for the client data collection, is that a one-time thing, just based on… based on your walkthrough?
+
+106
+00:16:52.430 --> 00:16:58.350
+Brad Campbell: It is now. You know, I think maybe one thing that comes out of this project is, like, do we need to, you know, kind of like…
+
+107
+00:16:58.360 --> 00:17:18.259
+Brad Campbell: Kind of like your bank does, like, every year they prompt you to, you know, when you log in, they say, hey, is your financial information still relevant? Like, do you still make this much, do you still work here? It would probably be one of those kinds of things where, based on, like, the jurisdiction, maybe… it may be, like, to me, this is actually kind of a big loop, right? So maybe one of the things that comes out of Milestone 8 is, like.
+
+108
+00:17:18.260 --> 00:17:35.749
+Brad Campbell: figuring out how to intelligently, like, re-trigger those reassessments of… or, you know, recollections of data, so that I'm not just doing it on, like, a calendar type of, cadence, right? Like, I'm not just doing it every 12 months. Like, I actually made… or maybe, I don't know, you know, maybe by default we do it every 12 months, but if something changes.
+
+109
+00:17:35.750 --> 00:17:43.200
+Brad Campbell: You know, and one of those notifications triggers, like, we know that, like, you know, in the interim, like, we actually need to recollect or re-verify our information for some
+
+110
+00:17:43.260 --> 00:17:53.059
+Brad Campbell: you know, change that happened as far as, like, a regulation goes. So, that's where I think, like, having a kind of decoupling mechanism for… for dumping these notifications somewhere where we can
+
+111
+00:17:53.350 --> 00:17:57.829
+Brad Campbell: Kind of have multiple consumers, based on use case, kind of go draw from that.
+
+112
+00:17:57.830 --> 00:18:09.819
+Kuan Wu: Q would be really useful, but yeah, I mean… Okay. So for data collection, that won't be… that won't need it to be a, like, a high-frequency consumer. Absolutely.
+
+113
+00:18:09.820 --> 00:18:14.090
+Brad Campbell: Yeah, I mean, like, once a year for, you know, right now it's a handful of…
+
+114
+00:18:14.260 --> 00:18:29.349
+Kuan Wu: But the mechanism for the data update is definitely needed, right? The frequency might be low. Okay, then how about… how about the regulations? Because there must be, like, many, like, sources of some government states.
+
+115
+00:18:29.350 --> 00:18:39.710
+Brad Campbell: Yeah, these are all going to be codified, most likely, in, like, legislative codes that are exposed online, and some programs have, like, individual websites. I can kind of put some of that stuff together.
+
+116
+00:18:39.880 --> 00:18:48.670
+Brad Campbell: So that you can kind of have a list of the current sources that we're aware of when you kind of put together your automation for going and grabbing the stuff.
+
+117
+00:18:49.060 --> 00:18:55.460
+Kuan Wu: Okay. Is there any, like, current, like, service provider for those regulations, or you guys just…
+
+118
+00:18:55.460 --> 00:18:59.730
+Brad Campbell: If there was, we wouldn't need this project, honestly. I mean, that's the whole point, right, is that there's not…
+
+119
+00:18:59.730 --> 00:19:00.090
+Kuan Wu: Okay.
+
+120
+00:19:00.090 --> 00:19:10.479
+Brad Campbell: It would be so nice if there was. There's actually, you know, potential for federal legislation that kind of covers this, so that may end up… I don't know. I don't know what'll happen there. It gets really interesting.
+
+121
+00:19:10.480 --> 00:19:28.400
+Kuan Wu: Okay. Okay, so… so mostly here is kind of a… kind of a manual work to fetch the data from the website, and… okay, so how about… how about all… how about different regulations from different states? Is there… is only… these kind of data would be, like.
+
+122
+00:19:28.520 --> 00:19:32.540
+Kuan Wu: So, kind of normalized into a similar format, or…
+
+123
+00:19:32.660 --> 00:19:35.879
+Brad Campbell: Let's hope so. I mean, I would kind of expect that…
+
+124
+00:19:36.150 --> 00:19:39.920
+Brad Campbell: our extraction mechanism. One, so, like, you know.
+
+125
+00:19:40.610 --> 00:19:46.719
+Brad Campbell: If you're gonna put everything in a database, you already have some view of what that data looks like in a normalized form, so we would…
+
+126
+00:19:46.990 --> 00:19:48.629
+Brad Campbell: Probably, you know.
+
+127
+00:19:49.010 --> 00:20:05.750
+Brad Campbell: I don't know how much of this will need to be scraped. I mean, we need to actually start looking at some of the sources, so I'll get you a list of them, and we can kind of start taking a look at them to figure out… my hope is that we would be able to kind of build some sort of, like, intermediary, normalized form of this data, maybe before it goes into a database, so that, you know…
+
+128
+00:20:06.020 --> 00:20:09.110
+Brad Campbell: I don't know that… Yeah.
+
+129
+00:20:09.110 --> 00:20:11.349
+Kuan Wu: Okay, okay. We'll have to look at it.
+
+130
+00:20:11.590 --> 00:20:13.289
+Kuan Wu: Okay, okay, and…
+
+131
+00:20:13.290 --> 00:20:17.110
+Brad Campbell: I don't know how much y'all have played around with NLP tooling, but, like.
+
+132
+00:20:17.370 --> 00:20:24.450
+Brad Campbell: my thought was to just dump some of this stuff in an S3 bucket and have some sort of NLP tool take, like, you know, do its assessment of it and say, like.
+
+133
+00:20:24.760 --> 00:20:29.519
+Brad Campbell: Here are textual features that I'm looking for that correlate to, like, You know, like…
+
+134
+00:20:29.690 --> 00:20:32.250
+Brad Campbell: given a set of regulations, like, here are the things I care.
+
+135
+00:20:32.250 --> 00:20:32.590
+Kuan Wu: No.
+
+136
+00:20:32.590 --> 00:20:36.219
+Brad Campbell: And basically, you know, building, like, a set of keywords for an NLP pipeline.
+
+137
+00:20:37.260 --> 00:20:38.410
+Brad Campbell: So, that's me.
+
+138
+00:20:38.820 --> 00:20:55.139
+Brad Campbell: you like how I would build it, which I think I'm not supposed to do, but, like, it really doesn't matter to me how you build it. I guess what I'm saying is, like, this is how I think about it. Like, there are probably keywords that map up to these, you know, individual pieces of regulatory data that we really want in this database.
+
+139
+00:20:55.140 --> 00:21:03.360
+Brad Campbell: map out these keywords and build, like, you know, whatever… whatever methods to go aggregate that data makes sense to you. If you want to build web scrapers to do it, cool.
+
+140
+00:21:03.460 --> 00:21:17.469
+Brad Campbell: If there are APIs that let us get it, great. I don't know that we're gonna run into that. Like, what I've… what I feel like we're probably gonna run into is, like, it's gonna be, like, a page on a website somewhere with, like, a big stupid PDF that we're gonna have to actually go parse the PDF and, like.
+
+141
+00:21:17.570 --> 00:21:23.550
+Brad Campbell: pull all this stuff out of it. Maybe some of the better programs won't be like that, but I suspect for some of the smaller states, there's…
+
+142
+00:21:23.950 --> 00:21:35.390
+Brad Campbell: probably going to be, unfortunately, how this works. Like, some sort of, like, file system-based extraction utility that's almost optimized for PDFs is probably going to be, like, a great way to kind of think about this in my mind.
+
+143
+00:21:36.730 --> 00:21:50.430
+Kuan Wu: Oh, well, I… I guess the approach to how to, like, format the data is not a big deal right here. It could be LLM, it could be some different kind of PDF tool, something like that, but I think what we need is we…
+
+144
+00:21:50.430 --> 00:22:04.170
+Kuan Wu: have to get some kind of knowledge to know what data, what field in those data are needed, and what has to be processed to… to fulfill the needed of… of the, yeah, the… I can… I can tell.
+
+145
+00:22:04.170 --> 00:22:07.179
+Brad Campbell: I can take an action item to put some of that together for you.
+
+146
+00:22:07.540 --> 00:22:13.420
+Kuan Wu: Okay, okay. And how… how about the database? Is the current system…
+
+147
+00:22:13.490 --> 00:22:27.600
+Kuan Wu: Has, like, kind of separated a knowledge database and a client database, and if there's some kind of integration in the future, and what's… what can we expect the method for the approach here?
+
+148
+00:22:27.720 --> 00:22:31.500
+Brad Campbell: So, my preference would be to use a PostgreSQL-based.
+
+149
+00:22:31.500 --> 00:22:35.329
+Kuan Wu: database for this. We use that almost universally for all of our data storage.
+
+150
+00:22:35.350 --> 00:22:42.799
+Brad Campbell: I could give you a lot of architectural reasons why I like Postgres, I don't know if you're interested in those, but long story short, it gives us the most flexibility
+
+151
+00:22:43.150 --> 00:22:56.250
+Brad Campbell: Across the board. So, you know, I know you guys are very much on the academic side of things. Like, we are moving heavily towards a domain-driven architecture. We don't really… we have some notion of one.
+
+152
+00:22:56.580 --> 00:23:02.490
+Brad Campbell: Whereas it kind of exists in certain APIs and things, like, it doesn't really exist in our data layer.
+
+153
+00:23:02.590 --> 00:23:16.429
+Brad Campbell: I'm kind of working to make that a thing on our data layer, and, like, one of the things… I said I wouldn't say it, but I'll tell you anyway. One of the things I really like about Postgres is it gives me the ability… so, like, if I have separate databases from a Postgres standpoint for each domain.
+
+154
+00:23:16.490 --> 00:23:24.199
+Brad Campbell: That makes it really easy to, expose certain elements of data across different domains using something that they call foreign data wrappers.
+
+155
+00:23:24.240 --> 00:23:37.489
+Brad Campbell: So to me, like, if y'all just went and, like, stood up your own PostgreSQL database somewhere, you know, created the database, created the tables in here, and said, like, this is the way that we store all this data, then that makes it really easy for us to consume.
+
+156
+00:23:37.590 --> 00:23:40.359
+Brad Campbell: Holistically across a swath of services.
+
+157
+00:23:40.800 --> 00:23:51.329
+Kuan Wu: Yeah, we actually have a little discussion about that, because for… I mean, your first thought might think, like, the knowledge database you have to do.
+
+158
+00:23:51.330 --> 00:23:51.859
+Brad Campbell: Please don't.
+
+159
+00:23:51.860 --> 00:24:04.990
+Kuan Wu: data you might… Yeah, because you can actually implement the graph logic in the pulseWares, so you can, like, definitely search more… That's okay. Yeah. Yeah.
+
+160
+00:24:04.990 --> 00:24:09.330
+Brad Campbell: I'd tell you a horror story, but I actually spent the last year of my life moving
+
+161
+00:24:10.150 --> 00:24:13.019
+Brad Campbell: all of our data out of Near4J into.
+
+162
+00:24:13.020 --> 00:24:13.440
+Kuan Wu: Okay.
+
+163
+00:24:13.440 --> 00:24:14.130
+Brad Campbell: Absolutely.
+
+164
+00:24:14.520 --> 00:24:20.900
+Brad Campbell: entire data abstraction, mapping, transform, all of that stuff, and did… did it all.
+
+165
+00:24:20.900 --> 00:24:21.879
+Kuan Wu: You know, like…
+
+166
+00:24:22.690 --> 00:24:29.340
+Brad Campbell: I don't know if y'all care. I mean, I would feel like you would. Like, the reason that we actually ended up having to do that is, like, at some point of…
+
+167
+00:24:29.370 --> 00:24:43.320
+Brad Campbell: of scale on Neo4j. So, what Neo4j doesn't really tell you, their big, dirty secret, is that basically you have to run the whole entire database in memory to actually get performance out of the database. So, our database became so large that we were running
+
+168
+00:24:43.420 --> 00:24:51.189
+Brad Campbell: basically a… 3 to 500 gigabyte database in memory, which, like, that's not a huge database, by the way.
+
+169
+00:24:51.660 --> 00:24:54.819
+Brad Campbell: But you have to run the whole thing in memory, and then you have to run 3 replicas of that.
+
+170
+00:24:54.820 --> 00:24:55.480
+Kuan Wu: That's crazy.
+
+171
+00:24:55.480 --> 00:24:58.900
+Brad Campbell: consistent. Yeah, so it's nuts, like, we are paying…
+
+172
+00:24:59.280 --> 00:25:18.859
+Brad Campbell: Are we being recorded? We were paying six-figure… almost six-figure… well, no, sorry. We were paying well into five figures a month just to host our database. And then after we have moved everything to Postgres, we are not well optimized, but across all three environments, we're paying basically less than $5,000 a month to run all of our database.
+
+173
+00:25:18.860 --> 00:25:19.290
+Kuan Wu: Excellent.
+
+174
+00:25:19.290 --> 00:25:34.510
+Brad Campbell: Postgres with better… actually, with better performance than we had on Neo4J. Neo4j is cool for, like, data science, like, data exploration, like, I think it's great for that, but, like, at the end of the day, if you kind of look at a graph database, like, it's still essentially a relational data structure, so…
+
+175
+00:25:34.510 --> 00:25:36.780
+Kuan Wu: I'll just put it in place for…
+
+176
+00:25:36.930 --> 00:25:37.680
+Brad Campbell: So…
+
+177
+00:25:37.680 --> 00:25:38.350
+Kuan Wu: Okay.
+
+178
+00:25:38.530 --> 00:25:45.109
+Brad Campbell: So, yeah, I think you're thinking about, like, if you want to use one of the, like, PG… not PGVector, that's vector, but, there's…
+
+179
+00:25:45.800 --> 00:25:53.409
+Brad Campbell: I can't think of… there are a couple libraries that let you basically use vector semantics over a Postgres data store, and that's okay with me, because this…
+
+180
+00:25:53.670 --> 00:26:00.019
+Brad Campbell: would be a decoupled database, and it wouldn't see the kind of usage that we see across the rest of our stack. So, yeah, that would be cool.
+
+181
+00:26:00.770 --> 00:26:10.419
+Kuan Wu: Okay, so… so just to clarify, so… so currently there is… there is a knowledge database in our logic system, and there's also a client
+
+182
+00:26:10.430 --> 00:26:29.410
+Kuan Wu: database in that system, and those, are… the database we're gonna do in this project are completely separated from this current data, and so we, we, so… so we won't access to the client data, right, obviously, so we might need some kind of
+
+183
+00:26:29.410 --> 00:26:36.250
+Kuan Wu: maybe sample data to really, like, test out the compliance or your engine. Okay.
+
+184
+00:26:36.250 --> 00:26:52.850
+Kuan Wu: Okay, and also for the… for the pro… for the portal of Milestone 7 here, because if we want to do some kind of onboarding feature, and there is a existing portal right now, and is it…
+
+185
+00:26:53.080 --> 00:26:56.059
+Kuan Wu: like, Like, for… for my fir… first…
+
+186
+00:26:56.200 --> 00:26:58.080
+Kuan Wu: First of all, it might be just…
+
+187
+00:26:58.240 --> 00:27:12.280
+Kuan Wu: would be better to just implement the onboarding feature on the current portal, rather than separate it, like, totally. So, do you have any, like, ins… thoughts about it? Like, how we're gonna do…
+
+188
+00:27:12.590 --> 00:27:23.469
+Brad Campbell: My thought was, like, make that an API, right? So, like, then I can essentially hook that API into our current, like, user experience. So basically, like, when somebody clicks the submit button to, like, create, you know, a new employer, like…
+
+189
+00:27:23.810 --> 00:27:26.710
+Kuan Wu: We just dispatch that same call. Like, we may…
+
+190
+00:27:26.960 --> 00:27:30.249
+Brad Campbell: Duplicate some of the data elements and just, you know, send them to.
+
+191
+00:27:30.250 --> 00:27:30.670
+Kuan Wu: Okay.
+
+192
+00:27:30.670 --> 00:27:36.000
+Brad Campbell: APIs, one that actually creates their data, Anyway… Okay.
+
+193
+00:27:36.940 --> 00:27:48.829
+Brad Campbell: I think we can… we can have more conversations, and I have no problems with, like, integrate… giving y'all, like, access to our development environment to work against this stuff, but my thought was to try to keep as much of this stuff decoupled as possible, so use.
+
+194
+00:27:48.830 --> 00:27:49.200
+Kuan Wu: Yeah.
+
+195
+00:27:49.200 --> 00:27:55.119
+Brad Campbell: use queues. Not really to keep y'all out of our systems, but, like, I just am generally…
+
+196
+00:27:56.190 --> 00:28:04.460
+Brad Campbell: My ethos is to try to build systems that are decoupled, just for obvious reasons. They give themselves a lot of scalability.
+
+197
+00:28:05.430 --> 00:28:06.400
+Brad Campbell: performance optimism.
+
+198
+00:28:06.400 --> 00:28:22.679
+Kuan Wu: Okay, so to better achieve that, maybe, for the current portal, the current existing portal, maybe we can get some kind of, like, text back about it, like, how to interact with the current data without accessing to the database directly? Okay.
+
+199
+00:28:22.880 --> 00:28:28.379
+Kuan Wu: Okay, alright. Do everyone want to, like, add everything?
+
+200
+00:28:29.140 --> 00:28:46.190
+Kuan Wu: Okay, we have… we have the next slide. I kind of, like, list out, more questions, more questions around here. Some of them we… we just discussed in the last… last slide. So, I think what we need here… oh, for the…
+
+201
+00:28:46.240 --> 00:28:53.430
+Kuan Wu: Oh, this one, for the versioning strategy, because those, like, regulations will, like, keep change every year, maybe every month, so…
+
+202
+00:28:53.490 --> 00:29:05.269
+Kuan Wu: It's a current, like, current strategy, you have to, like, support different versions of those regulations, or basically just follow the newest version that will apply to every client.
+
+203
+00:29:06.050 --> 00:29:11.960
+Brad Campbell: It would be really cool if there was, like, a temporal versioning strategy, or so, like, you know, let's just say that
+
+204
+00:29:12.740 --> 00:29:14.250
+Brad Campbell: I don't know how this thing ultimately.
+
+205
+00:29:14.250 --> 00:29:14.660
+Kuan Wu: Ultimately.
+
+206
+00:29:14.660 --> 00:29:21.659
+Brad Campbell: But let's say these scrapers or, like, whatever our ingestion framework is runs every 24 hours, and maybe every 20, like…
+
+207
+00:29:21.810 --> 00:29:35.549
+Brad Campbell: let's just say, you know, today it runs, right? Let's just say we ran everything today as a baseline. This is the first time we point this thing at every single one of these states. We collect all the information we put in the database. To me, that's version 2026.01.26.
+
+208
+00:29:36.080 --> 00:29:46.279
+Brad Campbell: you know, tomorrow we run all of these, nothing changes. Let's say, you know, whatever, maybe Wednesday we run it, and we see a difference in one of the state's regulatory requirements. We update the.
+
+209
+00:29:46.280 --> 00:29:46.650
+Kuan Wu: database.
+
+210
+00:29:46.650 --> 00:29:55.810
+Brad Campbell: So now that becomes, you know, 2026-01-28. And that only exists for one state, because we only saw a difference for one state. So basically, like, over time.
+
+211
+00:29:56.000 --> 00:29:59.560
+Brad Campbell: I don't know if we could… Hmm.
+
+212
+00:30:00.780 --> 00:30:14.589
+Brad Campbell: I'm not asking you to build a temporal data storage structure, because that would be really difficult to do, but, like, it would be nice to know, like, there was a version 2026.01.26, and there was… I don't know, I mean, we could actually build triggers in the database to, like.
+
+213
+00:30:14.880 --> 00:30:24.749
+Brad Campbell: you know, track the mutations that were actually done on the table. So, like, to me, like, this doesn't have to be a V1, V2, V3 thing, but, like, whenever we see something new that's changed, like.
+
+214
+00:30:24.920 --> 00:30:33.079
+Brad Campbell: Like, that date stamp becomes, like, the version number for, you know, the current set of, like, requirements that we have in the database, if that makes sense.
+
+215
+00:30:33.670 --> 00:30:34.250
+Kuan Wu: Oh.
+
+216
+00:30:34.410 --> 00:30:54.189
+Kuan Wu: Yeah, but, I mean, for… for the current… for the current, like, the current service, is there a scenario of a use case that you have to, you have to inspect whether a client has violated the rule from last year, or maybe just always focus on the newest version? I mean, for the…
+
+217
+00:30:54.190 --> 00:30:54.760
+Brad Campbell: Focus on the.
+
+218
+00:30:54.760 --> 00:30:55.360
+Kuan Wu: I was thinking.
+
+219
+00:30:55.360 --> 00:30:57.950
+Brad Campbell: is probably the right answer there. I mean…
+
+220
+00:30:57.950 --> 00:30:58.650
+Kuan Wu: Okay.
+
+221
+00:30:59.520 --> 00:31:00.080
+Brad Campbell: Yeah.
+
+222
+00:31:00.600 --> 00:31:13.249
+Kuan Wu: Okay, so the versioning might just be some kind of, like, analysis purpose, like, you can tell you you were good last year, but you're not good this year, some kind, just for analysis purpose, okay.
+
+223
+00:31:13.280 --> 00:31:14.500
+Brad Campbell: Okay.
+
+224
+00:31:14.500 --> 00:31:15.159
+Kuan Wu: Breath. Okay.
+
+225
+00:31:15.160 --> 00:31:23.339
+Saul Alvarez: I have a question for you. You are familiar with, like, the kind of regulations that each state has.
+
+226
+00:31:23.690 --> 00:31:24.670
+Saul Alvarez: Damn.
+
+227
+00:31:25.160 --> 00:31:28.020
+Saul Alvarez: How many axes of decision do you think
+
+228
+00:31:28.180 --> 00:31:30.840
+Saul Alvarez: We would need to implement, like.
+
+229
+00:31:30.970 --> 00:31:35.250
+Saul Alvarez: Considering the inputs that your customers are giving.
+
+230
+00:31:36.030 --> 00:31:42.289
+Saul Alvarez: do you think that we will need to ask you for more inputs? Like.
+
+231
+00:31:42.390 --> 00:31:45.649
+Saul Alvarez: To modify the portal to get more information out of them.
+
+232
+00:31:45.870 --> 00:31:48.400
+Saul Alvarez: ew, like… Boom.
+
+233
+00:31:49.070 --> 00:31:49.480
+Brad Campbell: It's
+
+234
+00:31:49.900 --> 00:31:57.969
+Brad Campbell: But I mean, really, the big driver is, like, where are you physically, like, you know, where is your business registered, and how many employees do you have? Like, those are really…
+
+235
+00:31:58.130 --> 00:31:58.850
+Brad Campbell: The big ones that I.
+
+236
+00:31:58.850 --> 00:32:02.500
+Saul Alvarez: The, the, the main, the main drivers. Alright, yeah, nothing.
+
+237
+00:32:02.670 --> 00:32:03.530
+Saul Alvarez: Okay.
+
+238
+00:32:06.430 --> 00:32:07.070
+Kuan Wu: Okay.
+
+239
+00:32:07.560 --> 00:32:14.869
+Kuan Wu: All right, and for the right part, I think we kind of covered, covered those things, the inputs.
+
+240
+00:32:14.910 --> 00:32:29.330
+Kuan Wu: And the scope. And how about, how about the… do we, like, need to, like, do some audit… auditability kind of support? Like, like, if all this, like, engine has… is a status.
+
+241
+00:32:29.470 --> 00:32:38.119
+Kuan Wu: the stateless engine, or you have to, like, trace back to some certain records? How's the current… current service right now?
+
+242
+00:32:38.120 --> 00:32:50.410
+Brad Campbell: Yeah, I mean, it's a good question, and if you're thinking about this the right way, I wouldn't worry about trying to, like, implement a solution for this in this project. I mean, really, like, the way that we would probably solve this would be using…
+
+243
+00:32:50.890 --> 00:32:55.540
+Brad Campbell: You know, some sort of archival mechanism with, like, database triggers.
+
+244
+00:32:55.850 --> 00:32:58.290
+Brad Campbell: So, like, if I wanted to, you know, like, for…
+
+245
+00:32:58.600 --> 00:33:06.800
+Brad Campbell: We're tracking, like, pass-fail version history per entity, right? Like, I can actually dump that stuff in an S3 bucket off of an update trigger from a database.
+
+246
+00:33:06.890 --> 00:33:23.429
+Brad Campbell: So, like, you know, that's… that's probably the really cheap and easy version of how to do this, like, at scale for, like, thousands of employers. Maybe we'd want something more robust, but, like, this is going to be such a small number of entities up front that, like, to me, it doesn't make sense to…
+
+247
+00:33:23.630 --> 00:33:30.180
+Brad Campbell: to spend a lot of time doing this. Now, if y'all finish everything up in August, and you're looking for something else to do, then yeah, we'll
+
+248
+00:33:30.470 --> 00:33:33.020
+Brad Campbell: We'll figure out how to make this a lot better than, you know.
+
+249
+00:33:33.130 --> 00:33:39.439
+Brad Campbell: Database triggers, dropping JSON blobs in an S3 bucket, but yeah, I don't think it's anything worth…
+
+250
+00:33:40.120 --> 00:33:42.079
+Brad Campbell: Thinking through too much at this point.
+
+251
+00:33:42.810 --> 00:33:48.940
+Kuan Wu: Okay, yeah, I think we have a pretty good, like, the whole picture about the service.
+
+252
+00:33:49.020 --> 00:34:03.820
+Kuan Wu: Okay, so let's get into some… some inter… immediate next steps for us. So I… I kind of, like, divided into, like, four major parts. So, the first one is the team accessibility.
+
+253
+00:34:03.880 --> 00:34:22.000
+Kuan Wu: like, we might… we might need… so we might… couldn't, like, access to the database in the short… in the near future, but, we might need some simple data provisioning, and also for the domain… domain knowledge transfer, because I… I imagine there will be some kind of, like.
+
+254
+00:34:22.300 --> 00:34:37.790
+Kuan Wu: knowledge base, or some SOP to how to run this project, and is there a possibility that we can access all those data, and also for… for codes, or some… some document, design document for existing… existing system?
+
+255
+00:34:37.889 --> 00:34:42.330
+Kuan Wu: Yeah, we are looking for, yeah, kind of those data.
+
+256
+00:34:42.330 --> 00:34:43.750
+Brad Campbell: Yeah, I'll work on that.
+
+257
+00:34:44.100 --> 00:34:51.189
+Kuan Wu: Okay, sounds good. Okay, so… okay, alright, for another one, Greenfield School, we might cover that.
+
+258
+00:34:51.290 --> 00:35:06.439
+Kuan Wu: Previously. Just want to… just want to clarify, so the tag… the whole tech stack, basically, we can, like, design it and decide it for, our… ourselves, and we can discuss with you. We don't have to…
+
+259
+00:35:06.440 --> 00:35:19.790
+Kuan Wu: follow any existing tech stack, right? Because there's… maybe there is golden, or some kind of other tech stack mentioned in the project. So is that a hard requirement, or actually we can just decide the whole tech stack?
+
+260
+00:35:19.990 --> 00:35:21.980
+Brad Campbell: Sure, as long as you don't use Java, it's fine with me.
+
+261
+00:35:24.250 --> 00:35:43.809
+Kuan Wu: Yeah, we… we won't… we won't use that. Yeah, and… and also for the environment as a solution strategy, because I… I guess there, there, there is an existing AWS cloud in our logistics right now, so we might… we might need to, like, how… how do we…
+
+262
+00:35:43.810 --> 00:35:54.949
+Kuan Wu: manage all those things. We might open a whole new infrastructure environment, or maybe a little kind of, like, like, sub-environment in the current structure, or…
+
+263
+00:35:54.950 --> 00:35:57.040
+Brad Campbell: I mean, most likely, so it sounds like…
+
+264
+00:35:57.380 --> 00:36:06.469
+Brad Campbell: Is the way this… this was one thing that wasn't clear to me. I guess we need to provide this for y'all to actually do your development on. Is that true or false?
+
+265
+00:36:07.520 --> 00:36:20.730
+Kuan Wu: I'm actually… I'm actually not sure about that. I guess that depends. I guess we can decide that. So, if there is… there is a current infrastructure that if we just
+
+266
+00:36:20.730 --> 00:36:33.579
+Kuan Wu: working on LAD, and that would be convenient to everyone, and we are totally good for it. And if for our logics, you guys want a whole separated environment, I guess we can decide it here.
+
+267
+00:36:33.580 --> 00:36:47.729
+Brad Campbell: Yeah. Long story short, like, if y'all need an AWS account to work within, like, I can create you one. That's not a big deal. I just… I'm not… it was very not clear to me, like, whether we needed to, or whether, like, y'all would just build the stuff on your laptops, like, exactly.
+
+268
+00:36:47.730 --> 00:36:48.480
+Kuan Wu: Don't he?
+
+269
+00:36:48.760 --> 00:36:54.659
+Brad Campbell: What the thought process there was, but if you need one, just ask for it, not a problem to get one split up for you.
+
+270
+00:36:54.840 --> 00:36:59.830
+Saul Alvarez: I guess we could work in our laptops, but the most utility to you?
+
+271
+00:37:00.040 --> 00:37:04.440
+Saul Alvarez: Is that we end up putting this in the right infrastructure.
+
+272
+00:37:04.700 --> 00:37:06.150
+Kuan Wu: Yeah, yeah.
+
+273
+00:37:06.150 --> 00:37:07.359
+Saul Alvarez: Deployed as possible.
+
+274
+00:37:07.360 --> 00:37:10.369
+Brad Campbell: Yeah, that's… that's a… that's a fair ask.
+
+275
+00:37:10.650 --> 00:37:12.319
+Brad Campbell: Yeah, I mean, we can get you a…
+
+276
+00:37:13.240 --> 00:37:15.820
+Brad Campbell: We can get you an account set up.
+
+277
+00:37:15.820 --> 00:37:25.379
+Kuan Wu: Yeah, yeah, that might… that might won't be a very immediate, really immediate thing to do, but we're just… just looking for a possibility here, because we… we really… we want our…
+
+278
+00:37:25.380 --> 00:37:36.240
+Kuan Wu: budget really deploy into the system, right? And, yeah, and that just leads to another question, is the infrastructure… is there infrastructure cost of budgeting? Because I'm quite not sure, I guess.
+
+279
+00:37:36.240 --> 00:37:42.579
+Kuan Wu: MSC won't sponsor anything about on this, so we might use… if we…
+
+280
+00:37:42.630 --> 00:37:54.210
+Kuan Wu: build… over-deploy our system under the current logic structure, so the cost might… we might need to discuss that. So is there a range, or actually, it doesn't matter at this stage?
+
+281
+00:37:54.540 --> 00:37:56.630
+Brad Campbell: Yeah, it would definitely matter.
+
+282
+00:37:56.630 --> 00:37:57.450
+Kuan Wu: Huh.
+
+283
+00:37:57.450 --> 00:37:58.230
+Brad Campbell: Let me…
+
+284
+00:37:58.560 --> 00:38:09.069
+Brad Campbell: Let me talk to our CTO and just see. Like, I've got a number in my head, but I don't want to just say it and get in trouble, so… Certainly, we wouldn't prohibit you from spending anything.
+
+285
+00:38:10.460 --> 00:38:15.580
+Brad Campbell: I would say, like, you know, as a general, like, overall architectural pattern, like, we do…
+
+286
+00:38:15.770 --> 00:38:27.020
+Brad Campbell: or I have kind of pushed us towards, like, using Kubernetes as our deployment, you know, kind of infrastructure of choice. So, don't know how much y'all have experience with that. I can certainly,
+
+287
+00:38:27.730 --> 00:38:28.150
+Kuan Wu: new.
+
+288
+00:38:28.150 --> 00:38:30.600
+Brad Campbell: Any sort of guidance or architectural
+
+289
+00:38:30.770 --> 00:38:34.429
+Brad Campbell: Decisioning that we've made about how we kind of build services and things.
+
+290
+00:38:34.670 --> 00:38:35.370
+Kuan Wu: Hmm.
+
+291
+00:38:35.420 --> 00:38:41.850
+Brad Campbell: Anyway, long story short, we can absolutely get you, you know, kind of a well-set-up Kubernetes cluster and a well.
+
+292
+00:38:41.850 --> 00:38:42.200
+Kuan Wu: That'll be.
+
+293
+00:38:42.200 --> 00:38:43.990
+Brad Campbell: AWS account to do some work in.
+
+294
+00:38:44.700 --> 00:38:50.979
+Kuan Wu: Okay, okay, so actually that depends, right? Depends how our system architecture will be, and…
+
+295
+00:38:51.260 --> 00:39:01.609
+Kuan Wu: Yeah, no, so… yeah, and yeah, if Kubernetes won't work, there must be other ways, maybe a simple virtual machine, there's a couple ways to do it, so… yeah, so…
+
+296
+00:39:01.610 --> 00:39:02.740
+Brad Campbell: Kubernetes, though.
+
+297
+00:39:02.740 --> 00:39:14.200
+Kuan Wu: Yeah, okay, okay, that sounds good. All right. Yeah, because there will be additional costs if you host, like, Kubernetes on those cloud services, that's why I asked.
+
+298
+00:39:14.200 --> 00:39:14.530
+Brad Campbell: That's a great.
+
+299
+00:39:14.530 --> 00:39:16.130
+Kuan Wu: Yeah, it's really nothing.
+
+300
+00:39:16.130 --> 00:39:16.749
+Brad Campbell: I could do.
+
+301
+00:39:16.750 --> 00:39:29.850
+Kuan Wu: Yeah, okay, okay, got it, sounds good. Okay, and yeah, here's for our Milestone 1. So, in Milestone 1, we, we have to, like, clarify all the requirements, and…
+
+302
+00:39:30.110 --> 00:39:47.799
+Kuan Wu: And we would like to, have the holistic, like, structure, system architecture blueprint, including, kind of, system design in a certain way, and the tech stack, all these things, and we can align with all the needs for the next step. Yeah.
+
+303
+00:39:48.090 --> 00:40:06.380
+Kuan Wu: And that's kind of like… and for the… oh, for the POC… for POC scope, for… so is it, for the… because for the milestone 3, there's… we have to, like, really, like, ingest all the data in that database, right? So is it… is it 27 states that's a hard…
+
+304
+00:40:06.380 --> 00:40:09.899
+Kuan Wu: requirement, or it actually depends, because I…
+
+305
+00:40:09.900 --> 00:40:29.260
+Kuan Wu: imagine, imagine if we, like, want to, like, expand to support every stage in that stage, might… might kind of spend too much time here, because let's kind of duplicate works. But if that's a hard requirement, we… we might find any other efficient way to do that, but just…
+
+306
+00:40:29.260 --> 00:40:30.580
+Kuan Wu: Want to clarify here.
+
+307
+00:40:31.040 --> 00:40:32.640
+Brad Campbell: Let's shoot for 5.
+
+308
+00:40:33.640 --> 00:40:35.010
+Kuan Wu: 2 to 5? Okay.
+
+309
+00:40:35.010 --> 00:40:36.669
+Brad Campbell: Yeah, let's shoot for 5.
+
+310
+00:40:37.430 --> 00:40:38.950
+Brad Campbell: So, 5 states?
+
+311
+00:40:39.150 --> 00:40:40.879
+Kuan Wu: Oh, five slaves, okay.
+
+312
+00:40:40.880 --> 00:40:41.580
+Brad Campbell: Reasonable?
+
+313
+00:40:41.850 --> 00:40:48.399
+Kuan Wu: Yeah, that sounds pretty reasonable. Is it… is it, like, priority stays that maybe…
+
+314
+00:40:48.720 --> 00:40:49.070
+Brad Campbell: Yes, that'.
+
+315
+00:40:49.070 --> 00:40:49.680
+Kuan Wu: comments.
+
+316
+00:40:49.680 --> 00:40:51.679
+Brad Campbell: Let me… let me get a list of them for.
+
+317
+00:40:51.680 --> 00:40:52.060
+Kuan Wu: God.
+
+318
+00:40:52.060 --> 00:40:53.790
+Brad Campbell: I think there certainly would be.
+
+319
+00:40:53.940 --> 00:41:04.420
+Kuan Wu: Got it, got it. Well, we will… we will, like, organize all these… all the things we need to know, and some kind of summary today, and send it… send it to you after the meeting, so yeah, so…
+
+320
+00:41:04.630 --> 00:41:06.599
+Kuan Wu: Can do that, and…
+
+321
+00:41:07.080 --> 00:41:15.939
+Kuan Wu: Okay, and is there any, like, expected time frame for Mouse on one, or actually the holistic project roadmap is good to you?
+
+322
+00:41:17.600 --> 00:41:22.870
+Brad Campbell: I don't know, end of… February seem reasonable? I mean…
+
+323
+00:41:22.870 --> 00:41:23.510
+Kuan Wu: Okay.
+
+324
+00:41:23.510 --> 00:41:26.429
+Brad Campbell: You know, working on this for 12 hours a week, yeah, I mean, I…
+
+325
+00:41:26.950 --> 00:41:27.530
+Kuan Wu: Yeah.
+
+326
+00:41:27.750 --> 00:41:30.319
+Brad Campbell: I don't see you being able to put all this together and…
+
+327
+00:41:31.010 --> 00:41:36.679
+Brad Campbell: 12 to 24 hours, so I mean, I don't know. February seems reasonable to me. Does that sound fair?
+
+328
+00:41:37.040 --> 00:41:52.299
+Kuan Wu: Okay, okay, yeah, because we also will spend some time arranging the AI thing, so, yeah, so good to align. And, yeah, and for the last part, it's for our ways of working, so…
+
+329
+00:41:52.440 --> 00:42:06.240
+Kuan Wu: So for our meeting, I think we might… don't need, like, regular bi-weekly meeting, or, do you think it's better we, like, schedule a regular meeting, or we just…
+
+330
+00:42:06.420 --> 00:42:11.249
+Kuan Wu: get… we just get to the times. We just schedule it, like, on demand, like, for example.
+
+331
+00:42:11.380 --> 00:42:20.849
+Kuan Wu: Milestone 1, Milestone 2, or something need to review, then we schedule it, or we just bi-weekly or weekly, just sync up all the things.
+
+332
+00:42:20.850 --> 00:42:28.760
+Brad Campbell: Let's just put a biweekly… I mean, this is how I like doing my projects. Let's just do a bi-weekly. If we decide we don't need it, then we just… we don't do it.
+
+333
+00:42:29.050 --> 00:42:33.590
+Kuan Wu: Got it. Is there a preferable time for a week?
+
+334
+00:42:35.400 --> 00:42:41.090
+Brad Campbell: Is before 5 p.m. something that y'all can do, or, like, is this kind of like class time that, like, is that.
+
+335
+00:42:41.090 --> 00:42:41.510
+Kuan Wu: We…
+
+336
+00:42:41.510 --> 00:42:43.099
+Brad Campbell: 5PM slot is…
+
+337
+00:42:43.420 --> 00:42:46.600
+Kuan Wu: We can work on that. We can work on that.
+
+338
+00:42:46.600 --> 00:42:52.269
+Brad Campbell: Really, that's the only ask. I don't really care what day, just before 5 would be nice.
+
+339
+00:42:52.270 --> 00:43:09.209
+Kuan Wu: Okay, we will… we'll try to work on that, and okay, we'll get back… we'll get it back to you. Okay, so let's set it up as a bi-weekly. And also for the communication, because we… we only have emails right now, and I just… because… because for last week, we kind of, like.
+
+340
+00:43:09.210 --> 00:43:14.260
+Kuan Wu: stuck into a situation. If we can give each other a phone call, that would be so great.
+
+341
+00:43:14.260 --> 00:43:20.660
+Kuan Wu: And I just want to see if you have any, like, preferable ways to do it, like.
+
+342
+00:43:20.710 --> 00:43:26.779
+Kuan Wu: Maybe message, or just email and telephone for emergency.
+
+343
+00:43:27.720 --> 00:43:31.769
+Brad Campbell: Yeah, I like that. I mean, I don't like people texting me about work unless that's how you.
+
+344
+00:43:31.770 --> 00:43:32.720
+Kuan Wu: really liked it. Yeah.
+
+345
+00:43:32.720 --> 00:43:33.280
+Brad Campbell: Hold on.
+
+346
+00:43:33.280 --> 00:43:45.340
+Kuan Wu: Okay, okay, yeah, sounds good. Okay, let's just stick to the email, and we will… we will send you, with our phone call, our point of contact to you, and we… we're happy to get
+
+347
+00:43:45.340 --> 00:43:54.730
+Kuan Wu: get your phone… phone number as well, so we can have a call just for emergency. We won't… we won't call you. We won't call you regularly.
+
+348
+00:43:54.730 --> 00:44:02.410
+Brad Campbell: Yeah, I'll send it back to you. You know, if it's something y'all want to do, like, we have Slack, we can set up a Slack channel if y'all would rather do that. I'll leave it up to y'all.
+
+349
+00:44:02.410 --> 00:44:03.840
+Saul Alvarez: We do use Slack.
+
+350
+00:44:03.840 --> 00:44:07.650
+Brad Campbell: Okay, I mean, if you want to do that, I mean, that's fine, but, like, I don't…
+
+351
+00:44:08.140 --> 00:44:15.360
+Brad Campbell: I'm trying to leave some of this up to y'all. I don't want y'all in a place where you feel like, you know, somebody's gonna, like, ask you questions every day. Like, I'm really not gonna do that. I'm gonna kind of.
+
+352
+00:44:15.360 --> 00:44:15.770
+Kuan Wu: Okay.
+
+353
+00:44:15.770 --> 00:44:17.690
+Brad Campbell: Let y'all drive this project, so…
+
+354
+00:44:17.810 --> 00:44:23.390
+Brad Campbell: If y'all want a Slack channel, happy to, like, get it set up for you. I'm guessing…
+
+355
+00:44:23.530 --> 00:44:26.059
+Brad Campbell: Your Slack accounts are tied to your school emails?
+
+356
+00:44:26.060 --> 00:44:29.990
+Kuan Wu: Yeah, well, I… I guess maybe we just…
+
+357
+00:44:30.170 --> 00:44:39.410
+Kuan Wu: How about we just start from a simple, simpler way, just email and phone number, and if there's needed, then we can, we can build that. Go down, okay?
+
+358
+00:44:39.410 --> 00:44:40.200
+Brad Campbell: I like that plan.
+
+359
+00:44:40.570 --> 00:44:56.949
+Kuan Wu: Okay, thank you so much. And also for the feedback, Luke, I think we can… maybe we can figure out in… so… so for my… I always imagine, like, like, is there any, like, review before the meeting? Like, for example, if we generate some related document, or…
+
+360
+00:44:57.210 --> 00:45:15.939
+Kuan Wu: maybe not for code review, but how about we… how is the feedback loop you're expected to be? Like, if we just sync it up, like, bi-weekly, or… or aside from the review, maybe we can… if there's a document, if there's some work, okay.
+
+361
+00:45:15.940 --> 00:45:23.260
+Brad Campbell: We'll take it. This is kind of, like, how I do stuff, and if y'all don't like it, you can just say, I don't like it, and we'll do something else. But, like, typically what I do is…
+
+362
+00:45:23.400 --> 00:45:38.569
+Brad Campbell: like, I'm a big fan of basic communication, like, I don't like lots of, like, hey, like, can we have a meeting? Because usually it's just a bunch of stuff you could have asked me, and I could have just written down the answer. So one, like, it forces people to write things down that, like, usually need to be written down anyway, so, like, why…
+
+363
+00:45:38.810 --> 00:45:55.619
+Brad Campbell: get on the phone and make it transcribed, and then you can just write it down in the first place. Long story short, like, the way I tend to do this is, like, for recurring meetings, like, there's a Confluence doc somewhere. If we have agenda items, drop them on Confluence. Like, half the time, you can answer them before you even get to the meeting, you realize you don't need the meeting, so…
+
+364
+00:45:55.630 --> 00:46:13.109
+Brad Campbell: If that works for y'all, we'll do the same thing. Like, I'll get all of y'all access to our Confluence, we'll have a dedicated space, we'll set up, you know, like, a dedicated page for the recurring calls. If y'all have got stuff that y'all want to talk about, like, you can put it on the agenda. If I've got something I want to talk about, I'll put it on the agenda. If there's nothing on the agenda, we don't have the phone call.
+
+365
+00:46:13.110 --> 00:46:20.679
+Brad Campbell: And then, like, you know, basically that's, you know, in Confluence, everything, you know, you can comment on it, you can link to other docs, so…
+
+366
+00:46:20.750 --> 00:46:21.490
+Brad Campbell: A lot of sense.
+
+367
+00:46:21.490 --> 00:46:27.309
+Kuan Wu: That's really great. Yeah, I just keep… I just keep it, like, asynchronous, some… some feedback, things like that.
+
+368
+00:46:27.310 --> 00:46:32.880
+Brad Campbell: Yeah, works best for me. Hopefully that works for y'all. It's just a lot more efficient, I think.
+
+369
+00:46:33.140 --> 00:46:44.700
+Kuan Wu: Yeah, I think that actually sounds good. And also for that Confluence webpage, maybe is there any, like, existing, like, knowledge transfer we need to get that we can also leverage the platform? Yep.
+
+370
+00:46:44.700 --> 00:46:54.240
+Brad Campbell: Yeah, and most of our… well, I say most of it. I've been doing a lot of work with Claude, so a lot of that stuff's in GitHub, but when I get everything aggregated, I'm actually aggregating
+
+371
+00:46:54.870 --> 00:47:03.959
+Brad Campbell: Long story short, I'll get it to you one way or the other, whether it's, like, stuff in GitHub or Confluence, I can probably get Claude to just go dump it all back into Confluence for you, so…
+
+372
+00:47:04.260 --> 00:47:05.569
+Kuan Wu: Got it, got it.
+
+373
+00:47:06.780 --> 00:47:11.729
+Kuan Wu: Okay, okay, yeah, I think… I think that's pretty… pretty about it.
+
+374
+00:47:11.870 --> 00:47:24.910
+Kuan Wu: And we will… we will send you an update after this meeting, and to… to summarize all those things, and things we need to get from you. And is there any other thing everyone wants to add?
+
+375
+00:47:25.060 --> 00:47:26.030
+Kuan Wu: Right here.
+
+376
+00:47:28.510 --> 00:47:39.960
+Kuan Wu: Okay, okay, well, thanks for having us, Brad. Yeah. Yeah, it's our honor to work with you guys, and yeah, hope, hope…
+
+377
+00:47:39.960 --> 00:47:41.970
+Brad Campbell: for this project.
+
+378
+00:47:42.380 --> 00:47:46.450
+Kuan Wu: Okay, thank you. Well, hope to see you soon. Thank you, everyone.
+
+379
+00:47:46.450 --> 00:47:47.589
+Brad Campbell: They'll take care of.
+
+380
+00:47:47.590 --> 00:47:51.630
+Scott Pavetti: You guys, after Brad drops, can you guys stay on the line and turn off the recording, please?
+
+381
+00:47:51.920 --> 00:47:54.010
+Brad Campbell: I didn't even know y'all were on the phone. Hey, Scott. Hey, John.
+
+382
+00:47:55.720 --> 00:47:57.200
+Kuan Wu: Okay, alright.
+
+383
+00:47:58.420 --> 00:47:59.540
+Kuan Wu: Okay, thank you.
+
+384
+00:47:59.790 --> 00:48:00.560
+Chawit (Punn) Uviengchai: King bread.
+
+385
+00:48:00.560 --> 00:48:01.320
+Jonathan Aldrich (he,him): Thanks.
+
+386
+00:48:06.610 --> 00:48:07.610
+Scott Pavetti: Okay.
+
+387
+00:48:08.140 --> 00:48:20.300
+Scott Pavetti: So, we'll need to set up a recurring meeting for mentoring. So, I think we talked about that before, and I just sent an email as a reminder for you guys to do that. So, what did you guys think? Did you turn the recording off?
+
+388
+00:48:22.790 --> 00:48:24.570
+Kuan Wu: These…
+
+389
+00:48:24.920 --> 00:48:26.040
+Chawit (Punn) Uviengchai: Is the recording?
+
