@@ -374,7 +374,7 @@ workspace "Logixian Compliance Engine" {
                 background #08427B
                 color #ffffff
             }
-            element "internet" {
+            element "Internet" {
                 background #8989B3
                 color #ffffff
                 shape WebBrowser
