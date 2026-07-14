@@ -208,7 +208,7 @@ workspace "Logixian Compliance Engine" {
         logixian.pipeline.basic_comparison -> logixian.pipeline.advanced_comparison "If saved and new image differ" {
             tags "calls"
         }
-        logixian.pipeline.advanced_comparison -> logixian.pipeline.state_id{
+        logixian.pipeline.advanced_comparison -> logixian.pipeline.state_id {
             tags "reads"
         }
         logixian.pipeline.advanced_comparison -> logixian.pipeline.llm_fetcher {
