@@ -101,16 +101,16 @@ workspace "Logixian Compliance Engine" {
         }
 
         compliance_team = person "IRALOGIX compliance team" {
-            tags "iralogix"
+            tags "IRALOGIX"
         }
         admin_team = person "IRALOGIX administrators" {
-            tags "iralogix"
+            tags "IRALOGIX"
         }
         customer = person "IRALOGIX customer" {
             tags "external"
         }
         authenticator = softwareSystem "Authenticator" {
-            tags "iralogix"
+            tags "IRALOGIX"
         }
         bedrock = element "AWS Bedrock" {
             tags "AI"
@@ -362,72 +362,81 @@ workspace "Logixian Compliance Engine" {
 
         styles {
             element "Software System" {
-                background #6AA1D8
+                background #75B9BE
+                color #000000
+            }
+            element "IRALOGIX" {
+                background #4059AD
                 color #ffffff
             }
-            element "iralogix" {
-                background #81377F
-                color #ffffff
+            element "external" {
+                background #F1E3F3
+                color #000000
             }
             element "Person" {
                 shape Person
-                background #08427B
-                color #ffffff
             }
             element "Internet" {
-                background #8989B3
-                color #ffffff
+                background #F1E3F3
+                color #000000
                 shape WebBrowser
             }
             element "AI" {
-                background #4E1F05
-                color #ffffff
+                background #ff6666
+                color #000000
                 shape Robot
             }
             element "database" {
-                background #157A09
+                background #FF6666
+                color #ffffff
                 shape Cylinder
             }
             element "Container" {
-                background #438DD5
+                background #75b9be
                 color #ffffff
             }
             element "method" {
-                background #ff0000
+                background #4059ad
                 color #ffffff
             }
             element "property" {
-                background #34C934
-                color #ffffff
+                background #CCFF66
+                color #000000
             }
             element "process" {
-                background #34C934
+                background #FF6666
+                color #ffffff
                 shape Diamond
             }
             relationship "readsWrites" {
-                color #1DB8C0
+                color #75B9BE
                 dashed false
             }
             relationship "reads" {
-                color #0B4725
+                color #4059AD
                 dashed false
             }
             relationship "writes" {
-                color #8B2626
-                dashed false
-            }
-            relationship "calls" {
-                color #BF8221
-            }
-            relationship "returns" {
-                color #1015A1
-            }
-            relationship "uses" {
                 color #000000
                 dashed false
             }
+            relationship "calls" {
+                color #FF6666
+            }
+            relationship "returns" {
+                color #99aa66
+            }
+            relationship "uses" {
+                color #000000
+            }
             relationship "alerts" {
-                color #EE00FF
+                color #75B9BE
+            }
+            element "Boundary" {
+                strokeWidth 5
+            }
+            relationship "Relationship" {
+                thickness 4
             }
         }
     }
