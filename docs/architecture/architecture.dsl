@@ -113,10 +113,10 @@ workspace "Logixian Compliance Engine" {
             tags "iralogix"
         }
         bedrock = element "AWS Bedrock" {
-            tags "ai"
+            tags "AI"
         }
         internet = element "WWW" {
-            tags "internet"
+            tags "Internet"
         }
 
         # Users
@@ -209,7 +209,7 @@ workspace "Logixian Compliance Engine" {
             tags "calls"
         }
         logixian.pipeline.state_id -> logixian.pipeline.advanced_comparison {
-            tags "requires"
+            tags "takes"
         }
         logixian.pipeline.advanced_comparison -> logixian.pipeline.llm_fetcher {
             tags "calls"
@@ -379,12 +379,12 @@ workspace "Logixian Compliance Engine" {
                 color #ffffff
                 shape WebBrowser
             }
-            element "ai" {
+            element "AI" {
                 background #4E1F05
                 color #ffffff
                 shape Robot
             }
-            element "database"{
+            element "database" {
                 background #157A09
                 shape Cylinder
             }
