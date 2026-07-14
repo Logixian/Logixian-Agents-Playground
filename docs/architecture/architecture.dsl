@@ -190,8 +190,8 @@ workspace "Logixian Compliance Engine" {
         logixian.pipeline.initializer -> logixian.pipeline.state_id {
             tags "writes"
         }
-        logixian.pipeline.state_id -> logixian.pipeline.basic_comparison {
-            tags "takes"
+        logixian.pipeline.basic_comparison -> logixian.pipeline.state_id {
+            tags "reads"
         }
         logixian.pipeline.initializer -> logixian.pipeline.basic_comparison {
             tags "calls"
@@ -208,8 +208,8 @@ workspace "Logixian Compliance Engine" {
         logixian.pipeline.basic_comparison -> logixian.pipeline.advanced_comparison "If saved and new image differ" {
             tags "calls"
         }
-        logixian.pipeline.state_id -> logixian.pipeline.advanced_comparison {
-            tags "takes"
+        logixian.pipeline.advanced_comparison -> logixian.pipeline.state_id{
+            tags "reads"
         }
         logixian.pipeline.advanced_comparison -> logixian.pipeline.llm_fetcher {
             tags "calls"
@@ -295,8 +295,8 @@ workspace "Logixian Compliance Engine" {
         logixian.compliance_engine.register_response -> logixian.compliance_engine.get_question "Session ID" {
             tags "calls"
         }
-        logixian.compliance_engine.rules_backbone -> logixian.compliance_engine.get_question {
-            tags "takes"
+        logixian.compliance_engine.get_question -> logixian.compliance_engine.rules_backbone {
+            tags "reads"
         }
         logixian.compliance_engine.get_question -> logixian.compliance_engine.register_response "New question/status" {
             tags "returns"
