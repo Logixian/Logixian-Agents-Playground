@@ -74,13 +74,15 @@ workspace "Logixian Compliance Engine" {
                     tags "method"
                 }
             }
-            portal = container "Portal" {
+            compliance_portal = container "Compliance team portal" "IRALOGIX-facing user stories" {
                 user_admin = component "User administration" {
                     tags "interface"
                 }
                 rules_admin = component "Rules administration" {
                     tags "interface"
                 }
+            }
+            customer_portal = container "Customer portal" "Customer-facing user stories" {
                 engine = component "Engine interface" {
                     tags "interface"
                 }
@@ -112,6 +114,9 @@ workspace "Logixian Compliance Engine" {
         authenticator = softwareSystem "Authenticator" {
             tags "IRALOGIX"
         }
+        iralogix_alerts = softwareSystem "IRALOGIX alert system" "Owned by IRALOGIX. Decides how an alert payload is routed to staff." {
+            tags "IRALOGIX"
+        }
         bedrock = element "AWS Bedrock" {
             tags "AI"
         }
@@ -120,51 +125,58 @@ workspace "Logixian Compliance Engine" {
         }
 
         # Users
-        compliance_team -> logixian.portal.rules_admin {
+        compliance_team -> logixian.compliance_portal.rules_admin {
             tags "uses"
         }
-        admin_team -> logixian.portal.user_admin {
+        admin_team -> logixian.compliance_portal.user_admin {
             tags "uses"
         }
-        customer -> logixian.portal.engine {
+        customer -> logixian.customer_portal.engine {
             tags "uses"
         }
 
-        # Portal 
-        logixian.portal.user_admin -> authenticator "Administer users" {
+        # Portals
+        # Shared login, then customer and IRALOGIX staff diverge to separate endpoint sets
+        logixian.customer_portal -> authenticator "Log in" {
+            tags "calls"
+        }
+        logixian.compliance_portal -> authenticator "Log in" {
+            tags "calls"
+        }
+        logixian.compliance_portal.user_admin -> authenticator "Administer users" {
             tags "readsWrites"
         }
-        logixian.portal.rules_admin -> logixian.verificator.unverified_schemas {
+        logixian.compliance_portal.rules_admin -> logixian.verificator.unverified_schemas {
             tags "calls"
         }
-        logixian.verificator.unverified_schemas -> logixian.portal.rules_admin "List of bundles" {
+        logixian.verificator.unverified_schemas -> logixian.compliance_portal.rules_admin "List of bundles" {
             tags "returns"
         }
-        logixian.portal.rules_admin -> logixian.verificator.accept_verification {
+        logixian.compliance_portal.rules_admin -> logixian.verificator.accept_verification {
             tags "calls"
         }
-        logixian.portal.engine -> logixian.compliance_engine.initializer "Start session - Employer ID, State ID" {
+        logixian.customer_portal.engine -> logixian.compliance_engine.initializer "Start session - Employer ID, State ID" {
             tags "calls"
         }
-        logixian.compliance_engine.initializer -> logixian.portal.engine "Session ID" {
+        logixian.compliance_engine.initializer -> logixian.customer_portal.engine "Session ID" {
             tags "returns"
         }
-        logixian.portal.engine -> logixian.compliance_engine.get_question "Request question" {
+        logixian.customer_portal.engine -> logixian.compliance_engine.get_question "Request question" {
             tags "calls"
         }
-        logixian.compliance_engine.get_question -> logixian.portal.engine "Current question" {
+        logixian.compliance_engine.get_question -> logixian.customer_portal.engine "Current question" {
             tags "returns"
         }
-        logixian.portal.engine -> logixian.compliance_engine.register_response "Post answer (action + Session ID)" {
+        logixian.customer_portal.engine -> logixian.compliance_engine.register_response "Post answer (action + Session ID)" {
             tags "calls"
         }
-        logixian.compliance_engine.register_response -> logixian.portal.engine "Next question/status" {
+        logixian.compliance_engine.register_response -> logixian.customer_portal.engine "Next question/status" {
             tags "returns"
         }
-        logixian.portal.engine -> logixian.compliance_engine.load "Load saved session - Session ID" {
+        logixian.customer_portal.engine -> logixian.compliance_engine.load "Load saved session - Session ID" {
             tags "calls"
         }
-        logixian.compliance_engine.load -> logixian.portal.engine "Next question" {
+        logixian.compliance_engine.load -> logixian.customer_portal.engine "Next question" {
             tags "returns"
         }
         
@@ -326,13 +338,16 @@ workspace "Logixian Compliance Engine" {
         logixian.alerter.bad_payloads -> logixian.alerter.alert_sender {
             tags "calls"
         }
-        logixian.alerter.alert_sender -> compliance_team {
+        logixian.alerter.alert_sender -> iralogix_alerts "Deliver alert payload (webhook)" {
+            tags "alerts"
+        }
+        iralogix_alerts -> compliance_team "SMS / email / workspace notification" {
             tags "alerts"
         }
 
         # Big picture relations
 
-        logixian.portal -> logixian.compliance_engine {
+        logixian.customer_portal -> logixian.compliance_engine {
             tags "uses"
         }
     }
