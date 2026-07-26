@@ -1,0 +1,262 @@
+specification {
+    element softwareSystem {
+        style {
+            color primary
+        }
+    }
+    element IRALOGIX {
+        style {
+            color secondary
+            shape person
+        }
+    }
+    element external {
+        style {
+            color green
+            shape person
+        }
+    }
+    element Internet {
+        style {
+            color green
+            shape browser
+        }
+    }
+    element AI {
+        style {
+            color red
+            shape component
+        }
+    }
+    element database {
+        style {
+            color red
+            shape storage
+        }
+    }
+    element container {
+        style {
+            color primary
+        }
+    }
+    element method {
+        style {
+            color secondary
+        }
+    }
+    element interface {
+        style {
+            color secondary
+            shape browser
+        }
+    }
+    element property {
+        style {
+            color amber
+        }
+    }
+    element process {
+        style {
+            color red
+            shape queue
+        }
+    }
+    relationship readsWrites {
+        color primary
+        line solid
+    }
+    relationship reads {
+        color secondary
+        line solid
+    }
+    relationship writes {
+        color muted
+        line solid
+    }
+    relationship calls {
+        color red
+        line dashed
+    }
+    relationship returns {
+        color slate
+        line dashed
+    }
+    relationship uses {
+        color gray
+        line dashed
+    }
+    relationship alerts {
+        color primary
+        line dashed
+    }
+}
+
+model {
+    logixian = softwareSystem "Logixian System" {
+        pipeline = container "Pipeline worker"{
+            initializer = method "Initializer"
+            state_id = property "State Id"
+            basic_comparison = method "Basic comparison"
+            advanced_comparison = method "Advanced comparison"
+            dumb_scrapper = method "Basic scrapper"
+            llm_fetcher = method "LLM scrapper"
+        }
+        compliance_engine = container "Compliance engine"{
+            initializer = method "Initializer"
+            ids = property "IDs"
+            rules_backbone = property "Rules backbone"
+            version_id = property "Rules information"
+            date = property "Date"
+            register_response = method "Answer question"
+            get_question = method "Get question"
+            save = method "Save log"
+            load = method "Get session"
+        }
+        alerter = container "Notification dispatcher" {
+            outdated_rules = method "Outdated rules"
+            outdated_payloads = method "Outdated payloads"
+            bad_payloads = method "Bad payloads"
+            alert_sender = method "Alert sender"
+        }
+        verificator = container "Verification interface" {
+            accept_verification = method "Accept verification"
+            unverified_schemas = method "List unverified schemas"
+        }
+        compliance_portal = container "Compliance team portal" {
+            user_admin = interface "User administration"
+            rules_admin = interface "Rules administration"
+        }
+        customer_portal = container "Customer portal" {
+            engine = interface "Engine interface"
+        }
+
+        raw_state_db = database "Raw state data"
+        state_bundles_db = database "State bundles database"
+        snapshots = database "Snapshots"
+        cron = process "Weekly cron"
+    }
+
+    compliance_team = IRALOGIX "IRALOGIX compliance team"
+    admin_team = IRALOGIX "IRALOGIX administrators"
+    customer = external "IRALOGIX customer"
+    authenticator = softwareSystem "Authenticator"
+    iralogix_alerts = softwareSystem "IRALOGIX alert system"
+    bedrock = AI "AWS Bedrock"
+    internet = Internet "WWW"
+
+    // Users
+    compliance_team -[uses]-> logixian.compliance_portal.rules_admin
+    admin_team -[uses]-> logixian.compliance_portal.user_admin
+    customer -[uses]-> logixian.customer_portal.engine
+
+    // Portals
+    // Shared login, then customer and IRALOGIX staff diverge to separate endpoint sets
+    logixian.customer_portal -[calls]-> authenticator "Log in"
+    logixian.compliance_portal -[calls]-> authenticator "Log in"
+    logixian.compliance_portal.user_admin -[readsWrites]-> authenticator "Administer users"
+    logixian.compliance_portal.rules_admin -[calls]-> logixian.verificator.unverified_schemas
+    logixian.verificator.unverified_schemas -[returns]-> logixian.compliance_portal.rules_admin "List of bundles"
+    logixian.compliance_portal.rules_admin -[calls]-> logixian.verificator.accept_verification
+    logixian.customer_portal.engine -[calls]-> logixian.compliance_engine.initializer "Start session - Employer ID, State ID"
+    logixian.compliance_engine.initializer -[returns]-> logixian.customer_portal.engine "Session ID"
+    logixian.customer_portal.engine -[calls]-> logixian.compliance_engine.get_question "Request question"
+    logixian.compliance_engine.get_question -[returns]-> logixian.customer_portal.engine "Current question"
+    logixian.customer_portal.engine -[calls]-> logixian.compliance_engine.register_response "Post answer (action + Session ID)"
+    logixian.compliance_engine.register_response -[returns]-> logixian.customer_portal.engine "Next question/status"
+    logixian.customer_portal.engine -[calls]-> logixian.compliance_engine.load "Load saved session - Session ID"
+    logixian.compliance_engine.load -[returns]-> logixian.customer_portal.engine "Next question"
+
+    // Authentication activities
+    logixian.compliance_engine.initializer -[calls]-> authenticator "Verify permissions"
+    logixian.compliance_engine.get_question -[calls]-> authenticator "Verify permissions"
+    logixian.compliance_engine.register_response -[calls]-> authenticator "Verify permissions"
+    logixian.compliance_engine.load -[calls]-> authenticator "Verify permissions"
+
+    // Fetching regulations
+
+    logixian.cron -[calls]-> logixian.pipeline.initializer
+    logixian.pipeline.initializer -[writes]-> logixian.pipeline.state_id
+    logixian.pipeline.basic_comparison -[reads]-> logixian.pipeline.state_id
+    logixian.pipeline.initializer -[calls]-> logixian.pipeline.basic_comparison
+    logixian.pipeline.basic_comparison -[calls]-> logixian.pipeline.dumb_scrapper
+    logixian.pipeline.dumb_scrapper -[returns]-> logixian.pipeline.basic_comparison "Registered website"
+    logixian.pipeline.basic_comparison -[reads]-> logixian.raw_state_db "Saved website image"
+    logixian.pipeline.basic_comparison -[calls]-> logixian.pipeline.advanced_comparison "If saved and new image differ"
+    logixian.pipeline.advanced_comparison -[reads]-> logixian.pipeline.state_id
+    logixian.pipeline.advanced_comparison -[calls]-> logixian.pipeline.llm_fetcher
+    logixian.pipeline.llm_fetcher -[returns]-> logixian.pipeline.advanced_comparison "State bundle + website url"
+    logixian.pipeline.llm_fetcher -[calls]-> logixian.pipeline.dumb_scrapper "Website URL"
+    logixian.pipeline.dumb_scrapper -[returns]-> logixian.pipeline.llm_fetcher "Raw website"
+    logixian.pipeline.llm_fetcher -[writes]-> logixian.raw_state_db "Saved website image"
+    logixian.pipeline.llm_fetcher -[writes]-> logixian.state_bundles_db "PENDING new fetched rules (only if changed)"
+    logixian.pipeline.llm_fetcher -[alerts]-> iralogix_alerts "If new rules exist"
+
+    logixian.pipeline.llm_fetcher -[uses]-> bedrock
+    logixian.pipeline.llm_fetcher -[reads]-> internet
+    logixian.pipeline.dumb_scrapper -[reads]-> internet
+
+    // Engine
+    logixian.compliance_engine.initializer -[reads]-> logixian.state_bundles_db "Get state bundle (State ID)"
+    logixian.compliance_engine.initializer -[writes]-> logixian.compliance_engine.rules_backbone
+    logixian.compliance_engine.initializer -[writes]-> logixian.compliance_engine.version_id
+    logixian.compliance_engine.initializer -[writes]-> logixian.compliance_engine.ids
+    logixian.compliance_engine.initializer -[writes]-> logixian.compliance_engine.date
+    logixian.compliance_engine.register_response -[writes]-> logixian.compliance_engine.ids
+    logixian.compliance_engine.register_response -[writes]-> logixian.compliance_engine.date
+    logixian.compliance_engine.register_response -[calls]-> logixian.compliance_engine.save "New step"
+    logixian.compliance_engine.save -[returns]-> logixian.compliance_engine.register_response "Status projection"
+    logixian.compliance_engine.save -[calls]-> logixian.compliance_engine.load "Session ID"
+    logixian.compliance_engine.save -[writes]-> logixian.snapshots "New step"
+
+    logixian.compliance_engine.load -[returns]-> logixian.compliance_engine.save "Session history"
+    logixian.compliance_engine.load -[writes]-> logixian.compliance_engine.version_id
+    logixian.compliance_engine.load -[writes]-> logixian.compliance_engine.rules_backbone
+    logixian.compliance_engine.load -[reads]-> logixian.snapshots
+
+    logixian.compliance_engine.register_response -[calls]-> logixian.compliance_engine.get_question "Session ID"
+    logixian.compliance_engine.get_question -[reads]-> logixian.compliance_engine.rules_backbone
+    logixian.compliance_engine.get_question -[returns]-> logixian.compliance_engine.register_response "New question/status"
+
+    // Alerter
+
+    logixian.alerter.outdated_rules -[reads]-> logixian.snapshots
+    logixian.alerter.outdated_rules -[reads]-> logixian.state_bundles_db
+    logixian.alerter.outdated_payloads -[reads]-> logixian.snapshots
+    logixian.alerter.bad_payloads -[reads]-> logixian.snapshots
+
+    logixian.alerter.outdated_rules -[calls]-> logixian.alerter.alert_sender
+    logixian.alerter.outdated_payloads -[calls]-> logixian.alerter.alert_sender
+    logixian.alerter.bad_payloads -[calls]-> logixian.alerter.alert_sender
+    logixian.alerter.alert_sender -[alerts]-> iralogix_alerts "Deliver alert payload (webhook)"
+    iralogix_alerts -[alerts]-> compliance_team "SMS / email / workspace notification"
+
+    // Big picture relations
+    logixian.customer_portal -[uses]-> logixian.compliance_engine
+}
+
+views {
+    view index {
+        title "Context diagram"
+        include *
+    }
+
+    view view2 of logixian {
+        title "Container diagram"
+        include *
+    }
+
+    view view3 of logixian.compliance_engine {
+        title "Component diagram of the compliance engine"
+        include *
+    }
+
+    view view4 of logixian.pipeline {
+        title "Component diagram of the worker pipeline"
+        include *
+    }
+
+    view view5 of logixian.alerter {
+        title "Component diagram of the alerting system"
+        include *
+    }
+}

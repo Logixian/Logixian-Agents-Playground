@@ -63,3 +63,5 @@ for DSL syntax highlighting. Live preview still requires Structurizr Lite (Optio
   regenerated on next run.
 - Commit `workspace.dsl`, `workspace.json`, and `images/`. Ignore `.structurizr/`
   if it grows noisy.
+
+For running likec4, you can run `npx likec4 start` on this directory, using the packages in `package.json`.
