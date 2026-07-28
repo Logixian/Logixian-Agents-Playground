@@ -116,7 +116,7 @@ model {
             outdated_rules = method "Outdated rules"
             outdated_payloads = method "Outdated payloads"
             bad_payloads = method "Bad payloads"
-            alert_sender = method "Alert sender"
+            alert_sender = method "Alert dispatcher"
         }
         verificator = container "Verification interface" {
             accept_verification = method "Accept verification"
@@ -157,6 +157,8 @@ model {
     logixian.compliance_portal.rules_admin -[calls]-> logixian.verificator.unverified_schemas
     logixian.verificator.unverified_schemas -[returns]-> logixian.compliance_portal.rules_admin "List of bundles"
     logixian.compliance_portal.rules_admin -[calls]-> logixian.verificator.accept_verification
+    logixian.verificator.unverified_schemas -[reads]-> logixian.state_bundles_db "Unverified schemas"
+    logixian.verificator.accept_verification -[writes]-> logixian.state_bundles_db "Verified schemas"
     logixian.customer_portal.engine -[calls]-> logixian.compliance_engine.initializer "Start session - Employer ID, State ID"
     logixian.compliance_engine.initializer -[returns]-> logixian.customer_portal.engine "Session ID"
     logixian.customer_portal.engine -[calls]-> logixian.compliance_engine.get_question "Request question"
@@ -228,7 +230,8 @@ model {
     logixian.alerter.outdated_payloads -[calls]-> logixian.alerter.alert_sender
     logixian.alerter.bad_payloads -[calls]-> logixian.alerter.alert_sender
     logixian.alerter.alert_sender -[alerts]-> iralogix_alerts "Deliver alert payload (webhook)"
-    iralogix_alerts -[alerts]-> compliance_team "SMS / email / workspace notification"
+    iralogix_alerts -[alerts]-> compliance_team "notification"
+    iralogix_alerts -[alerts]-> customer
 
     // Big picture relations
     logixian.customer_portal -[uses]-> logixian.compliance_engine
