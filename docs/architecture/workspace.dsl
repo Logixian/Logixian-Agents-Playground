@@ -241,7 +241,7 @@ workspace "Logixian Compliance Engine" {
         logixian.pipeline.llm_fetcher -> logixian.state_bundles_db "PENDING new fetched rules (only if changed)" {
             tags "writes"
         }
-        logixian.pipeline.llm_fetcher -> compliance_team "If new rules exist" {
+        logixian.pipeline.llm_fetcher -> iralogix_alerts "If new rules exist" {
             tags "alerts"
         }
 
