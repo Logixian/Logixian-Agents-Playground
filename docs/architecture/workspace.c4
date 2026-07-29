@@ -126,14 +126,15 @@ model {
             user_admin = interface "User administration"
             rules_admin = interface "Rules administration"
         }
-        customer_portal = container "Customer portal" {
-            engine = interface "Engine interface"
-        }
 
         raw_state_db = database "Raw state data"
         state_bundles_db = database "State bundles database"
         snapshots = database "Snapshots"
         cron = process "Weekly cron"
+    }
+
+    customer_portal = container "Customer portal" {
+        engine = interface "Engine interface"
     }
 
     compliance_team = IRALOGIX "IRALOGIX compliance team"
@@ -147,11 +148,11 @@ model {
     // Users
     compliance_team -[uses]-> logixian.compliance_portal.rules_admin
     admin_team -[uses]-> logixian.compliance_portal.user_admin
-    customer -[uses]-> logixian.customer_portal.engine
+    customer -[uses]-> customer_portal.engine
 
     // Portals
     // Shared login, then customer and IRALOGIX staff diverge to separate endpoint sets
-    logixian.customer_portal -[calls]-> authenticator "Log in"
+    customer_portal -[calls]-> authenticator "Log in"
     logixian.compliance_portal -[calls]-> authenticator "Log in"
     logixian.compliance_portal.user_admin -[readsWrites]-> authenticator "Administer users"
     logixian.compliance_portal.rules_admin -[calls]-> logixian.verificator.unverified_schemas
@@ -159,14 +160,14 @@ model {
     logixian.compliance_portal.rules_admin -[calls]-> logixian.verificator.accept_verification
     logixian.verificator.unverified_schemas -[reads]-> logixian.state_bundles_db "Unverified schemas"
     logixian.verificator.accept_verification -[writes]-> logixian.state_bundles_db "Verified schemas"
-    logixian.customer_portal.engine -[calls]-> logixian.compliance_engine.initializer "Start session - Employer ID, State ID"
-    logixian.compliance_engine.initializer -[returns]-> logixian.customer_portal.engine "Session ID"
-    logixian.customer_portal.engine -[calls]-> logixian.compliance_engine.get_question "Request question"
-    logixian.compliance_engine.get_question -[returns]-> logixian.customer_portal.engine "Current question"
-    logixian.customer_portal.engine -[calls]-> logixian.compliance_engine.register_response "Post answer (action + Session ID)"
-    logixian.compliance_engine.register_response -[returns]-> logixian.customer_portal.engine "Next question/status"
-    logixian.customer_portal.engine -[calls]-> logixian.compliance_engine.load "Load saved session - Session ID"
-    logixian.compliance_engine.load -[returns]-> logixian.customer_portal.engine "Next question"
+    customer_portal.engine -[calls]-> logixian.compliance_engine.initializer "Start session - Employer ID, State ID"
+    logixian.compliance_engine.initializer -[returns]-> customer_portal.engine "Session ID"
+    customer_portal.engine -[calls]-> logixian.compliance_engine.get_question "Request question"
+    logixian.compliance_engine.get_question -[returns]-> customer_portal.engine "Current question"
+    customer_portal.engine -[calls]-> logixian.compliance_engine.register_response "Post answer (action + Session ID)"
+    logixian.compliance_engine.register_response -[returns]-> customer_portal.engine "Next question/status"
+    customer_portal.engine -[calls]-> logixian.compliance_engine.load "Load saved session - Session ID"
+    logixian.compliance_engine.load -[returns]-> customer_portal.engine "Next question"
 
     // Authentication activities
     logixian.compliance_engine.initializer -[calls]-> authenticator "Verify permissions"
@@ -234,7 +235,9 @@ model {
     iralogix_alerts -[alerts]-> customer
 
     // Big picture relations
-    logixian.customer_portal -[uses]-> logixian.compliance_engine
+    customer_portal -[uses]-> logixian.compliance_engine
+    customer_portal -[calls]-> logixian.compliance_engine.register_response
+    
 }
 
 views {
