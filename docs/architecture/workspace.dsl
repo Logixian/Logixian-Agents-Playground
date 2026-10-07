@@ -13,13 +13,14 @@ workspace "Logixian Compliance Engine" {
                 basic_comparison = component "Basic comparison" {
                     tags "method"
                 }
-                advanced_comparison = component "Advanced comparison" {
-                    tags "method"
-                }
                 dumb_scrapper = component "Basic scrapper" {
                     tags "method"
                 }
                 llm_fetcher = component "LLM scrapper" {
+                    tags "method"
+                }
+
+                agent = component "Agent" {
                     tags "method"
                 }
             }
@@ -66,14 +67,7 @@ workspace "Logixian Compliance Engine" {
                     tags "method"
                 }
             }
-            verificator = container "Verification interface" {
-                accept_verification = component "Accept verification" {
-                    tags "method"
-                }
-                unverified_schemas = component "List unverified schemas" {
-                    tags "method"
-                }
-            }
+   
             compliance_portal = container "Compliance team portal" "IRALOGIX-facing user stories" {
                 user_admin = component "User administration" {
                     tags "interface"
@@ -96,9 +90,6 @@ workspace "Logixian Compliance Engine" {
             }
             snapshots = container "Snapshots" {
                 tags "database"
-            }
-            cron = container "Weekly cron" {
-                tags "process"
             }
         }
 
@@ -146,15 +137,13 @@ workspace "Logixian Compliance Engine" {
         logixian.compliance_portal.user_admin -> authenticator "Administer users" {
             tags "readsWrites"
         }
-        logixian.compliance_portal.rules_admin -> logixian.verificator.unverified_schemas {
+        logixian.compliance_portal.rules_admin -> logixian.pipeline.initializer {
             tags "calls"
         }
-        logixian.verificator.unverified_schemas -> logixian.compliance_portal.rules_admin "List of bundles" {
+        logixian.pipeline.llm_fetcher -> logixian.compliance_portal.rules_admin {
             tags "returns"
         }
-        logixian.compliance_portal.rules_admin -> logixian.verificator.accept_verification {
-            tags "calls"
-        }
+
         logixian.customer_portal.engine -> logixian.compliance_engine.initializer "Start session - Employer ID, State ID" {
             tags "calls"
         }
@@ -195,10 +184,7 @@ workspace "Logixian Compliance Engine" {
         }
 
         # Fetching regulations
-        
-        logixian.cron -> logixian.pipeline.initializer {
-            tags "calls"
-        }
+      
         logixian.pipeline.initializer -> logixian.pipeline.state_id {
             tags "writes"
         }
@@ -217,17 +203,11 @@ workspace "Logixian Compliance Engine" {
         logixian.pipeline.basic_comparison -> logixian.raw_state_db "Saved website image" {
             tags "reads"
         }
-        logixian.pipeline.basic_comparison -> logixian.pipeline.advanced_comparison "If saved and new image differ" {
+        logixian.pipeline.basic_comparison -> logixian.pipeline.llm_fetcher "If saved and new image differ" {
             tags "calls"
         }
-        logixian.pipeline.advanced_comparison -> logixian.pipeline.state_id {
+        logixian.pipeline.llm_fetcher -> logixian.pipeline.state_id {
             tags "reads"
-        }
-        logixian.pipeline.advanced_comparison -> logixian.pipeline.llm_fetcher {
-            tags "calls"
-        }
-        logixian.pipeline.llm_fetcher -> logixian.pipeline.advanced_comparison "State bundle + website url" {
-            tags "returns"
         }
         logixian.pipeline.llm_fetcher -> logixian.pipeline.dumb_scrapper "Website URL" {
             tags "calls"
@@ -238,17 +218,18 @@ workspace "Logixian Compliance Engine" {
         logixian.pipeline.llm_fetcher -> logixian.raw_state_db "Saved website image" {
             tags "writes"
         }
-        logixian.pipeline.llm_fetcher -> logixian.state_bundles_db "PENDING new fetched rules (only if changed)" {
+        logixian.pipeline.llm_fetcher -> logixian.compliance_portal.rules_admin "New rules fetched" {
             tags "writes"
         }
-        logixian.pipeline.llm_fetcher -> iralogix_alerts "If new rules exist" {
-            tags "alerts"
-        }
-
-        logixian.pipeline.llm_fetcher -> bedrock {
+ 
+        logixian.pipeline.llm_fetcher -> logixian.pipeline.agent {
             tags "uses"
         }
-        logixian.pipeline.llm_fetcher -> internet {
+
+        logixian.pipeline.agent -> bedrock {
+            tags "uses"
+        }
+        logixian.pipeline.agent -> internet {
             tags "reads"
         }
         logixian.pipeline.dumb_scrapper -> internet {
